@@ -44,3 +44,7 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+
+# Expo prebuild output (generated)
+mobile/android/
+mobile/ios/

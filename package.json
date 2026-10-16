@@ -1,0 +1,24 @@
+{
+  "name": "ormma",
+  "private": true,
+  "description": "Ormma monorepo root: shared tooling and scripts only. mobile/ and functions/ are independent projects.",
+  "scripts": {
+    "prereqs": "node scripts/check-prereqs.mjs",
+    "emulators": "npm run prereqs && npm --prefix functions run build && firebase emulators:start --project demo-ormma --import=emulator-data --export-on-exit=emulator-data",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p shared --noEmit && npm --prefix functions run typecheck && npm --prefix mobile run typecheck",
+    "test": "npm --prefix functions test && npm --prefix mobile test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "firebase-tools": "^15.34.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
