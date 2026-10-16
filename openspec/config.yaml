@@ -39,9 +39,12 @@ context: |
   - Urgent keywords (chest pain, breathlessness, fall, unconsciousness) trigger an
     immediate family alert, checked before any model call.
 
-  Spec locations: the Ormma specs are the numbered files in specs/ (data model, security
-  rules, call flow, medical safety, consent and DPDP, AI contracts). They move to
-  openspec/specs/ during the bootstrap; until then treat specs/ as the source of truth.
+  Spec locations: the Ormma specs live in openspec/specs/, one folder per capability
+  (data-model, access-control, dose-event-lifecycle, call-flow, grouped-calls,
+  missed-dose-alerts, medical-safety, trend-flagging, consent, data-protection,
+  ai-contracts, reply-structuring, prescription-reading, weekly-summary). The old numbered
+  files are kept only at git tag specs-v1-pre-openspec; docs/spec-migration-map.md maps
+  old sections to capabilities.
   Decision log: docs/DECISIONS.md, one line per non-obvious decision.
 
 # Per-artifact rules
