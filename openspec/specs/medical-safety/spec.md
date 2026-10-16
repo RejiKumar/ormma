@@ -81,12 +81,11 @@ The system SHALL:
 - **AND** no attempt is made to assess it
 
 ### Requirement: Emergency prompt in the family app
-The following is a recommendation (SHOULD), not a binding requirement:
-- The family app should show a prompt to call local emergency services.
+The family app SHALL show a prompt to call local emergency services.
 
 #### Scenario: Emergency prompt
 - **WHEN** an urgent alert is shown in the family app
-- **THEN** the app should show a prompt to call local emergency services
+- **THEN** the app shows a prompt to call local emergency services
 
 ### Requirement: Urgent keyword list
 The following SHALL hold:
@@ -100,6 +99,11 @@ The following SHALL hold:
 ### Requirement: Review before launch
 The following SHALL hold:
 - A doctor or pharmacist reads: call scripts, alert templates, trend wording, disclaimer, urgent-keyword list.
+- This review is a launch gate: the app SHALL NOT be released to real users until each item has been reviewed and the review is recorded in `docs/DECISIONS.md` with the reviewer's role and the date.
+
+#### Scenario: Launch gate
+- **WHEN** any of the call scripts, alert templates, trend wording, disclaimer or urgent-keyword list has not been reviewed and recorded
+- **THEN** the app is not released to real users
 
 #### Scenario: Pre-launch review
 - **WHEN** the app is prepared for launch

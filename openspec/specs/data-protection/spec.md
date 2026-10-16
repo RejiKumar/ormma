@@ -15,14 +15,14 @@ The following SHALL hold:
 
 ### Requirement: Transcript storage
 The following SHALL hold:
-- Transcripts: store only when needed for review, in Storage with a 30-day lifecycle.
+- Transcripts: store only when needsReview is true, in Storage under `transcripts/review/`, deleted when the review is resolved or after 30 days, whichever comes first.
 
 (See also `data-model` Retention for the same topic.)
 
 #### Scenario: Transcript for review
-- **WHEN** a transcript is needed for review
-- **THEN** it is stored in Storage with a 30-day lifecycle
-- **AND** it is stored only when needed for review
+- **WHEN** needsReview is true for a reply
+- **THEN** its transcript is stored in Storage under `transcripts/review/`
+- **AND** it is deleted when the review is resolved or after 30 days, whichever comes first
 
 ### Requirement: Claude prompt content
 The following SHALL hold:

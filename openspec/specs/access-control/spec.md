@@ -35,7 +35,12 @@ The following SHALL hold:
 
 ### Requirement: parents path rule
 The following SHALL hold:
-- parents/{id}: read by members. Create by any signed-in user (creator becomes owner via a Cloud Function, not the client). Update by owner only, and the client may NOT modify `consent`.
+- parents/{id}: read by members. Create only through a callable Cloud Function that writes the parent and its owner member in one batch; clients cannot create parents directly. Update by owner only, and the client may NOT modify `consent`.
+
+#### Scenario: Parent creation
+- **WHEN** a client tries to create a parent document directly
+- **THEN** the create is denied
+- **AND** a callable Cloud Function writes the parent and its owner member in one batch
 
 #### Scenario: Consent is not client-writable
 - **WHEN** a client updates a parent document
@@ -51,11 +56,11 @@ The following SHALL hold:
 
 ### Requirement: medicines path rule
 The following SHALL hold:
-- medicines: read by members. Create/update by owner or editor. Client may not set `confirmedByHuman` to true on documents with source "prescription_scan" except through the review screen path (field set only when a human edits the doc; enforce with a rule that requires `request.auth.uid` to be an editor/owner).
+- medicines: read by members. Create/update by owner or editor. `confirmedByHuman: true` can be written only by an owner or editor (`request.auth.uid` is an editor/owner). Whether the field was set through a review screen is not enforced in rules.
 
 #### Scenario: Prescription-scan medicine confirmation
-- **WHEN** a client sets `confirmedByHuman` to true on a medicine with source "prescription_scan"
-- **THEN** it is allowed only through the review screen path, where a human edits the doc and `request.auth.uid` is an editor/owner
+- **WHEN** a client writes `confirmedByHuman: true` on a medicine, including one with source "prescription_scan"
+- **THEN** it is allowed only if `request.auth.uid` is an owner or editor
 
 ### Requirement: doseEvents read
 The following SHALL hold:
@@ -190,7 +195,7 @@ The following SHALL hold:
 - **THEN** the access is denied
 
 ### Requirement: Rules test suite
-The Firebase emulator test suite SHALL include the following tests, numbered as in the source.
+The Firebase emulator test suite SHALL include the following tests, numbered as in the source. Tests 15 and 16 were added when decisions #5 and #14 were adopted.
 
 #### Scenario: Rules test 1
 - **WHEN** an unauthenticated user tries to read anything
@@ -251,3 +256,12 @@ The Firebase emulator test suite SHALL include the following tests, numbered as 
 - **WHEN** the first `revokedAt` = T1 is kept, `regrantedAt` is null, and data was created between T2 and the later revocation
 - **THEN** an editor or viewer cannot read anything dated at or after T1 (including that in-between data), and can read data before T1
 - **AND** the owner can read all
+
+#### Scenario: Rules test 15
+- **WHEN** a client tries to create a parent document directly
+- **THEN** the create is denied, because parents are created only through the callable Cloud Function
+
+#### Scenario: Rules test 16
+- **WHEN** a viewer tries to write `confirmedByHuman: true` on a medicine
+- **THEN** the write is denied
+- **AND** an owner or editor can write it

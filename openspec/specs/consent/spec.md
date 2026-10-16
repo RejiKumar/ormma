@@ -14,12 +14,12 @@ The following SHALL hold: Not legal advice. Have a lawyer review before launch.
 
 ### Requirement: Initial consent state
 The following SHALL hold:
-- A parent record starts with consent.status = "pending". No calls or health logging until "granted".
+- A parent record starts with consent.status = "pending". No calls or health logging until "granted", except the consent call (call type "consent"), which plays only the consent script and writes no health data.
 
 #### Scenario: New parent
 - **WHEN** a parent record is created
 - **THEN** consent.status is "pending"
-- **AND** no calls or health logging happen until it is "granted"
+- **AND** no calls or health logging happen until it is "granted", except the consent call (call type "consent"), which plays only the consent script and writes no health data
 
 ### Requirement: Granting by voice or DTMF
 The following SHALL hold:
