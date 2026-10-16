@@ -12,7 +12,9 @@ Not legal advice. Have a lawyer review before launch.
 ## Revocation
 - The parent can say or press a key on any call to stop calls and sharing ("Press 9 to stop reminders"). Status becomes "revoked" immediately.
 - Owner can revoke from the app.
-- On revocation: stop calls, hide new data from non-owners, offer export and deletion.
+- On revocation: set `consent.revokedAt`, stop calls, hide new data from non-owners, offer export and deletion.
+- Visibility rule (enforced in Firestore rules, spec 02): data created before `revokedAt` stays visible to existing members. Data dated at or after `revokedAt` is visible to owners only. Editors and viewers lose access to it.
+- The owner decides what happens to the older data: export it, or delete the parent record.
 
 ## Data minimisation
 - Do not store raw audio. Process in memory only.
