@@ -12,8 +12,10 @@ Not legal advice. Have a lawyer review before launch.
 ## Revocation
 - The parent can say or press a key on any call to stop calls and sharing ("Press 9 to stop reminders"). Status becomes "revoked" immediately.
 - Owner can revoke from the app.
-- On revocation: set `consent.revokedAt`, stop calls, hide new data from non-owners, offer export and deletion.
-- Visibility rule (enforced in Firestore rules, spec 02): data created before `revokedAt` stays visible to existing members. Data dated at or after `revokedAt` is visible to owners only. Editors and viewers lose access to it.
+- On revocation: set `consent.revokedAt` (at the first revocation only; never overwritten) and clear `regrantedAt`, stop calls, hide new data from non-owners, offer export and deletion.
+- Re-grant: if consent is granted again (a new consent call or a family attestation by an owner), set `consent.regrantedAt` and keep `revokedAt`. Calls may resume.
+- Visibility rule (enforced in Firestore rules, spec 02): data dated before `revokedAt`, or at or after `regrantedAt`, is visible to existing members. Data dated in between is visible to owners only, permanently.
+- v1 limitation (fail closed): only one revoke and re-grant cycle is modelled. A second revocation hides everything after the first revocation from editors and viewers, including history between the re-grant and the later revocation. This is deliberate.
 - The owner decides what happens to the older data: export it, or delete the parent record.
 
 ## Data minimisation

@@ -19,7 +19,7 @@ Status: draft v1. All timestamps are Firestore Timestamps in UTC. Display timezo
 - createdBy: uid
 - active: boolean
 - callPolicy: { retryCount: 2, retryGapMinutes: 10, missedAfterMinutes: 60, quietHours: { start: "22:00", end: "06:00" } }
-- consent: { status: "pending" | "granted" | "revoked", grantedAt, revokedAt: timestamp | null (set when status becomes "revoked"; used by the visibility rule in spec 02), method: "call_voice" | "call_dtmf" | "family_attested", policyVersion: string, sharedWith: "all_members" }
+- consent: { status: "pending" | "granted" | "revoked", grantedAt, revokedAt: timestamp | null (set at the FIRST revocation and never overwritten; used by the visibility rule in spec 02), regrantedAt: timestamp | null (set when consent is granted again after a revocation; cleared on a further revocation. v1 limitation: only one revoke and re-grant cycle is modelled, see spec 02), method: "call_voice" | "call_dtmf" | "family_attested", policyVersion: string, sharedWith: "all_members" }
 - createdAt: timestamp
 
 ### parents/{parentId}/members/{uid}
@@ -48,6 +48,7 @@ Status: draft v1. All timestamps are Firestore Timestamps in UTC. Display timezo
 - lastCallSid: string | null
 - missedAt: timestamp | null (set once when the event goes missed; never cleared, even after a family override to taken)
 - resolvedAt: timestamp | null
+- resolvedByUid: string | null (uid of the family member who resolved it in the app, including a missed -> taken override; null when resolved by dtmf or voice. Rules require it to equal request.auth.uid.)
 - resolvedBy: "dtmf" | "voice" | "family" | null
 - alertSent: boolean
 - groupConfirmed: boolean (true only when resolved by a grouped call; see spec 03 "Grouped calls")

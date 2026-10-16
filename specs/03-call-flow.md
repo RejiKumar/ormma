@@ -20,7 +20,7 @@ missed -> taken (family override only, see below)
 Terminal states: taken, missed. "not_taken" after max retries becomes "missed". The server never moves an event out of `missed`; no call, retry or webhook can change it.
 
 ## Family override of a missed dose
-- A family member may change a `missed` event to `taken` in the app (resolvedBy "family"). `resolvedAt` is set to the override time.
+- An owner or editor may change a `missed` event to `taken` in the app (resolvedBy "family"). Viewers cannot. `resolvedAt` is set to the override time and `resolvedByUid` to the member who did it.
 - `missedAt` is set when the event goes missed and is never cleared or changed, so the history shows it was missed and later confirmed by family.
 - The original missed-dose alert is neither retracted nor re-sent. The override never triggers a new alert.
 - In a group, the override applies to the one event the member confirmed (see "Grouped calls").
@@ -95,3 +95,4 @@ Family override tests:
 1. A family override changes `missed` to `taken` with resolvedBy "family", sets `resolvedAt`, and keeps `missedAt` unchanged.
 2. The override sends no alert and does not reset `alertSent`.
 3. A late webhook, retry or dispatcher run cannot move an event out of `missed`.
+4. A viewer cannot perform the override (the rule is tested in the emulator, spec 02 test 11; the app also hides the control).
