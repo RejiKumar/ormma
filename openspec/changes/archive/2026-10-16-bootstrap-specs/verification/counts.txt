@@ -1,0 +1,24 @@
+== counts ==
+PASS capability folders: 14 (expected 14)
+PASS Rules test scenarios (access-control): 14 [1,2,3,4,5,6,7,8,9,10,11,12,13,14] (expected 14)
+PASS Grouped-call test scenarios (grouped-calls): 6 [1,2,3,4,5,6] (expected 6)
+PASS Family override test scenarios (dose-event-lifecycle): 4 [1,2,3,4] (expected 4)
+PASS Call script step requirements (call-flow): 5 [1,2,3,4,5] (expected 5)
+PASS Component requirements (call-flow): 5 [1,2,3,4,5] (expected 5)
+PASS requirements without a scenario: 0 [] (expected 0)
+INFO 156 requirements, 196 scenarios in 14 capabilities
+INFO   access-control: 23 requirements
+INFO   ai-contracts: 5 requirements
+INFO   call-flow: 29 requirements
+INFO   consent: 12 requirements
+INFO   data-model: 19 requirements
+INFO   data-protection: 9 requirements
+INFO   dose-event-lifecycle: 9 requirements
+INFO   grouped-calls: 16 requirements
+INFO   medical-safety: 10 requirements
+INFO   missed-dose-alerts: 6 requirements
+INFO   prescription-reading: 5 requirements
+INFO   reply-structuring: 7 requirements
+INFO   trend-flagging: 2 requirements
+INFO   weekly-summary: 4 requirements
+RESULT: PASS

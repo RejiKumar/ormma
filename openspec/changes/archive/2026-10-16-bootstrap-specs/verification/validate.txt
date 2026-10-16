@@ -1,0 +1,12 @@
+Change 'bootstrap-specs' is valid
+⚠ [WARNING] data-model/spec.md: ADDED "parents consent field": Requirement text is very long (>500 characters). Move examples and edge cases into scenarios, or split it into separate requirements that each state one behavior.
+⚠ [WARNING] medical-safety/spec.md: ADDED "Emergency prompt in the family app" should contain SHALL or MUST (RFC 2119 best practice for English specs)
+--- strict:
+Change 'bootstrap-specs' has issues
+⚠ [WARNING] data-model/spec.md: ADDED "parents consent field": Requirement text is very long (>500 characters). Move examples and edge cases into scenarios, or split it into separate requirements that each state one behavior.
+⚠ [WARNING] medical-safety/spec.md: ADDED "Emergency prompt in the family app" should contain SHALL or MUST (RFC 2119 best practice for English specs)
+Next steps:
+  - Ensure change has deltas in specs/: use headers ## ADDED/MODIFIED/REMOVED/RENAMED Requirements
+  - Each requirement MUST include at least one #### Scenario: block
+  - Debug parsed deltas: openspec show bootstrap-specs --json --deltas-only
+strict exit=1

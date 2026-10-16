@@ -1,0 +1,12 @@
+== tokens ==
+TOKENS: 177 distinct old tokens (410 occurrences); 0 with fewer occurrences in the new specs
+  modal may: old=9 new=15
+  modal should: old=1 new=3
+  modal must: old=6 new=7
+  modal never: old=14 new=24
+  modal only: old=38 new=73
+  modal cannot: old=17 new=18
+  modal can: old=13 new=14
+  modal optional: old=2 new=5
+  modal skippable: old=1 new=2
+RESULT: PASS
