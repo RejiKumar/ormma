@@ -15,6 +15,11 @@ GoogleService-Info.plist
 .secret.local
 secrets/
 
+# Claude Code local and personal settings
+.claude/settings.local.json
+.claude/*.local.*
+CLAUDE.local.md
+
 # Firebase local state and emulator data
 .firebase/
 emulator-data/

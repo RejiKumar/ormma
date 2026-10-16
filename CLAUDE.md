@@ -23,8 +23,10 @@ The system phones the parent at medicine times, captures the reply, and updates 
 7. Phone numbers are stored in E.164 format.
 
 ## Workflow
-- Work on one stage at a time from `PROMPTS.md`.
-- For stages touching specs/ areas: propose first (plan, files, edge cases), wait for my approval, then implement.
+- Work follows OpenSpec: `/opsx:explore`, `/opsx:propose`, `/opsx:apply`, `/opsx:archive`.
+- Work on one stage at a time from `PROMPTS.md`. The stage text is the description given to `/opsx:propose`.
+- Specs live in `openspec/specs/` after the bootstrap. Until then they are the numbered files in `specs/` listed below.
+- Proposals must list requirement changes under "Spec changes" (see `openspec/config.yaml`). Wait for my OK on a proposal before `/opsx:apply`.
 - Write tests for functions and rules. Run them before saying a stage is done.
 - Keep a `docs/DECISIONS.md` with one line per non-obvious decision.
 - If a spec is unclear or conflicts with the request, ask me. Do not guess.

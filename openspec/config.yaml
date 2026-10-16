@@ -1,0 +1,60 @@
+schema: spec-driven
+
+# Project context: constraints an agent cannot infer from the code.
+context: |
+  Ormma is a voice-first, local-language care coordination app. The system phones an
+  elderly parent at medicine times, captures the reply, and updates a family app.
+
+  Stack (do not change without asking):
+  - Mobile: React Native with Expo (development builds), TypeScript, React Navigation
+  - Backend: Firebase (Auth, Firestore, Storage, Cloud Functions v2 in TypeScript,
+    Cloud Scheduler, FCM), region asia-south1 (Mumbai) for Firestore, Storage and Functions
+  - Voice: Google Cloud Speech-to-Text and Text-to-Speech
+  - Telephony: Exotel (outbound calls, DTMF)
+  - AI: Claude API, called ONLY from Cloud Functions, never from the app.
+    Haiku 5.5 (claude-haiku-5-5) for transcript structuring and summaries;
+    Sonnet 5.5 (claude-sonnet-5-5) for prescription photo reading.
+
+  Hard rules (every proposal, design, spec and task must respect these):
+  - The Claude API key and Exotel credentials live only in Firebase secrets (Secret
+    Manager). Never in the app, never in git.
+  - No health data in logs. Log IDs and statuses only, never transcripts or values.
+  - Phone numbers are stored in E.164 format.
+  - All AI output is validated against a schema (zod) before being written. Invalid or
+    low-confidence output goes to a review state, never silently saved, and never
+    changes a dose status.
+  - Call-flow code is idempotent: deterministic event IDs, transactional claims,
+    duplicate webhooks and scheduler runs must not create duplicate logs or alerts.
+  - Every Firestore access path is governed by the security rules spec. Any change to
+    firestore.rules needs emulator tests.
+
+  Medical safety (the app records and relays, it never advises):
+  - Never suggest, change or comment on a dose, timing or medicine choice.
+  - Never call a reading normal, safe or dangerous, and never diagnose.
+  - Never schedule an AI-extracted medicine without a human confirming it on screen.
+  - Call scripts and alert text are fixed templates; nothing AI-generated is spoken to
+    the parent, and alerts carry no raw health values.
+  - Never fill in a missing value (dose, time, name) from the model's own knowledge.
+  - Show the disclaimer "This app does not provide medical advice."
+  - Urgent keywords (chest pain, breathlessness, fall, unconsciousness) trigger an
+    immediate family alert, checked before any model call.
+
+  Spec locations: the Ormma specs are the numbered files in specs/ (data model, security
+  rules, call flow, medical safety, consent and DPDP, AI contracts). They move to
+  openspec/specs/ during the bootstrap; until then treat specs/ as the source of truth.
+  Decision log: docs/DECISIONS.md, one line per non-obvious decision.
+
+# Per-artifact rules
+rules:
+  proposal:
+    - >-
+      Any change to a requirement in the security rules, call flow, consent, or AI
+      contracts areas (and any change to the medical safety rules) must be listed
+      explicitly under a "Spec changes" heading: the requirement, the old behaviour,
+      the new behaviour, and the spec file affected, so a human can review it.
+      If there are none, write "Spec changes: none".
+    - State what is out of scope.
+  specs:
+    - Requirements that touch the areas above must stay consistent with the hard rules and medical safety rules in the project context.
+  tasks:
+    - Include the tests for each requirement (emulator tests for rules, unit tests with mocked Exotel, Google and Claude clients for functions) before the task is marked done.
