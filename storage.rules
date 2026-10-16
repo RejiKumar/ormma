@@ -1,8 +1,32 @@
 rules_version = '2';
 
-// Stage 0 placeholder: deny everything. Real rules come with Stage 1.
+// Source of truth: openspec/specs/access-control/spec.md (Storage rules requirements).
+// Deny by default. The Admin SDK used by Cloud Functions bypasses these rules.
 service firebase.storage {
   match /b/{bucket}/o {
+
+    // Owner or editor of the parent, read from the Firestore member document (cross-service rule).
+    function canEdit(parentId) {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/parents/$(parentId)/members/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/parents/$(parentId)/members/$(request.auth.uid)).data.role in ['owner', 'editor'];
+    }
+
+    // /prescriptions/{parentId}/*: read/write only by owner/editor members. Max 10 MB, images only.
+    match /prescriptions/{parentId}/{allPaths=**} {
+      allow read: if canEdit(parentId);
+      allow create, update: if canEdit(parentId)
+        && request.resource.size <= 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if canEdit(parentId);
+    }
+
+    // /transcripts/*: no client access.
+    match /transcripts/{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Everything else is denied.
     match /{allPaths=**} {
       allow read, write: if false;
     }

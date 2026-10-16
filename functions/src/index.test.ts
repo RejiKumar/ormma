@@ -1,7 +1,7 @@
-import { STAGE } from "./index";
+import { SUPPORTED_LANGUAGES } from "./index";
 
 describe("functions entry", () => {
   it("loads", () => {
-    expect(STAGE).toBe("0");
+    expect(SUPPORTED_LANGUAGES).toHaveLength(4);
   });
 });

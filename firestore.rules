@@ -1,9 +1,230 @@
 rules_version = '2';
 
-// Stage 0 placeholder: deny everything. Real rules come from specs/02-security-rules.md (Stage 1).
+// Source of truth: openspec/specs/access-control/spec.md (and data-model for the field shapes).
+// Deny by default: anything not matched below is denied. The Admin SDK used by Cloud Functions
+// bypasses these rules, so every "server-only" field and collection is simply denied to clients.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function parentPath(parentId) {
+      return /databases/$(database)/documents/parents/$(parentId);
+    }
+
+    function memberPath(parentId, uid) {
+      return /databases/$(database)/documents/parents/$(parentId)/members/$(uid);
+    }
+
+    // A user sees a parent's data only if parents/{parentId}/members/{uid} exists. Checked on every
+    // request, so a removed member loses access immediately.
+    function isMember(parentId) {
+      return signedIn() && exists(memberPath(parentId, request.auth.uid));
+    }
+
+    function roleOf(parentId) {
+      return get(memberPath(parentId, request.auth.uid)).data.role;
+    }
+
+    function isOwner(parentId) {
+      return isMember(parentId) && roleOf(parentId) == 'owner';
+    }
+
+    function canEdit(parentId) {
+      return isMember(parentId) && roleOf(parentId) in ['owner', 'editor'];
+    }
+
+    function isE164(value) {
+      return value is string && value.matches('^\\+[1-9][0-9]{7,14}$');
+    }
+
+    // Consent visibility: a non-owner member can read data dated `ts` only if consent.revokedAt is
+    // null, or ts < revokedAt, or (regrantedAt is not null and ts >= regrantedAt). A parent without a
+    // consent map makes get() fail, which denies (fail closed). Owners always read everything.
+    function visibleToNonOwner(parentId, ts) {
+      let consent = get(parentPath(parentId)).data.consent;
+      let revokedAt = consent.get('revokedAt', null);
+      let regrantedAt = consent.get('regrantedAt', null);
+      return revokedAt == null
+        || ts < revokedAt
+        || (regrantedAt != null && ts >= regrantedAt);
+    }
+
+    function canReadDated(parentId, ts) {
+      return isOwner(parentId) || (isMember(parentId) && visibleToNonOwner(parentId, ts));
+    }
+
+    // ---------- users/{uid}: read/write only by that uid ----------
+    function validUser(data) {
+      return data.keys().hasOnly(['displayName', 'phone', 'fcmTokens', 'createdAt'])
+        && data.keys().hasAll(['displayName', 'phone', 'fcmTokens', 'createdAt'])
+        && data.displayName is string
+        && isE164(data.phone)
+        && data.fcmTokens is list
+        && data.createdAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid && validUser(request.resource.data);
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ---------- parents/{parentId} ----------
+    function validCallPolicy(p) {
+      return p is map
+        && p.keys().hasOnly(['retryCount', 'retryGapMinutes', 'missedAfterMinutes', 'quietHours'])
+        && p.keys().hasAll(['retryCount', 'retryGapMinutes', 'missedAfterMinutes', 'quietHours'])
+        && p.retryCount is int && p.retryCount >= 0
+        && p.retryGapMinutes is int && p.retryGapMinutes >= 0
+        && p.missedAfterMinutes is int && p.missedAfterMinutes >= 0
+        && p.quietHours is map
+        && p.quietHours.keys().hasOnly(['start', 'end'])
+        && p.quietHours.keys().hasAll(['start', 'end'])
+        && p.quietHours.start is string
+        && p.quietHours.end is string;
+    }
+
+    function validParentUpdate(data) {
+      return data.name is string && data.name.size() > 0
+        && isE164(data.phone)
+        && data.language in ['ml-IN', 'ta-IN', 'hi-IN', 'en-IN']
+        && data.timezone is string
+        && data.active is bool
+        && validCallPolicy(data.callPolicy);
+    }
+
+    match /parents/{parentId} {
+      allow read: if isMember(parentId);
+      // Parents are created only through the callable Cloud Function (parent and owner member in one batch).
+      allow create: if false;
+      // Owner only. The whitelist excludes consent (and createdBy, createdAt).
+      allow update: if isOwner(parentId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy'])
+        && validParentUpdate(request.resource.data);
+      // Deleting a parent is the owner's callable with recursive delete.
+      allow delete: if false;
+
+      // ---------- members: read by members, writes only via Cloud Function ----------
+      match /members/{uid} {
+        allow read: if isMember(parentId);
+        allow write: if false;
+      }
+
+      // ---------- medicines ----------
+      function validMedicine(data) {
+        return data.keys().hasOnly(['name', 'doseText', 'times', 'startDate', 'endDate', 'active', 'source',
+                                    'confirmedByHuman', 'prescriptionId', 'createdBy', 'createdAt'])
+          && data.keys().hasAll(['name', 'doseText', 'times', 'startDate', 'endDate', 'active', 'source',
+                                 'confirmedByHuman', 'prescriptionId', 'createdBy', 'createdAt'])
+          && data.name is string && data.name.size() > 0
+          && data.doseText is string
+          && data.times is list && data.times.size() <= 24
+          && data.startDate is string
+          && (data.endDate == null || data.endDate is string)
+          && data.active is bool
+          && data.source in ['manual', 'prescription_scan']
+          && data.confirmedByHuman is bool
+          && (data.prescriptionId == null || data.prescriptionId is string)
+          && data.createdBy is string
+          && data.createdAt is timestamp;
+      }
+
+      match /medicines/{medicineId} {
+        allow read: if isMember(parentId);
+        // confirmedByHuman: true can only be written by an owner or editor because only they can write at all.
+        allow create: if canEdit(parentId)
+          && validMedicine(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid;
+        allow update: if canEdit(parentId)
+          && validMedicine(request.resource.data)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if false;
+      }
+
+      // ---------- doseEvents ----------
+      // Client update: only status to taken/not_taken with resolvedBy "family", resolvedByUid equal to the
+      // caller, plus resolvedAt. taken is terminal; missed only becomes taken (family override).
+      function doseClientUpdate(oldData, newData) {
+        return newData.diff(oldData).affectedKeys().hasOnly(['status', 'resolvedAt', 'resolvedBy', 'resolvedByUid'])
+          && newData.status in ['taken', 'not_taken']
+          && newData.resolvedBy == 'family'
+          && newData.resolvedByUid == request.auth.uid
+          && newData.resolvedAt is timestamp
+          && oldData.status != 'taken'
+          && (oldData.status != 'missed' || newData.status == 'taken');
+      }
+
+      match /doseEvents/{eventId} {
+        allow read: if canReadDated(parentId, resource.data.scheduledFor);
+        allow update: if canEdit(parentId) && doseClientUpdate(resource.data, request.resource.data);
+        allow create, delete: if false;
+      }
+
+      // ---------- healthLogs ----------
+      function validFamilyHealthLog(data) {
+        return data.keys().hasOnly(['type', 'values', 'source', 'rawTranscriptRef', 'needsReview', 'createdAt'])
+          && data.keys().hasAll(['type', 'values', 'source', 'needsReview', 'createdAt'])
+          && data.type in ['bp', 'sugar', 'symptom', 'note']
+          && data.values is map
+          && data.source == 'family'
+          && data.get('rawTranscriptRef', null) == null
+          && data.needsReview is bool
+          // createdAt drives the consent visibility rule, so it must be the server time.
+          && data.createdAt == request.time;
+      }
+
+      match /healthLogs/{logId} {
+        allow read: if canReadDated(parentId, resource.data.createdAt);
+        allow create: if canEdit(parentId) && validFamilyHealthLog(request.resource.data);
+        allow update, delete: if false;
+      }
+
+      // ---------- callSessions: no client access at all ----------
+      match /callSessions/{sessionId} {
+        allow read, write: if false;
+      }
+
+      // ---------- prescriptions ----------
+      match /prescriptions/{prescriptionId} {
+        allow read: if isMember(parentId);
+        allow create: if canEdit(parentId)
+          && request.resource.data.keys().hasOnly(['storagePath', 'status', 'extracted', 'uploadedBy', 'createdAt'])
+          && request.resource.data.keys().hasAll(['storagePath', 'status', 'uploadedBy', 'createdAt'])
+          && request.resource.data.storagePath is string
+          && request.resource.data.status == 'pending_review'
+          && request.resource.data.uploadedBy == request.auth.uid
+          && request.resource.data.createdAt is timestamp;
+        allow update: if canEdit(parentId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['pending_review', 'confirmed', 'rejected'];
+        allow delete: if false;
+      }
+
+      // ---------- alerts: read by members; client may only append its own uid to readBy ----------
+      match /alerts/{alertId} {
+        allow read: if canReadDated(parentId, resource.data.createdAt);
+        allow update: if isMember(parentId)
+          && canReadDated(parentId, resource.data.createdAt)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+          && !(request.auth.uid in resource.data.readBy)
+          && request.resource.data.readBy == resource.data.readBy.concat([request.auth.uid]);
+        allow create, delete: if false;
+      }
+    }
+
+    // ---------- invites: no client access, redeemed through a callable function ----------
+    match /invites/{code} {
+      allow read, write: if false;
+    }
+
+    // ---------- auditLogs: no client access at all ----------
+    match /auditLogs/{id} {
       allow read, write: if false;
     }
   }
