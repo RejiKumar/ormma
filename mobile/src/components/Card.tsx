@@ -7,7 +7,7 @@ export type CardTone = "surface" | "alt" | "tinted";
 
 export interface CardProps {
   children: ReactNode;
-  /** surface: white bento card; alt: nested tile; tinted: soft teal highlight. */
+  /** surface: white bento card; alt: nested tile; tinted: soft sage highlight. */
   tone?: CardTone;
   /** Makes the whole card a button. */
   onPress?: () => void;

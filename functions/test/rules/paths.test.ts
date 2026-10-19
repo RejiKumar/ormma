@@ -225,6 +225,25 @@ describe("doseEvents read / client updates and terminal states / client deletes"
     await assertFails(deleteDoc(ref));
     await assertFails(deleteDoc(doc(db, p("doseEvents/missed1"))));
   });
+
+  it("a status update passes on a doseEvent that already carries a server confirmationNote; clients cannot write the note", async () => {
+    await put(env, [
+      [p("doseEvents/noted1"), doseEvent({ confirmationNote: "She said she took the tablets." })],
+    ]);
+    const db = asUser(env, EDITOR);
+    await assertSucceeds(
+      updateDoc(doc(db, p("doseEvents/noted1")), familyResolve(EDITOR, "taken")),
+    );
+    await assertFails(
+      updateDoc(doc(db, p("doseEvents/noted1")), {
+        ...familyResolve(EDITOR),
+        confirmationNote: "edited by client",
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(db, p("doseEvents/noted1")), { confirmationNote: null }),
+    );
+  });
 });
 
 describe("healthLogs path rule / healthLogs client create shape", () => {

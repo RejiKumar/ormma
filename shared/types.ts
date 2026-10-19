@@ -130,6 +130,8 @@ export interface DoseEventDoc {
   alertSent: boolean;
   /** True only when resolved by a grouped call. */
   groupConfirmed: boolean;
+  /** Server-written by reply structuring: one short factual sentence in the family's language; null on the review path. Clients may not write it. */
+  confirmationNote: string | null;
 }
 
 // ---------- parents/{parentId}/healthLogs/{logId} ----------

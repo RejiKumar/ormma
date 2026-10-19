@@ -2,6 +2,8 @@
 
 Direction: warm, calm clarity. Light theme by default, a separately designed dark theme, and a "system" option. Bento-style cards, rounded geometry, one primary action per screen, bottom tab navigation, everything reachable in the thumb zone. Capability spec: `openspec/specs/design-system/spec.md`.
 
+Palette (light start values, kept in `tokens.ts` and the design-system spec): background `#FAF7F2` warm cream, surface `#FFFFFF`, ink `#1F2A2E`, primary `#2D5A4C` sage, accent `#F2A93B` amber, border `#EBE6DD`. Status colours (taken green, pending slate, missed coral, unclear violet, calling teal), the coral rule and the neutral reading style are unchanged; the dark theme is re-hued to a lifted sage and designed separately. Contrast decides any pair adjustment (decision #51).
+
 ## Where things live
 
 | Path                                     | What                                                                                                        |
@@ -28,7 +30,7 @@ Direction: warm, calm clarity. Light theme by default, a separately designed dar
 | `ParentCard`       | Avatar, name, next-dose summary, status chip and dose ring in one pressable card                        |
 | `Avatar`           | Initials on a warm neutral tint (never a status colour)                                                 |
 | `ListItem`         | Row at least 56 dp, optional chevron, leading and trailing content                                      |
-| `Banner`           | `info` (calm teal) and `urgent` (coral, urgent alerts only), optional action                            |
+| `Banner`           | `info` (calm sage) and `urgent` (coral, urgent alerts only), optional action                            |
 | `DisclaimerFooter` | "This app does not provide medical advice." (shown by `Screen`)                                         |
 | `EmptyState`       | Icon, title, description, optional action                                                               |
 | `Skeleton`         | Static loading placeholder (fades in once, never loops)                                                 |

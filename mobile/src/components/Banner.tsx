@@ -7,7 +7,7 @@ import { Icon } from "./Icon";
 export type BannerVariant = "info" | "urgent";
 
 export interface BannerProps {
-  /** info: calm teal tint. urgent: coral, reserved for urgent alerts. */
+  /** info: calm sage tint. urgent: coral, reserved for urgent alerts. */
   variant?: BannerVariant;
   title?: string;
   message: string;

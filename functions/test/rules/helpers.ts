@@ -128,6 +128,7 @@ export function doseEvent(over: Partial<DoseEventDoc> = {}): DoseEventDoc {
     resolvedBy: null,
     alertSent: false,
     groupConfirmed: false,
+    confirmationNote: null,
     ...over,
   };
 }
