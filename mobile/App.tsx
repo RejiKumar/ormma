@@ -1,27 +1,57 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import type { Language } from "../shared/types";
-import { PlaceholderScreen } from "./src/screens/PlaceholderScreen";
+import { useMemo } from "react";
+import { I18nextProvider } from "react-i18next";
+import { View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider, useTheme } from "./src/design/ThemeProvider";
+import { useAppFonts } from "./src/design/useAppFonts";
+import { initI18n } from "./src/i18n";
+import { AppTabs } from "./src/navigation/AppTabs";
 
-type RootStackParamList = { Placeholder: undefined };
+const i18n = initI18n();
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+/** React Navigation colours from the design tokens. */
+function useNavigationTheme() {
+  const { theme, name } = useTheme();
+  return useMemo(() => {
+    const base = name === "dark" ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: theme.colors.primary,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.colors.ink,
+        border: theme.colors.border,
+        notification: theme.colors.primary,
+      },
+    };
+  }, [theme, name]);
+}
 
-// Placeholder: proves the shared/ type import is erased by Metro. No features yet.
-export const DEFAULT_LANGUAGE: Language = "en-IN";
+function Root() {
+  const { theme, name } = useTheme();
+  const navigationTheme = useNavigationTheme();
+  const fontsReady = useAppFonts();
+  if (!fontsReady) return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <AppTabs />
+      <StatusBar style={name === "dark" ? "light" : "dark"} />
+    </NavigationContainer>
+  );
+}
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Placeholder"
-          component={PlaceholderScreen}
-          options={{ title: "Ormma" }}
-        />
-      </Stack.Navigator>
-      <StatusBar style="auto" />
-    </NavigationContainer>
+    <I18nextProvider i18n={i18n}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <Root />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </I18nextProvider>
   );
 }

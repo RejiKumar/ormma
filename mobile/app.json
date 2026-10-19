@@ -24,6 +24,11 @@
       "favicon": "./assets/favicon.png"
     },
     "scheme": "ormma",
-    "plugins": ["expo-dev-client"]
+    "plugins": [
+      "expo-dev-client",
+      "expo-font",
+      "expo-localization",
+      "expo-asset"
+    ]
   }
 }

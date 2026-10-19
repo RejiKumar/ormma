@@ -1,0 +1,53 @@
+{
+  "app": {
+    "name": "Ormma"
+  },
+  "disclaimer": {
+    "medical": "This app does not provide medical advice."
+  },
+  "status": {
+    "taken": "Taken",
+    "pending": "Pending",
+    "missed": "Missed",
+    "unclear": "Unclear",
+    "calling": "Calling now"
+  },
+  "tabs": {
+    "today": "Today",
+    "medicines": "Medicines",
+    "family": "Family"
+  },
+  "common": {
+    "loading": "Loading",
+    "tryAgain": "Try again",
+    "close": "Close"
+  },
+  "doseRing": {
+    "label": "{{taken}} of {{total}} doses taken",
+    "none": "No doses today"
+  },
+  "parentCard": {
+    "nextDose": "Next dose {{time}}",
+    "noDoses": "No doses scheduled",
+    "open": "Open {{name}}"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "screens": {
+    "today": {
+      "emptyTitle": "Nothing here yet",
+      "emptyDescription": "Parents you add will appear here with today's doses."
+    },
+    "medicines": {
+      "emptyTitle": "No medicines yet",
+      "emptyDescription": "Medicines you add for a parent will be listed here."
+    },
+    "family": {
+      "emptyTitle": "No family members yet",
+      "emptyDescription": "People you invite will be listed here."
+    }
+  }
+}
