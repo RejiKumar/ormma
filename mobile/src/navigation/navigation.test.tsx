@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { fireEvent, screen } from "@testing-library/react-native";
+import { AuthProvider } from "../auth/AuthProvider";
 import { MIN_TOUCH_TARGET, darkTheme, lightTheme } from "../design/tokens";
 import { renderApp } from "../test-utils";
 import { AppTabs, tabBarStyles } from "./AppTabs";
@@ -8,7 +9,9 @@ import { getTabRoutes } from "./routes";
 const renderTabs = (opts?: Parameters<typeof renderApp>[1]) =>
   renderApp(
     <NavigationContainer>
-      <AppTabs />
+      <AuthProvider>
+        <AppTabs />
+      </AuthProvider>
     </NavigationContainer>,
     opts,
   );
@@ -61,9 +64,9 @@ describe("AppTabs", () => {
 
   it("switches to the Medicines and Family tabs", async () => {
     await renderTabs();
-    fireEvent.press(screen.getByRole("button", { name: "Medicines" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Medicines" }));
     expect(await screen.findByTestId("medicines-empty")).toBeTruthy();
-    fireEvent.press(screen.getByRole("button", { name: "Family" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Family" }));
     expect(await screen.findByTestId("family-empty")).toBeTruthy();
   });
 

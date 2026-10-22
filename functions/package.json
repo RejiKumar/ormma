@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "jest",
+    "test:fns:run": "jest -c jest.fns.config.js --runInBand",
     "test:rules:run": "jest -c jest.rules.config.js --runInBand"
   },
   "dependencies": {

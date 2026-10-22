@@ -36,6 +36,36 @@
     "dark": "Dark",
     "system": "System"
   },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "We will send a code by SMS to confirm your number.",
+      "phoneLabel": "Phone number",
+      "sendCode": "Send code"
+    },
+    "otp": {
+      "title": "Enter the code",
+      "subtitle": "We sent a 6-digit code to {{phone}}.",
+      "codeLabel": "Verification code",
+      "verify": "Verify",
+      "resend": "Resend code",
+      "resendIn": "Resend in {{seconds}}s"
+    },
+    "errors": {
+      "invalidPhone": "That phone number is not valid. Use international format, for example +919876543210.",
+      "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
+      "invalidCode": "That code is not correct. Check the message and try again.",
+      "incompleteCode": "Enter all 6 digits of the code.",
+      "sessionExpired": "That code can no longer be used. Send a new code and try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "languages": {
+    "en": "English",
+    "ml": "മലയാളം",
+    "ta": "தமிழ்",
+    "hi": "हिन्दी"
+  },
   "screens": {
     "today": {
       "emptyTitle": "Nothing here yet",
@@ -46,8 +76,57 @@
       "emptyDescription": "Medicines you add for a parent will be listed here."
     },
     "family": {
-      "emptyTitle": "No family members yet",
-      "emptyDescription": "People you invite will be listed here."
+      "title": "Family",
+      "emptyTitle": "No parents yet",
+      "emptyDescription": "Parents you add will appear here with their consent status.",
+      "addParent": "Add a parent",
+      "redeem": "Have an invite code?",
+      "invite": "Invite",
+      "consentPending": "Calls start after consent is granted"
+    },
+    "addParent": {
+      "title": "Add a parent",
+      "subtitle": "The app will call this parent at medicine times.",
+      "nameLabel": "Parent's name",
+      "phoneLabel": "Phone number",
+      "phoneHint": "For example +919876543210",
+      "languageLabel": "Language for calls",
+      "save": "Save parent",
+      "errors": {
+        "nameRequired": "Enter the parent's name.",
+        "failed": "Could not add the parent. Please try again."
+      }
+    },
+    "invite": {
+      "title": "Invite family",
+      "subtitle": "Invite a sibling to help care for {{name}}.",
+      "roleLabel": "Their role",
+      "roleEditor": "Editor",
+      "roleEditorDescription": "Can add medicines and record doses.",
+      "roleViewer": "Viewer",
+      "roleViewerDescription": "Can see progress but not change anything.",
+      "create": "Create invite code",
+      "codeLabel": "Invite code",
+      "codeInstructions": "Share this code with your family. It works once and expires in 7 days.",
+      "errors": {
+        "notOwner": "Only the family owner can create invite codes.",
+        "failed": "Could not create the invite code. Please try again."
+      }
+    },
+    "redeem": {
+      "title": "Enter invite code",
+      "subtitle": "Enter the 8-character code a family member shared with you.",
+      "codeLabel": "Invite code",
+      "codeHint": "8 letters and numbers, for example K7M2P9XA",
+      "join": "Join family",
+      "errors": {
+        "invalidFormat": "That code is not valid. It is 8 letters and numbers.",
+        "unknown": "This invite code is not valid.",
+        "expired": "This invite code has expired.",
+        "used": "This invite code was already used.",
+        "alreadyMember": "You are already a member of this family.",
+        "failed": "Could not join the family. Please try again."
+      }
     }
   }
 }

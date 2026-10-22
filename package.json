@@ -10,6 +10,7 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -p shared --noEmit && npm --prefix functions run typecheck && npm --prefix mobile run typecheck",
     "test": "npm --prefix functions test && npm --prefix mobile test",
+    "test:fns": "npm run prereqs && firebase emulators:exec --only firestore --project demo-ormma \"npm --prefix functions run test:fns:run\"",
     "check:isolated": "node scripts/check-functions-isolated.mjs",
     "test:rules": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"npm --prefix functions run test:rules:run\"",
     "test:rules:mutations": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"node scripts/mutation-check-rules.mjs\""

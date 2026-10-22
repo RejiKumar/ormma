@@ -1,14 +1,13 @@
 import { screen } from "@testing-library/react-native";
 import { renderApp } from "../test-utils";
 import { GalleryScreen } from "./gallery/GalleryScreen";
-import { FamilyScreen, MedicinesScreen, TodayScreen } from "./TabPlaceholders";
+import { MedicinesScreen, TodayScreen } from "./TabPlaceholders";
 
 const DISCLAIMER = "This app does not provide medical advice.";
 
 describe.each([
   ["Today", TodayScreen, "Nothing here yet"],
   ["Medicines", MedicinesScreen, "No medicines yet"],
-  ["Family", FamilyScreen, "No family members yet"],
 ] as const)("%s placeholder", (_name, Component, title) => {
   it("shows its empty state from the catalogue and the disclaimer", async () => {
     await renderApp(<Component />);

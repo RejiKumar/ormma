@@ -11,12 +11,8 @@ function TabPlaceholder({
   testID,
 }: {
   icon: IconName;
-  titleKey:
-    "screens.today.emptyTitle" | "screens.medicines.emptyTitle" | "screens.family.emptyTitle";
-  descriptionKey:
-    | "screens.today.emptyDescription"
-    | "screens.medicines.emptyDescription"
-    | "screens.family.emptyDescription";
+  titleKey: "screens.today.emptyTitle" | "screens.medicines.emptyTitle";
+  descriptionKey: "screens.today.emptyDescription" | "screens.medicines.emptyDescription";
   testID: string;
 }) {
   const { t } = useTranslation();
@@ -49,13 +45,3 @@ export function MedicinesScreen() {
   );
 }
 
-export function FamilyScreen() {
-  return (
-    <TabPlaceholder
-      testID="family-empty"
-      icon="people"
-      titleKey="screens.family.emptyTitle"
-      descriptionKey="screens.family.emptyDescription"
-    />
-  );
-}

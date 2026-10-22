@@ -4,10 +4,12 @@ import { useMemo } from "react";
 import { I18nextProvider } from "react-i18next";
 import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthProvider, useAuth } from "./src/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "./src/design/ThemeProvider";
 import { useAppFonts } from "./src/design/useAppFonts";
 import { initI18n } from "./src/i18n";
 import { AppTabs } from "./src/navigation/AppTabs";
+import { AuthStack } from "./src/navigation/AuthStack";
 
 const i18n = initI18n();
 
@@ -31,6 +33,13 @@ function useNavigationTheme() {
   }, [theme, name]);
 }
 
+/** Signed out shows the auth stack; signed in shows the existing tabs. */
+function RootNavigator() {
+  const { user, initialising } = useAuth();
+  if (initialising) return null;
+  return user ? <AppTabs /> : <AuthStack />;
+}
+
 function Root() {
   const { theme, name } = useTheme();
   const navigationTheme = useNavigationTheme();
@@ -38,8 +47,10 @@ function Root() {
   if (!fontsReady) return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
   return (
     <NavigationContainer theme={navigationTheme}>
-      <AppTabs />
-      <StatusBar style={name === "dark" ? "light" : "dark"} />
+      <AuthProvider>
+        <RootNavigator />
+        <StatusBar style={name === "dark" ? "light" : "dark"} />
+      </AuthProvider>
     </NavigationContainer>
   );
 }

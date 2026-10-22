@@ -240,9 +240,7 @@ describe("doseEvents read / client updates and terminal states / client deletes"
         confirmationNote: "edited by client",
       }),
     );
-    await assertFails(
-      updateDoc(doc(db, p("doseEvents/noted1")), { confirmationNote: null }),
-    );
+    await assertFails(updateDoc(doc(db, p("doseEvents/noted1")), { confirmationNote: null }));
   });
 });
 
