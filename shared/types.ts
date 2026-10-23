@@ -132,6 +132,10 @@ export interface DoseEventDoc {
   groupConfirmed: boolean;
   /** Server-written by reply structuring: one short factual sentence in the family's language; null on the review path. Clients may not write it. */
   confirmationNote: string | null;
+  /** Server-written by the dispatcher when a call attempt is claimed. Clients may not write it. */
+  lastCallAt: Timestamp | null;
+  /** Server-written when the one extra reminder after a "not yet" reply is scheduled. Clients may not write it. */
+  reminderAt: Timestamp | null;
 }
 
 // ---------- parents/{parentId}/healthLogs/{logId} ----------
