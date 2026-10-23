@@ -1,6 +1,7 @@
 import { Timestamp, type Firestore } from "firebase-admin/firestore";
 import type {
   CallPolicy,
+  CallSessionDoc,
   ConsentStatus,
   DoseStatus,
   Language,
@@ -20,7 +21,7 @@ import { localClock } from "./time";
 export const MIN_ATTEMPT_SPACING_MS = 10 * 60 * 1000;
 export const DISPATCH_QUERY_LIMIT = 200;
 
-const DEFAULT_CALL_POLICY: CallPolicy = {
+export const DEFAULT_CALL_POLICY: CallPolicy = {
   retryCount: 2,
   retryGapMinutes: 10,
   missedAfterMinutes: 60,
@@ -164,7 +165,7 @@ const toMillis = (value: unknown): number | null => {
   return null;
 };
 
-const toState = (data: Record<string, unknown>): DoseEventState => ({
+export const toDoseEventState = (data: Record<string, unknown>): DoseEventState => ({
   status: (data.status as DoseStatus) ?? "pending",
   attempts: Number(data.attempts ?? 0),
   scheduledFor: toMillis(data.scheduledFor) ?? 0,
@@ -263,11 +264,13 @@ async function claimGroup(
 
     for (const doc of docs) {
       if (!doc.exists) return false;
-      if (toState(doc.data() as Record<string, unknown>).status !== "pending") return false;
+      if (toDoseEventState(doc.data() as Record<string, unknown>).status !== "pending") {
+        return false;
+      }
     }
 
     for (const doc of docs) {
-      const result = applyTransition(toState(doc.data() as Record<string, unknown>), {
+      const result = applyTransition(toDoseEventState(doc.data() as Record<string, unknown>), {
         type: "call_started",
         at: nowMs,
       });
@@ -297,7 +300,7 @@ async function revertGroup(
     const docs = await tx.getAll(...refs);
     for (const doc of docs) {
       if (!doc.exists) continue;
-      const state = toState(doc.data() as Record<string, unknown>);
+      const state = toDoseEventState(doc.data() as Record<string, unknown>);
       if (state.status !== "calling" || state.lastCallAt !== nowMs) continue;
       tx.set(doc.ref, { status: "pending" }, { merge: true });
     }
@@ -393,6 +396,16 @@ export async function dispatchDueCallsHandler(
           lastCallSid: handle.callSid,
         });
       }
+      // The session is created only after the provider accepted the call; the webhook routes
+      // callbacks by CallSid and CustomField (parentId).
+      batch.set(db.doc(`parents/${call.parentId}/callSessions/${handle.callSid}`), {
+        callSid: handle.callSid,
+        doseEventIds: call.eventIds,
+        status: "initiated",
+        dtmfInput: null,
+        startedAt: Timestamp.fromMillis(nowMs),
+        endedAt: null,
+      } satisfies CallSessionDoc);
       await batch.commit();
       summary.called += 1;
       summary.eventsCalled += call.eventIds.length;

@@ -24,7 +24,7 @@ npm --prefix mobile install
 | `npm run format`    | Prettier, write mode (`format:check` only checks)                       |
 | `npm run typecheck` | Type-checks `shared/`, `functions/` and `mobile/`                       |
 | `npm test`          | Jest in `functions/` and `mobile/` (emulator-free, decision #36)       |
-| `npm run test:fns`  | Callable tests against the Firestore emulator (18 tests)              |
+| `npm run test:fns`  | Callable and webhook tests against the Firestore emulator (38 tests)  |
 | `npm run test:rules`| Security-rules tests against Firestore + Storage emulators            |
 | `npm run seed`      | Seeds the running emulators with demo parents, medicines and events    |
 
@@ -59,3 +59,23 @@ These steps live in the Firebase console and cannot be verified by tests; they a
 5. **Billing**: reCAPTCHA-free Android phone auth needs the Blaze plan on the project before shipping; app-check is out of scope for v1.
 
 Then rebuild the dev client (`npx expo run:android` / `run:ios`) — config-plugin changes only land after a prebuild.
+
+## Exotel telephony (manual, Stage 5)
+
+The dispatcher stays on the log-only provider unless `CALL_PROVIDER=exotel`. Emulator runs and tests never dial.
+
+1. **Create the secrets** (Secret Manager via the Firebase CLI). Values never go in git or the app:
+   ```
+   firebase functions:secrets:set EXOTEL_API_KEY
+   firebase functions:secrets:set EXOTEL_API_TOKEN
+   firebase functions:secrets:set EXOTEL_ACCOUNT_SID
+   firebase functions:secrets:set EXOTEL_CALLER_ID
+   firebase functions:secrets:set EXOTEL_FLOW_URL
+   firebase functions:secrets:set EXOTEL_WEBHOOK_URL
+   firebase functions:secrets:set EXOTEL_WEBHOOK_TOKEN
+   ```
+   `EXOTEL_CALLER_ID` is the ExoPhone in E.164 (`+91…`). `EXOTEL_FLOW_URL` is the dashboard flow's start URL. `EXOTEL_WEBHOOK_URL` is the deployed `exotelWebhook` URL (`https://asia-south1-<project>.cloudfunctions.net/exotelWebhook`). Pick a long random `EXOTEL_WEBHOOK_TOKEN`; it is the only callback authentication Exotel offers.
+2. **Opt in**: add `CALL_PROVIDER=exotel` to `functions/.env.<projectId>` (or the deployed environment variables), deploy functions, then confirm `dispatchDueCalls` dials.
+3. **Dashboard flow**: Greeting → Gather (one digit; 1/2/9, timeout a few seconds) → Passthru **GET, sync** to `https://asia-south1-<project>.cloudfunctions.net/exotelWebhook?token=<EXOTEL_WEBHOOK_TOKEN>&kind=gather` → Closing. The Passthru must pass the gather `digits` through (it also receives `CallSid` and `CustomField`). The flow only collects a key this stage; spoken prompts/audio are Stage 6. The provider sets `StatusCallback` (terminal + answered, JSON) and `CustomField = parentId`; the webhook routes on those plus `CallSid`.
+4. **Manual live verification** (cannot be automated here; needs Exotel KYC, an approved caller ID/DLT and a real phone): place one call through the dispatcher, confirm the workflow answers, press 1/2/9 and see `taken`/`not_taken`/consent revoked in the app, then confirm the terminal callback closes the `callSessions` row. Check logs contain ids/status codes only — never transcripts or phone numbers.
+5. Without Exotel credentials you can still run everything locally: the logging provider and the emulator webhook tests (mocked HTTP + emulator Firestore) cover the code paths.

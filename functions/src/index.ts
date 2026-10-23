@@ -1,6 +1,9 @@
 import { setGlobalOptions } from "firebase-functions/v2";
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { getDb } from "./db";
+import { EXOTEL_SECRETS, WEBHOOK_SECRETS, createCallProvider } from "./exotel/config";
+import { exotelWebhookHandler } from "./exotel/webhook";
 import { createParentHandler } from "./family";
 import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } from "./invites";
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
@@ -26,10 +29,30 @@ export const generateDoseEvents = onSchedule(
   },
 );
 
-// Every minute. Claims due events and hands them to the call provider (log-only in this stage).
+// Every minute. Claims due events and hands them to the call provider. `CALL_PROVIDER=exotel`
+// opts in to real calls; otherwise the log-only provider is used.
 export const dispatchDueCalls = onSchedule(
-  { schedule: "* * * * *", timeZone: "Asia/Kolkata" },
+  { schedule: "* * * * *", timeZone: "Asia/Kolkata", secrets: EXOTEL_SECRETS },
   async () => {
-    await dispatchDueCallsHandler();
+    await dispatchDueCallsHandler({ provider: createCallProvider() });
   },
 );
+
+// Exotel StatusCallback (POST) and Passthru gather (GET) arrive on one authenticated endpoint.
+export const exotelWebhook = onRequest({ secrets: WEBHOOK_SECRETS }, async (request, response) => {
+  try {
+    const result = await exotelWebhookHandler(
+      {
+        method: request.method,
+        query: request.query as Record<string, unknown>,
+        body: request.body,
+      },
+      { db: getDb(), token: process.env.EXOTEL_WEBHOOK_TOKEN ?? "" },
+    );
+    response.status(result.status).json(result.body);
+  } catch (error) {
+    const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+    console.error("exotelWebhook: handler failed", { code });
+    response.status(500).json({ error: "internal" });
+  }
+});

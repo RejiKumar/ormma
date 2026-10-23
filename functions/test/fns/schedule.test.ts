@@ -187,6 +187,18 @@ describe("dispatchDueCallsHandler (emulator)", () => {
     expect(snap.data()?.lastCallSid).toBe("CA_evt_claim");
     expect(snap.data()?.lastCallAt).toBeTruthy();
 
+    const session = await db()
+      .doc(`parents/${parentId}/callSessions/CA_evt_claim`)
+      .get();
+    expect(session.exists).toBe(true);
+    expect(session.data()).toMatchObject({
+      callSid: "CA_evt_claim",
+      doseEventIds: ["evt_claim"],
+      status: "initiated",
+      dtmfInput: null,
+      endedAt: null,
+    });
+
     const second = await dispatchDueCallsHandler({ nowMs, provider });
     expect(second.called).toBe(0);
     expect(provider.startCall).toHaveBeenCalledTimes(1);
@@ -269,6 +281,7 @@ describe("dispatchDueCallsHandler (emulator)", () => {
     expect(snap.data()?.status).toBe("pending");
     expect(snap.data()?.attempts).toBe(1);
     expect(snap.data()?.lastCallSid).toBeNull();
+    expect((await db().collection(`parents/${parentId}/callSessions`).get()).size).toBe(0);
 
     const retry = await dispatchDueCallsHandler({ nowMs: nowMs + 60_000, provider });
     expect(retry.called).toBe(0);
