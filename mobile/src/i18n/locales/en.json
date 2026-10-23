@@ -10,7 +10,16 @@
     "pending": "Pending",
     "missed": "Missed",
     "unclear": "Unclear",
-    "calling": "Calling now"
+    "calling": "Calling now",
+    "not_taken": "Not taken",
+    "no_answer": "No answer"
+  },
+  "alertTypes": {
+    "missed_dose": "Missed dose",
+    "unclear_reply": "Unclear reply",
+    "no_answer": "No answer",
+    "trend_flag": "Trend flag",
+    "weekly_summary": "Weekly summary"
   },
   "tabs": {
     "today": "Today",
@@ -69,11 +78,43 @@
   "screens": {
     "today": {
       "emptyTitle": "Nothing here yet",
-      "emptyDescription": "Parents you add will appear here with today's doses."
+      "emptyDescription": "Parents you add will appear here with today's doses.",
+      "noEvents": "No doses scheduled today",
+      "alertsTitle": "Recent alerts",
+      "noAlerts": "No recent alerts"
     },
     "medicines": {
+      "title": "Medicines",
       "emptyTitle": "No medicines yet",
-      "emptyDescription": "Medicines you add for a parent will be listed here."
+      "emptyDescription": "Medicines you add for a parent will be listed here.",
+      "selectParent": "Choose a parent",
+      "inactive": "Inactive",
+      "add": "Add medicine",
+      "addTitle": "Add a medicine",
+      "editTitle": "Edit medicine",
+      "nameLabel": "Medicine name",
+      "doseLabel": "Dose",
+      "doseHint": "For example 1 tablet",
+      "timesLabel": "Dose times",
+      "timeLabel": "Time",
+      "removeTime": "Remove this time",
+      "addTime": "Add another time",
+      "startDateLabel": "Start date",
+      "startDateHint": "YYYY-MM-DD",
+      "save": "Save medicine",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "deactivateWarning": "Deactivating stops future calls for this medicine. Its history is kept.",
+      "confirmDeactivate": "Yes, deactivate",
+      "cancel": "Cancel",
+      "readOnly": "Only the family owner or an editor can change medicines.",
+      "errors": {
+        "nameRequired": "Enter the medicine name.",
+        "noTimes": "Add at least one dose time.",
+        "invalidTime": "Use 24-hour times like 08:00 or 20:30.",
+        "invalidDate": "Use the date format YYYY-MM-DD.",
+        "failed": "Could not save the medicine. Please try again."
+      }
     },
     "family": {
       "title": "Family",

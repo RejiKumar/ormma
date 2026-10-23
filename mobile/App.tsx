@@ -7,10 +7,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "./src/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "./src/design/ThemeProvider";
 import { useAppFonts } from "./src/design/useAppFonts";
+import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
 import { AppTabs } from "./src/navigation/AppTabs";
 import { AuthStack } from "./src/navigation/AuthStack";
 
+connectEmulators();
 const i18n = initI18n();
 
 /** React Navigation colours from the design tokens. */

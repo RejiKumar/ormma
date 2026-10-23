@@ -5,6 +5,7 @@
   "scripts": {
     "prereqs": "node scripts/check-prereqs.mjs",
     "emulators": "npm run prereqs && npm --prefix functions run build && firebase emulators:start --project demo-ormma --import=emulator-data --export-on-exit=emulator-data",
+    "seed": "node scripts/seed-emulator.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -11,8 +11,8 @@ function TabPlaceholder({
   testID,
 }: {
   icon: IconName;
-  titleKey: "screens.today.emptyTitle" | "screens.medicines.emptyTitle";
-  descriptionKey: "screens.today.emptyDescription" | "screens.medicines.emptyDescription";
+  titleKey: "screens.medicines.emptyTitle";
+  descriptionKey: "screens.medicines.emptyDescription";
   testID: string;
 }) {
   const { t } = useTranslation();
@@ -20,17 +20,6 @@ function TabPlaceholder({
     <Screen insideTabs>
       <EmptyState testID={testID} icon={icon} title={t(titleKey)} description={t(descriptionKey)} />
     </Screen>
-  );
-}
-
-export function TodayScreen() {
-  return (
-    <TabPlaceholder
-      testID="today-empty"
-      icon="home"
-      titleKey="screens.today.emptyTitle"
-      descriptionKey="screens.today.emptyDescription"
-    />
   );
 }
 

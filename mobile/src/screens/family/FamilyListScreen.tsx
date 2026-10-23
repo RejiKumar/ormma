@@ -59,7 +59,7 @@ export function FamilyListScreen({ navigation }: Props) {
           ) : undefined
         }
       />
-      {parent.consentStatus !== "granted" ? (
+      {parent.consent?.status !== "granted" ? (
         <Banner testID={`consent-${parent.id}`} message={t("screens.family.consentPending")} />
       ) : null}
     </View>

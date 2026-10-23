@@ -11,11 +11,20 @@ import { readParentIds } from "./parentIds";
 /** Firestore `in` clauses accept at most 30 values. */
 const CHUNK_SIZE = 30;
 
+export interface FamilyParentConsent {
+  status: ConsentStatus;
+  /** Epoch ms of the consent timestamps; null when absent (visibility queries need them). */
+  revokedAt: number | null;
+  regrantedAt: number | null;
+}
+
 export interface FamilyParent {
   id: string;
   name: string;
   language: Language;
-  consentStatus: ConsentStatus;
+  timezone: string;
+  /** Null when the parent document has no consent map at all — fail closed for dated queries. */
+  consent: FamilyParentConsent | null;
   /** The signed-in member's role for this parent; null when the membership doc is unreadable. */
   role: Role | null;
 }
@@ -32,16 +41,36 @@ interface ParentSnapshot {
   id: string;
   name: string;
   language: Language;
-  consentStatus: ConsentStatus;
+  timezone: string;
+  consent: FamilyParentConsent | null;
+}
+
+/** A parent as the dated-query hooks need it: identity, timezone, consent map and this member's role. */
+export type DatedParent = Pick<FamilyParent, "id" | "timezone" | "consent" | "role">;
+
+/** Epoch ms of a Firestore Timestamp-like value (or a plain number); null when absent. */
+export function timestampMs(value: unknown): number | null {
+  if (typeof value === "number") return value;
+  const toMillis = (value as { toMillis?: unknown } | null)?.toMillis;
+  return typeof toMillis === "function" ? (toMillis as () => number).call(value) : null;
 }
 
 function toSnapshot(id: string, data: Record<string, unknown> | undefined): ParentSnapshot {
-  const consent = (data?.consent ?? {}) as { status?: ConsentStatus };
+  const raw = data?.consent;
+  const consent =
+    raw !== null && typeof raw === "object"
+      ? ({
+          status: (raw as { status?: ConsentStatus }).status ?? "pending",
+          revokedAt: timestampMs((raw as { revokedAt?: unknown }).revokedAt),
+          regrantedAt: timestampMs((raw as { regrantedAt?: unknown }).regrantedAt),
+        } satisfies FamilyParentConsent)
+      : null;
   return {
     id,
     name: typeof data?.name === "string" ? data.name : "",
     language: (typeof data?.language === "string" ? data.language : "en-IN") as Language,
-    consentStatus: consent.status ?? "pending",
+    timezone: typeof data?.timezone === "string" && data.timezone ? data.timezone : "Asia/Kolkata",
+    consent,
   };
 }
 

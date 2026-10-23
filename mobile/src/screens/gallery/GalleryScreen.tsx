@@ -22,7 +22,7 @@ import { useTheme, type ThemePreference } from "../../design/ThemeProvider";
 import type { StatusKey, TextVariant } from "../../design/tokens";
 import { initI18n, SUPPORTED_LANGUAGES, type AppLanguage } from "../../i18n";
 
-const STATUSES: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling"];
+const STATUSES: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling", "not_taken", "no_answer"];
 const VARIANTS: TextVariant[] = [
   "display",
   "headline",

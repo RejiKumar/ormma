@@ -14,7 +14,8 @@ The app SHALL define all colours, the type scale, spacing, radius, elevation and
 
 #### Scenario: Status colours
 - **WHEN** the tokens are defined
-- **THEN** they include status colours for taken, pending, missed, unclear and calling, each with a foreground, a background and an icon colour
+- **THEN** they include status colours for taken, pending, missed, unclear, calling, not_taken and no_answer, each with a foreground, a background and an icon colour
+- **AND** no colour of the not_taken or no_answer status equals a coral colour of the missed status or the urgent banner
 
 ### Requirement: Light, dark and system themes
 The app SHALL provide a light theme (the default) and a separately designed dark theme, and a "system" option that follows the operating system setting. The chosen option SHALL be remembered on the device and SHALL apply without restarting the app.
@@ -118,7 +119,7 @@ The design system SHALL provide Button, Card, StatusChip, DoseRing, ParentCard, 
 - **THEN** the component gallery screen is not registered
 
 ### Requirement: Status display
-Every dose status (taken, pending, missed, unclear, and calling now) SHALL be shown with an icon, a text label and its status colour, never by colour alone.
+Every dose status (taken, pending, missed, unclear, calling now, not taken, and no answer) SHALL be shown with an icon, a text label and its status colour, never by colour alone.
 
 #### Scenario: StatusChip content
 - **WHEN** a StatusChip is rendered for any status
@@ -127,6 +128,10 @@ Every dose status (taken, pending, missed, unclear, and calling now) SHALL be sh
 #### Scenario: Accessible name
 - **WHEN** a screen reader reads a StatusChip
 - **THEN** it announces the label text
+
+#### Scenario: All seven dose statuses
+- **WHEN** a StatusChip is rendered once for each of taken, pending, missed, unclear, calling, not_taken and no_answer
+- **THEN** each chip shows that status's own icon, its own catalogue label and its own status colours
 
 ### Requirement: Neutral presentation of health readings
 The app SHALL NOT colour or label a health reading as good, bad, normal, safe or dangerous. Readings SHALL use a neutral style, and the coral colour SHALL be used only for missed doses and urgent alerts.

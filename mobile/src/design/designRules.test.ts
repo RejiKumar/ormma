@@ -1,6 +1,6 @@
 // Presentation rules from the specs, enforced over the whole mobile source:
 // coral only for missed doses and urgent alerts; no judgement words about readings in the catalogue;
-// the status set is exactly the five dose statuses.
+// the status set is exactly the seven dose-event-lifecycle statuses.
 import fs from "node:fs";
 import path from "node:path";
 import en from "../i18n/locales/en.json";
@@ -51,7 +51,7 @@ describe("coral is only for missed doses and urgent alerts", () => {
         colors.urgent.icon,
       ]);
       const others: Array<[string, string]> = [];
-      for (const key of ["taken", "pending", "unclear", "calling"] as StatusKey[]) {
+      for (const key of ["taken", "pending", "unclear", "calling", "not_taken", "no_answer"] as StatusKey[]) {
         for (const [part, value] of Object.entries(colors.status[key]))
           others.push([`${key}.${part}`, value]);
       }
@@ -78,10 +78,12 @@ describe("health readings are never judged", () => {
     expect(JUDGEMENT.test("Blood pressure 150/90")).toBe(false);
   });
 
-  it("the status set is exactly the five dose statuses, with no reading-judgement status", () => {
+  it("the status set is exactly the seven dose statuses, with no reading-judgement status", () => {
     expect(Object.keys(lightColors.status).sort()).toEqual([
       "calling",
       "missed",
+      "no_answer",
+      "not_taken",
       "pending",
       "taken",
       "unclear",
@@ -89,6 +91,8 @@ describe("health readings are never judged", () => {
     expect(Object.keys(darkColors.status).sort()).toEqual([
       "calling",
       "missed",
+      "no_answer",
+      "not_taken",
       "pending",
       "taken",
       "unclear",

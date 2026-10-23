@@ -1,7 +1,8 @@
 import type { ComponentType } from "react";
 import type { IconName } from "../components/Icon";
 import { GalleryScreen } from "../screens/gallery/GalleryScreen";
-import { MedicinesScreen, TodayScreen } from "../screens/TabPlaceholders";
+import { MedicineStack } from "./MedicineStack";
+import { TodayDashboardScreen } from "../screens/today/TodayDashboardScreen";
 import { FamilyStack } from "./FamilyStack";
 
 export interface TabRoute {
@@ -18,8 +19,8 @@ export interface TabRoute {
  */
 export function getTabRoutes(isDev: boolean): TabRoute[] {
   const routes: TabRoute[] = [
-    { name: "Today", labelKey: "tabs.today", icon: "home", component: TodayScreen },
-    { name: "Medicines", labelKey: "tabs.medicines", icon: "pill", component: MedicinesScreen },
+    { name: "Today", labelKey: "tabs.today", icon: "home", component: TodayDashboardScreen },
+    { name: "Medicines", labelKey: "tabs.medicines", icon: "pill", component: MedicineStack },
     { name: "Family", labelKey: "tabs.family", icon: "people", component: FamilyStack },
   ];
   if (isDev)

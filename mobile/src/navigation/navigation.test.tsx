@@ -54,7 +54,7 @@ describe("tab bar styles", () => {
 describe("AppTabs", () => {
   it("shows the Today tab first, with the tab labels from the catalogue and the disclaimer", async () => {
     await renderTabs();
-    expect(screen.getByTestId("today-empty")).toBeTruthy();
+    expect(screen.getByTestId("today-no-parents")).toBeTruthy();
     expect(screen.getByText("Nothing here yet")).toBeTruthy();
     for (const label of ["Today", "Medicines", "Family"]) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
@@ -90,6 +90,6 @@ describe("AppTabs", () => {
 
   it("renders in dark mode", async () => {
     await renderTabs({ theme: "dark" });
-    expect(screen.getByTestId("today-empty")).toBeTruthy();
+    expect(screen.getByTestId("today-no-parents")).toBeTruthy();
   });
 });

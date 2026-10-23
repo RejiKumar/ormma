@@ -8,13 +8,15 @@ import { DoseRing } from "./DoseRing";
 import { Skeleton } from "./Skeleton";
 import { STATUS_ICON, StatusChip } from "./StatusChip";
 
-const STATUSES: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling"];
+const STATUSES: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling", "not_taken", "no_answer"];
 const LABELS: Record<StatusKey, string> = {
   taken: "Taken",
   pending: "Pending",
   missed: "Missed",
   unclear: "Unclear",
   calling: "Calling now",
+  not_taken: "Not taken",
+  no_answer: "No answer",
 };
 const flat = (el: { props: { style?: unknown } }) => StyleSheet.flatten(el.props.style as never);
 

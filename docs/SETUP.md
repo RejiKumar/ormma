@@ -26,9 +26,23 @@ npm --prefix mobile install
 | `npm test`          | Jest in `functions/` and `mobile/` (emulator-free, decision #36)       |
 | `npm run test:fns`  | Callable tests against the Firestore emulator (18 tests)              |
 | `npm run test:rules`| Security-rules tests against Firestore + Storage emulators            |
+| `npm run seed`      | Seeds the running emulators with demo parents, medicines and events    |
 
 Emulators use project id `demo-ormma` and keep data in `emulator-data/` (git-ignored).
 Ctrl+C in the emulator terminal exports data on exit.
+
+## Local dev against the emulators
+
+For a development build point the app at the emulators with `EXPO_PUBLIC_FIREBASE_EMULATOR_HOST`:
+`127.0.0.1` for the iOS simulator, `10.0.2.2` for the Android emulator (the host machine from inside
+it), or the machine's LAN IP for a physical device. Production builds ignore it, and the wiring never
+runs under Jest; see `mobile/src/firebase/emulators.ts`.
+
+With the emulators running, `npm run seed` reads `users/*` and creates two parents per user (the user
+is the owner member), medicines, today's dose events in every status and recent alerts. With no users
+it seeds `demo-user` (phone `+919876500000`, any code `123456` in the auth emulator). Re-running
+overwrites the same seeded documents; the script verifies the data over the emulator REST API before
+exiting.
 
 ## Before the first EAS build or Firebase app registration
 

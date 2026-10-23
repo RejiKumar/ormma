@@ -31,13 +31,16 @@ module.exports = {
   // Test helpers (not part of the real package).
   __setUser(user) {
     currentUser = user;
+    authInstance.currentUser = user;
   },
   __emitAuthState(user) {
     currentUser = user;
+    authInstance.currentUser = user;
     for (const listener of [...listeners]) listener(user);
   },
   __resetAuth() {
     currentUser = null;
+    authInstance.currentUser = null;
     listeners.clear();
     signInWithPhoneNumber.mockClear();
     signInWithPhoneNumber.mockImplementation(() =>

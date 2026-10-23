@@ -31,11 +31,11 @@ function captureListeners(): SnapshotListener[] {
   return captured;
 }
 
-const parentDoc = (name: string, status: string) => ({
+const parentDoc = (name: string, status: string, extra: Record<string, unknown> = {}) => ({
   docs: [
     {
       id: "p1",
-      data: () => ({ name, language: "ml-IN", consent: { status } }),
+      data: () => ({ name, language: "ml-IN", consent: { status }, ...extra }),
     },
   ],
 });
@@ -68,7 +68,14 @@ describe("useParents", () => {
     });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.parents).toEqual([
-      { id: "p1", name: "Amma", language: "ml-IN", consentStatus: "pending", role: "owner" },
+      {
+        id: "p1",
+        name: "Amma",
+        language: "ml-IN",
+        timezone: "Asia/Kolkata",
+        consent: { status: "pending", revokedAt: null, regrantedAt: null },
+        role: "owner",
+      },
     ]);
   });
 
@@ -80,10 +87,40 @@ describe("useParents", () => {
     const { result } = await renderHook(() => useParents(), { wrapper });
     await waitFor(() => expect(listeners).toHaveLength(1));
     await act(async () => {
-      listeners[0].next(parentDoc("Amma", "granted"));
+      listeners[0].next(
+        parentDoc("Amma", "granted", {
+          timezone: "Asia/Kolkata",
+          consent: {
+            status: "granted",
+            revokedAt: { toMillis: () => 1_792_607_400_000 },
+            regrantedAt: null,
+          },
+        }),
+      );
     });
     await waitFor(() => expect(result.current.parents).toHaveLength(1));
-    expect(result.current.parents[0]).toMatchObject({ consentStatus: "granted", role: null });
+    expect(result.current.parents[0]).toMatchObject({
+      timezone: "Asia/Kolkata",
+      consent: { status: "granted", revokedAt: 1_792_607_400_000, regrantedAt: null },
+      role: null,
+    });
+  });
+
+  it("surfaces a missing consent map as null (fail closed for dated queries)", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+    const listeners = captureListeners();
+    fsMock.getDoc.mockResolvedValue({ exists: () => false, data: () => undefined });
+
+    const { result } = await renderHook(() => useParents(), { wrapper });
+    await waitFor(() => expect(listeners).toHaveLength(1));
+    await act(async () => {
+      listeners[0].next({
+        docs: [{ id: "p1", data: () => ({ name: "Amma", language: "ml-IN" }) }],
+      });
+    });
+    await waitFor(() => expect(result.current.parents).toHaveLength(1));
+    expect(result.current.parents[0].consent).toBeNull();
+    expect(result.current.parents[0].timezone).toBe("Asia/Kolkata");
   });
 
   it("chunks more than 30 ids into several in-queries", async () => {

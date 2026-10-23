@@ -59,8 +59,16 @@ describe.each(Object.keys(themes) as ThemeName[])("contrast in the %s theme", (n
     expect(missing).toEqual([]);
   });
 
-  it("uses a different icon colour and label colour check for each of the five statuses", () => {
-    for (const key of ["taken", "pending", "missed", "unclear", "calling"] as const) {
+  it("uses a different icon colour and label colour check for each of the seven statuses", () => {
+    for (const key of [
+      "taken",
+      "pending",
+      "missed",
+      "unclear",
+      "calling",
+      "not_taken",
+      "no_answer",
+    ] as const) {
       expect(pairs.some((p) => p.fgToken === `status.${key}.fg`)).toBe(true);
       expect(pairs.some((p) => p.fgToken === `status.${key}.icon`)).toBe(true);
     }

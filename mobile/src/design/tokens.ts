@@ -4,8 +4,8 @@
 import { MIN_LARGE_OR_GRAPHIC_RATIO, MIN_TEXT_RATIO } from "./contrast";
 
 export type ThemeName = "light" | "dark";
-/** Dose statuses shown in the UI. "calling" is the live "calling now" state. */
-export type StatusKey = "taken" | "pending" | "missed" | "unclear" | "calling";
+/** Dose statuses shown in the UI — the seven dose-event-lifecycle states. "calling" is the live "calling now" state. */
+export type StatusKey = "taken" | "pending" | "missed" | "unclear" | "calling" | "not_taken" | "no_answer";
 
 export interface StatusColors {
   /** Label text colour on `bg`. */
@@ -61,6 +61,8 @@ export const lightColors: ThemeColors = {
     missed: { fg: "#9F3326", bg: "#FCE8E4", icon: "#C2432F" },
     unclear: { fg: "#5E4388", bg: "#EFE9F7", icon: "#7452B0" },
     calling: { fg: "#0F6B6B", bg: "#DDEFEE", icon: "#0F6B6B" },
+    not_taken: { fg: "#7A5210", bg: "#F7EDD4", icon: "#8F6415" },
+    no_answer: { fg: "#38536E", bg: "#E8EEF5", icon: "#46617D" },
   },
   urgent: { fg: "#8F2418", bg: "#FDE3DE", icon: "#C2432F" },
   reading: { fg: "#1F2A2E", bg: "#F3ECE2" },
@@ -87,6 +89,8 @@ export const darkColors: ThemeColors = {
     missed: { fg: "#FFA79A", bg: "#4A2420", icon: "#FF8E7E" },
     unclear: { fg: "#CDB8F2", bg: "#34294B", icon: "#CDB8F2" },
     calling: { fg: "#7FD9D6", bg: "#1B3A3A", icon: "#7FD9D6" },
+    not_taken: { fg: "#F2D18A", bg: "#3B2F1C", icon: "#EFC36E" },
+    no_answer: { fg: "#A9C6E2", bg: "#26333F", icon: "#9CBFE0" },
   },
   urgent: { fg: "#FFB3A7", bg: "#55231D", icon: "#FF8E7E" },
   reading: { fg: "#E8EFF0", bg: "#222C2F" },
@@ -187,7 +191,7 @@ export interface ContrastPair {
 export const minRatio = (kind: PairKind): number =>
   kind === "text" ? MIN_TEXT_RATIO : MIN_LARGE_OR_GRAPHIC_RATIO;
 
-const STATUS_KEYS: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling"];
+const STATUS_KEYS: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling", "not_taken", "no_answer"];
 
 /** Every text/background and icon/background combination the components use, per theme. */
 export function contrastPairs(c: ThemeColors): ContrastPair[] {

@@ -22,6 +22,8 @@ export const STATUS_ICON: Record<StatusKey, IconName> = {
   missed: "xCircle",
   unclear: "question",
   calling: "phone",
+  not_taken: "minusCircle",
+  no_answer: "phoneOff",
 };
 
 export interface StatusChipProps {
