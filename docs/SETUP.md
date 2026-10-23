@@ -113,7 +113,7 @@ review every line). Audio is cached privately in the default Storage bucket unde
 The STT adapter lives in `functions/src/voice/stt.ts`. It takes call audio in memory, uses the
 parent's language, and returns a transcript plus confidence. Low confidence, missing confidence,
 empty results and silence are not usable and must fall back to the DTMF prompt. Nothing is stored or
-logged. It is wired into `processReply` in Stage 8; there is no HTTP endpoint in this stage.
+logged. It is wired into `processReply` in Stage 9; there is no HTTP endpoint in this stage.
 
 1. **Secret**:
    ```
@@ -125,3 +125,33 @@ logged. It is wired into `processReply` in Stage 8; there is no HTTP endpoint in
    short Malayalam/Tamil/Hindi/English answer, confirm the transcript and confidence, then try a
    wrong-language answer and silence and confirm both are classified as not usable. Live voice
    capture needs a recording/voicebot applet; the current dashboard flow is DTMF-only.
+
+## Reply structuring with Claude (manual, Stage 8)
+
+The structuring module lives in `functions/src/reply/` and the versioned prompt in
+`functions/src/prompts/replyStructuring.v1.ts`. It is not yet connected to an endpoint; Stage 9 adds
+`processReply` and the Firestore writes. No transcript is logged by this module.
+
+1. **Secret**:
+   ```
+   firebase functions:secrets:set ANTHROPIC_API_KEY   # Claude API key; never in the app or git
+   ```
+   `AI_SECRETS` is exported for the function that will call the model in Stage 9. Without the key,
+   `createReplyModelClient` returns null so the caller can fall back to DTMF-only.
+2. **API version**: the installed SDK (`@anthropic-ai/sdk` 1.1) sends API version `2026-10-21`,
+   which rejects `temperature`, `top_p` and `top_k` with a 400. Do not add them back; the fixed
+   prompt and strict schema provide stability instead.
+3. **Eval** (manual, costs tokens):
+   ```
+   npm --prefix functions run eval:reply
+   ```
+   It builds the functions, runs all fixtures in `functions/test/fixtures/reply-transcripts.json`
+   against the real model and prints fixture ids, per-field pass/fail and accuracy. It never prints
+   transcripts. Run it before accepting any prompt change.
+4. **Launch gate (manual)**: a native speaker reviews the urgent keyword lists in
+   `functions/src/urgent-keywords.ts` and the `confirmationNote` instructions in the prompt; a doctor
+   or pharmacist reviews the wording and the plausibility ranges. Record both reviews in
+   `docs/DECISIONS.md` with role and date. Do not ship to real families before that.
+5. **Review queue**: low confidence (< 0.6), implausible readings and invalid output after the
+   single retry all return `needsReview: true` and `canApplyDoseStatus: false`. The caller must not
+   change a dose status from those results; Stage 9 surfaces them for family review.
