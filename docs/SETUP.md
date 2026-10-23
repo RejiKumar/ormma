@@ -107,3 +107,21 @@ review every line). Audio is cached privately in the default Storage bucket unde
    both reviews in `docs/DECISIONS.md` with role and date; do not ship to real families before that.
 5. **Manual check**: play each prompt on a real Exotel call, confirm pronunciation and that pressing
    9 is mentioned, and confirm no name/phone appears in function logs or URLs.
+
+## Voice replies with Speech-to-Text (manual, Stage 7)
+
+The STT adapter lives in `functions/src/voice/stt.ts`. It takes call audio in memory, uses the
+parent's language, and returns a transcript plus confidence. Low confidence, missing confidence,
+empty results and silence are not usable and must fall back to the DTMF prompt. Nothing is stored or
+logged. It is wired into `processReply` in Stage 8; there is no HTTP endpoint in this stage.
+
+1. **Secret**:
+   ```
+   firebase functions:secrets:set GOOGLE_STT_API_KEY   # key restricted to Cloud Speech-to-Text API
+   ```
+   Enable the Cloud Speech-to-Text API for the project and restrict the key to it. `STT_SECRETS`
+   is exported for the function that will use it in Stage 8.
+2. **Manual live verification** (needs Exotel recording/voice capture and a real phone): record a
+   short Malayalam/Tamil/Hindi/English answer, confirm the transcript and confidence, then try a
+   wrong-language answer and silence and confirm both are classified as not usable. Live voice
+   capture needs a recording/voicebot applet; the current dashboard flow is DTMF-only.
