@@ -24,7 +24,7 @@ npm --prefix mobile install
 | `npm run format`    | Prettier, write mode (`format:check` only checks)                       |
 | `npm run typecheck` | Type-checks `shared/`, `functions/` and `mobile/`                       |
 | `npm test`          | Jest in `functions/` and `mobile/` (emulator-free, decision #36)       |
-| `npm run test:fns`  | Callable and webhook tests against the Firestore emulator (38 tests)  |
+| `npm run test:fns`  | Callable, webhook and prompt tests against the Firestore emulator (45 tests) |
 | `npm run test:rules`| Security-rules tests against Firestore + Storage emulators            |
 | `npm run seed`      | Seeds the running emulators with demo parents, medicines and events    |
 
@@ -79,3 +79,31 @@ The dispatcher stays on the log-only provider unless `CALL_PROVIDER=exotel`. Emu
 3. **Dashboard flow**: Greeting → Gather (one digit; 1/2/9, timeout a few seconds) → Passthru **GET, sync** to `https://asia-south1-<project>.cloudfunctions.net/exotelWebhook?token=<EXOTEL_WEBHOOK_TOKEN>&kind=gather` → Closing. The Passthru must pass the gather `digits` through (it also receives `CallSid` and `CustomField`). The flow only collects a key this stage; spoken prompts/audio are Stage 6. The provider sets `StatusCallback` (terminal + answered, JSON) and `CustomField = parentId`; the webhook routes on those plus `CallSid`.
 4. **Manual live verification** (cannot be automated here; needs Exotel KYC, an approved caller ID/DLT and a real phone): place one call through the dispatcher, confirm the workflow answers, press 1/2/9 and see `taken`/`not_taken`/consent revoked in the app, then confirm the terminal callback closes the `callSessions` row. Check logs contain ids/status codes only — never transcripts or phone numbers.
 5. Without Exotel credentials you can still run everything locally: the logging provider and the emulator webhook tests (mocked HTTP + emulator Firestore) cover the code paths.
+
+## Voice prompts and TTS (manual, Stage 6)
+
+The fixed scripts live in `functions/src/voice/templates.ts`; edit only that file (native speakers
+review every line). Audio is cached privately in the default Storage bucket under `tts/`.
+
+1. **Secrets**:
+   ```
+   firebase functions:secrets:set GOOGLE_TTS_API_KEY      # key restricted to Cloud Text-to-Speech API
+   firebase functions:secrets:set VOICE_PROMPT_TOKEN      # long random; shared with the dashboard URLs
+   firebase functions:secrets:set VOICE_AUDIO_BASE_URL    # https://asia-south1-<project>.cloudfunctions.net/voiceAudio
+   ```
+   Deploy functions after setting them. `voicePrompt` and `voiceAudio` are HTTPS endpoints in
+   asia-south1; a missing TTS key makes `voicePrompt` return 503 (code only), it never crashes.
+2. **Exotel flow**: each audio applet uses the "Type Text → URL" mode pointing at
+   `https://asia-south1-<project>.cloudfunctions.net/voicePrompt?token=<VOICE_PROMPT_TOKEN>&kind=<kind>`
+   with `kind` = `greeting`, `question`, `closing` or `consent`. Exotel appends `CallSid`,
+   `CustomField` (the parent id) and `From`; the function returns one audio URL (8 kHz mono MP3)
+   from `voiceAudio`. Keep Greeting → Question+Gather → Passthru → Closing, with the Passthru as in
+   the Stage 5 section. Exotel sends HEAD as well as GET; both are supported.
+3. **First use**: the first request for a language/prompt synthesises and caches it; later calls
+   reuse the same object and URL. Watch that first-call latency stays under Exotel's URL timeout;
+   the cache warms permanently after that.
+4. **Launch gate (manual)**: a native speaker reviews all four languages in `templates.ts`, and a
+   doctor or pharmacist reviews the call scripts (medical-safety "Review before launch"). Record
+   both reviews in `docs/DECISIONS.md` with role and date; do not ship to real families before that.
+5. **Manual check**: play each prompt on a real Exotel call, confirm pronunciation and that pressing
+   9 is mentioned, and confirm no name/phone appears in function logs or URLs.

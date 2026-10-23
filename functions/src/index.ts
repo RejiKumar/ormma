@@ -8,6 +8,12 @@ import { createParentHandler } from "./family";
 import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } from "./invites";
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
+import {
+  VOICE_AUDIO_SECRETS,
+  VOICE_SECRETS,
+  createPromptAudioService,
+} from "./voice/config";
+import { voiceAudioHandler, voicePromptHandler } from "./voice/prompt";
 
 // Every function deploys to Mumbai. Set once here so none can land in another region.
 setGlobalOptions({ region: "asia-south1" });
@@ -37,6 +43,48 @@ export const dispatchDueCalls = onSchedule(
     await dispatchDueCallsHandler({ provider: createCallProvider() });
   },
 );
+
+// Exotel dynamic greeting/question/closing URLs. Returns plain text containing audio URLs.
+export const voicePrompt = onRequest({ secrets: VOICE_SECRETS }, async (request, response) => {
+  try {
+    const result = await voicePromptHandler(
+      { method: request.method, query: request.query as Record<string, unknown> },
+      {
+        db: getDb(),
+        audio: createPromptAudioService(),
+        token: process.env.VOICE_PROMPT_TOKEN ?? "",
+        audioBaseUrl: process.env.VOICE_AUDIO_BASE_URL ?? "",
+      },
+    );
+    response.status(result.status);
+    for (const [name, value] of Object.entries(result.headers)) response.set(name, value);
+    response.send(result.body);
+  } catch (error) {
+    const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+    console.error("voicePrompt: handler failed", { code });
+    response.status(500).json({ error: "internal" });
+  }
+});
+
+// Serves the private cached MP3. Stable URL per content hash, so both caches stay warm.
+export const voiceAudio = onRequest({ secrets: VOICE_AUDIO_SECRETS }, async (request, response) => {
+  try {
+    const result = await voiceAudioHandler(
+      { method: request.method, query: request.query as Record<string, unknown> },
+      {
+        audio: createPromptAudioService(),
+        token: process.env.VOICE_PROMPT_TOKEN ?? "",
+      },
+    );
+    response.status(result.status);
+    for (const [name, value] of Object.entries(result.headers)) response.set(name, value);
+    response.send(result.body);
+  } catch (error) {
+    const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+    console.error("voiceAudio: handler failed", { code });
+    response.status(500).json({ error: "internal" });
+  }
+});
 
 // Exotel StatusCallback (POST) and Passthru gather (GET) arrive on one authenticated endpoint.
 export const exotelWebhook = onRequest({ secrets: WEBHOOK_SECRETS }, async (request, response) => {
