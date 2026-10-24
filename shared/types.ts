@@ -32,7 +32,7 @@ export type HealthLogSource = "voice" | "family" | "prescription_scan";
 export type CallSessionStatus = "initiated" | "answered" | "completed" | "failed" | "no_answer";
 export type PrescriptionStatus = "pending_review" | "confirmed" | "rejected";
 export type AlertType =
-  "missed_dose" | "unclear_reply" | "no_answer" | "trend_flag" | "weekly_summary";
+  "missed_dose" | "unclear_reply" | "no_answer" | "trend_flag" | "weekly_summary" | "urgent";
 
 // ---------- users/{uid} ----------
 /** Family members only. Parents do not have accounts in v1; they are reached by phone. */
@@ -136,6 +136,8 @@ export interface DoseEventDoc {
   lastCallAt: Timestamp | null;
   /** Server-written when the one extra reminder after a "not yet" reply is scheduled. Clients may not write it. */
   reminderAt: Timestamp | null;
+  /** True when the most recent provider call attempt failed before the provider accepted the call. Server-written. */
+  lastDispatchFailure: boolean;
 }
 
 // ---------- parents/{parentId}/healthLogs/{logId} ----------

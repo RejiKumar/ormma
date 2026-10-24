@@ -13,6 +13,7 @@ export const ALERTS_LIMIT = 20;
 
 export interface FamilyAlert {
   id: string;
+  parentId: string;
   type: AlertType;
   /** Fixed template text from the catalogue of alert templates; never raw health values. */
   message: string;
@@ -32,11 +33,16 @@ function str(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
-function toAlert(id: string, data: Record<string, unknown> | undefined): FamilyAlert | null {
+function toAlert(
+  id: string,
+  parentId: string,
+  data: Record<string, unknown> | undefined,
+): FamilyAlert | null {
   const createdAt = timestampMs(data?.createdAt);
   if (createdAt === null) return null;
   return {
     id,
+    parentId,
     type: typeof data?.type === "string" ? (data.type as AlertType) : "missed_dose",
     message: str(data?.message),
     relatedEventId: typeof data?.relatedEventId === "string" ? data.relatedEventId : null,
@@ -90,7 +96,7 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
             if (cancelled) return;
             const docs = new Map<string, FamilyAlert>();
             for (const d of snapshot.docs) {
-              const alert = toAlert(d.id, d.data());
+              const alert = toAlert(d.id, parent.id, d.data());
               if (alert) docs.set(alert.id, alert);
             }
             docsByKey.set(key, docs);
@@ -110,10 +116,10 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
     }
 
     if (totalQueries === 0) {
-      setAlerts([]);
-      setLoading(false);
+      setAlerts((prev) => (prev.length === 0 ? prev : []));
+      setLoading((prev) => (prev === false ? prev : false));
     } else if (pending.size > 0) {
-      setLoading(true);
+      setLoading((prev) => (prev === true ? prev : true));
     }
 
     return () => {

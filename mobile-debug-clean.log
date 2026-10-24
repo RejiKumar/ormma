@@ -1,0 +1,54 @@
+﻿
+> mobile@1.0.0 test
+> jest --testPathPatterns debug
+
+  console.log
+    T1 JSON: {"type":"RNCSafeAreaProvider","props":{"style":[{"flex":1},null]},"children":[{"type":"View","props":{"style":[{"flex":1},null]},"children":[{"type":"RNSScreenStack","props":{"style":{"flex":1}},"children":[{"type":"RNSScreen","props":{"screenId":"Login-sRH6_ymKF0tTNRPELCEss","stackPresentation":"pu
+
+      at Object.log (src/screens/auth/debug.test.tsx:21:13)
+
+  console.error
+    You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (node_modules/react/cjs/react.development.js:630:17)
+      at node_modules/react/cjs/react.development.js:920:17
+
+  console.error
+    You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (node_modules/react/cjs/react.development.js:630:17)
+      at node_modules/react/cjs/react.development.js:920:17
+
+  console.log
+    T2 JSON: {"type":"RNCSafeAreaProvider","props":{"style":[{"flex":1},null]},"children":[{"type":"View","props":{"style":[{"flex":1},null]},"children":[{"type":"RNSScreenStack","props":{"style":{"flex":1}},"children":[{"type":"RNSScreen","props":{"screenId":"Login-IsO96Bcy_aFoZZ9gkvTmv","stackPresentation":"pu
+
+      at Object.log (src/screens/auth/debug.test.tsx:31:13)
+
+  console.log
+    T3 JSON: null
+
+      at Object.log (src/screens/auth/debug.test.tsx:38:13)
+
+FAIL src/screens/auth/debug.test.tsx
+  â— debug sequence â€º t3 success path
+
+    Unable to find an element with testID: login-phone
+
+      37 |     // eslint-disable-next-line no-console
+      38 |     console.log("T3 JSON:", JSON.stringify(screen.toJSON())?.slice(0, 300));
+    > 39 |     expect(screen.getByTestId("login-phone")).toBeTruthy();
+         |                   ^
+      40 |   });
+      41 | });
+      42 |
+
+      at Object.getByTestId (src/screens/auth/debug.test.tsx:39:19)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 2 passed, 3 total
+Snapshots:   0 total
+Time:        2.519 s
+Ran all test suites matching debug.
+

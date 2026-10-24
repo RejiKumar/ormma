@@ -21,6 +21,7 @@ export interface FamilyParentConsent {
 export interface FamilyParent {
   id: string;
   name: string;
+  phone: string;
   language: Language;
   timezone: string;
   /** Null when the parent document has no consent map at all — fail closed for dated queries. */
@@ -40,6 +41,7 @@ export interface UseParentsResult {
 interface ParentSnapshot {
   id: string;
   name: string;
+  phone: string;
   language: Language;
   timezone: string;
   consent: FamilyParentConsent | null;
@@ -68,6 +70,7 @@ function toSnapshot(id: string, data: Record<string, unknown> | undefined): Pare
   return {
     id,
     name: typeof data?.name === "string" ? data.name : "",
+    phone: typeof data?.phone === "string" ? data.phone : "",
     language: (typeof data?.language === "string" ? data.language : "en-IN") as Language,
     timezone: typeof data?.timezone === "string" && data.timezone ? data.timezone : "Asia/Kolkata",
     consent,

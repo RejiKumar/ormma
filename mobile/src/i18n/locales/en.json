@@ -19,12 +19,22 @@
     "unclear_reply": "Unclear reply",
     "no_answer": "No answer",
     "trend_flag": "Trend flag",
-    "weekly_summary": "Weekly summary"
+    "weekly_summary": "Weekly summary",
+    "urgent": "Urgent"
   },
   "tabs": {
     "today": "Today",
     "medicines": "Medicines",
+    "alerts": "Alerts",
     "family": "Family"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "emergencyPrompt": "Please call your local emergency services if you are worried.",
+    "callNow": "Call now",
+    "markAsTaken": "Mark as taken",
+    "unread": "New",
+    "none": "No alerts yet"
   },
   "common": {
     "loading": "Loading",

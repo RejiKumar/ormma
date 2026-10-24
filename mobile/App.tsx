@@ -11,6 +11,7 @@ import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
 import { AppTabs } from "./src/navigation/AppTabs";
 import { AuthStack } from "./src/navigation/AuthStack";
+import { PushRegistrar } from "./src/push/PushRegistrar";
 
 connectEmulators();
 const i18n = initI18n();
@@ -50,6 +51,7 @@ function Root() {
   return (
     <NavigationContainer theme={navigationTheme}>
       <AuthProvider>
+        <PushRegistrar />
         <RootNavigator />
         <StatusBar style={name === "dark" ? "light" : "dark"} />
       </AuthProvider>

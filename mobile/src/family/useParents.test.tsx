@@ -71,6 +71,7 @@ describe("useParents", () => {
       {
         id: "p1",
         name: "Amma",
+        phone: "",
         language: "ml-IN",
         timezone: "Asia/Kolkata",
         consent: { status: "pending", revokedAt: null, regrantedAt: null },

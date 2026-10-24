@@ -281,6 +281,7 @@ async function claimGroup(
           status: result.state.status,
           attempts: result.state.attempts,
           lastCallAt: Timestamp.fromMillis(nowMs),
+          lastDispatchFailure: false,
         },
         { merge: true },
       );
@@ -302,7 +303,7 @@ async function revertGroup(
       if (!doc.exists) continue;
       const state = toDoseEventState(doc.data() as Record<string, unknown>);
       if (state.status !== "calling" || state.lastCallAt !== nowMs) continue;
-      tx.set(doc.ref, { status: "pending" }, { merge: true });
+      tx.set(doc.ref, { status: "pending", lastDispatchFailure: true }, { merge: true });
     }
   });
 }

@@ -2,12 +2,14 @@ import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getDb } from "./db";
+import { AdminPushSender } from "./alerts/fcm";
 import { EXOTEL_SECRETS, WEBHOOK_SECRETS, createCallProvider } from "./exotel/config";
 import { exotelWebhookHandler } from "./exotel/webhook";
 import { createParentHandler } from "./family";
 import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } from "./invites";
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
+import { missedDoseCheckerHandler } from "./schedule/missedDose";
 import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
@@ -41,6 +43,15 @@ export const dispatchDueCalls = onSchedule(
   { schedule: "* * * * *", timeZone: "Asia/Kolkata", secrets: EXOTEL_SECRETS },
   async () => {
     await dispatchDueCallsHandler({ provider: createCallProvider() });
+  },
+);
+
+// Every minute. Marks events missed after the parent's policy window and alerts the family once per
+// event or group. Alerts are written transactionally; FCM delivery follows the commit.
+export const missedDoseChecker = onSchedule(
+  { schedule: "* * * * *", timeZone: "Asia/Kolkata" },
+  async () => {
+    await missedDoseCheckerHandler({ sender: new AdminPushSender() });
   },
 );
 

@@ -1,9 +1,11 @@
 import { initializeApp, getApps } from "firebase-admin/app";
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import type { MedicineDoc, ParentDoc } from "../../../shared/types";
+import type { PushSender } from "../../src/alerts/fcm";
 import type { CallProvider, CallRequest } from "../../src/callProvider";
 import { dispatchDueCallsHandler } from "../../src/schedule/dispatch";
 import { generateDoseEventsHandler } from "../../src/schedule/generate";
+import { missedDoseCheckerHandler } from "../../src/schedule/missedDose";
 import { zonedTimeToMs } from "../../src/schedule/time";
 
 // Runs under `firebase emulators:exec --only firestore` (npm run test:fns from the repo root).
@@ -97,9 +99,26 @@ async function seedEvent(
       confirmationNote: null,
       lastCallAt: null,
       reminderAt: null,
+      lastDispatchFailure: false,
       ...overrides,
     });
 }
+
+async function seedMember(parentId: string): Promise<{ uid: string; token: string }> {
+  const uid = unique("user");
+  const token = unique("token");
+  await db().doc(`parents/${parentId}/members/${uid}`).set({ role: "owner" });
+  await db().doc(`users/${uid}`).set({ phone: "+919800000000", fcmTokens: [token] });
+  return { uid, token };
+}
+
+const fakeSender = (): PushSender & { sendMulticast: jest.Mock } => ({
+  sendMulticast: jest.fn().mockImplementation(async (tokens: string[]) => ({
+    successCount: tokens.length,
+    failureCount: 0,
+    invalidTokens: [],
+  })),
+});
 
 const fakeProvider = (): CallProvider & { startCall: jest.Mock } => ({
   name: "test",
@@ -186,6 +205,7 @@ describe("dispatchDueCallsHandler (emulator)", () => {
     expect(snap.data()?.attempts).toBe(1);
     expect(snap.data()?.lastCallSid).toBe("CA_evt_claim");
     expect(snap.data()?.lastCallAt).toBeTruthy();
+    expect(snap.data()?.lastDispatchFailure).toBe(false);
 
     const session = await db()
       .doc(`parents/${parentId}/callSessions/CA_evt_claim`)
@@ -280,11 +300,104 @@ describe("dispatchDueCallsHandler (emulator)", () => {
     const snap = await db().doc(`parents/${parentId}/doseEvents/evt_fail`).get();
     expect(snap.data()?.status).toBe("pending");
     expect(snap.data()?.attempts).toBe(1);
+    expect(snap.data()?.lastDispatchFailure).toBe(true);
     expect(snap.data()?.lastCallSid).toBeNull();
     expect((await db().collection(`parents/${parentId}/callSessions`).get()).size).toBe(0);
 
     const retry = await dispatchDueCallsHandler({ nowMs: nowMs + 60_000, provider });
     expect(retry.called).toBe(0);
     expect(provider.startCall).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("missedDoseCheckerHandler (emulator)", () => {
+  const nowMs = at("2026-12-02", "12:00");
+
+  it("marks a dose missed and creates exactly one alert and one push", async () => {
+    const parentId = await seedParent();
+    const medicineId = await seedMedicine(parentId, { times: ["09:00"] });
+    await seedEvent(parentId, "evt_missed_once", medicineId, at("2026-12-02", "09:00"));
+    const { token } = await seedMember(parentId);
+    const sender = fakeSender();
+
+    const first = await missedDoseCheckerHandler({ nowMs, sender });
+    expect(first.alerted).toBeGreaterThanOrEqual(1);
+
+    const event = await db().doc(`parents/${parentId}/doseEvents/evt_missed_once`).get();
+    expect(event.data()?.status).toBe("missed");
+    expect(event.data()?.alertSent).toBe(true);
+    expect(event.data()?.missedAt).toBeTruthy();
+    expect(event.data()?.lastDispatchFailure).toBe(false);
+
+    const alerts = await db().collection(`parents/${parentId}/alerts`).get();
+    expect(alerts.size).toBe(1);
+    expect(alerts.docs[0].data()).toMatchObject({
+      type: "missed_dose",
+      relatedEventId: "evt_missed_once",
+      readBy: [],
+    });
+    expect(alerts.docs[0].data().message).toBe(
+      "Amma has not confirmed the 9:00 AM tablets. Last attempt at 9:00 AM. Please check.",
+    );
+    expect(
+      sender.sendMulticast.mock.calls.some((call) => (call[0] as string[]).includes(token)),
+    ).toBe(true);
+
+    const second = await missedDoseCheckerHandler({ nowMs: nowMs + 60_000, sender });
+    expect(second.alerted).toBe(0);
+    expect((await db().collection(`parents/${parentId}/alerts`).get()).size).toBe(1);
+  });
+
+  it("sends one group alert when the parent confirmed only some tablets", async () => {
+    const parentId = await seedParent();
+    const m1 = await seedMedicine(parentId, { times: ["09:00"] });
+    const m2 = await seedMedicine(parentId, { times: ["09:00"] });
+    await seedEvent(parentId, "evt_group_missed_a", m1, at("2026-12-02", "09:00"));
+    await seedEvent(parentId, "evt_group_missed_b", m2, at("2026-12-02", "09:00"), {
+      groupConfirmed: true,
+    });
+    await seedMember(parentId);
+    const sender = fakeSender();
+
+    await missedDoseCheckerHandler({ nowMs, sender });
+
+    const alerts = await db().collection(`parents/${parentId}/alerts`).get();
+    expect(alerts.size).toBe(1);
+    expect(alerts.docs[0].data().message).toBe(
+      "Amma did not confirm all of the 9:00 AM tablets. Please follow up.",
+    );
+    for (const id of ["evt_group_missed_a", "evt_group_missed_b"]) {
+      const event = await db().doc(`parents/${parentId}/doseEvents/${id}`).get();
+      expect(event.data()?.status).toBe("missed");
+      expect(event.data()?.alertSent).toBe(true);
+    }
+  });
+
+  it("explains a provider failure instead of claiming the parent did not answer", async () => {
+    const parentId = await seedParent();
+    const medicineId = await seedMedicine(parentId, { times: ["09:00"] });
+    await seedEvent(parentId, "evt_missed_failure", medicineId, at("2026-12-02", "09:00"), {
+      lastDispatchFailure: true,
+    });
+    await seedMember(parentId);
+    const sender = fakeSender();
+
+    await missedDoseCheckerHandler({ nowMs, sender });
+
+    const alerts = await db().collection(`parents/${parentId}/alerts`).get();
+    expect(alerts.docs.map((doc) => doc.data().message)).toContain(
+      "We could not complete the call to Amma about the 9:00 AM tablets. Please check.",
+    );
+  });
+
+  it("still writes the alert when no member has a push token", async () => {
+    const parentId = await seedParent();
+    const medicineId = await seedMedicine(parentId, { times: ["09:00"] });
+    await seedEvent(parentId, "evt_missed_no_token", medicineId, at("2026-12-02", "09:00"));
+    const sender = fakeSender();
+
+    await missedDoseCheckerHandler({ nowMs, sender });
+
+    expect((await db().collection(`parents/${parentId}/alerts`).get()).size).toBe(1);
   });
 });

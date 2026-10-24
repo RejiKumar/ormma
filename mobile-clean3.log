@@ -1,0 +1,315 @@
+﻿
+> mobile@1.0.0 test
+> jest
+
+FAIL src/components/TextField.test.tsx
+  â— TextField â€º shows the hint only when there is no error
+
+    Unable to find an element with text: Not valid
+
+    <RNCSafeAreaProvider>
+      <View>
+        <Text
+          testID="tf-label"
+        >
+          Phone
+        </Text>
+        <TextInput
+          accessibilityLabel="Phone"
+          editable={true}
+          testID="tf"
+          value=""
+        />
+        <Text>
+          Hint text
+        </Text>
+      </View>
+    </RNCSafeAreaProvider>
+
+      45 |       />,
+      46 |     );
+    > 47 |     expect(screen.getByText("Not valid")).toBeTruthy();
+         |                   ^
+      48 |     expect(screen.queryByText("Hint text")).toBeNull();
+      49 |   });
+      50 |
+
+      at Object.getByText (src/components/TextField.test.tsx:47:19)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/auth/OtpScreen.test.tsx
+  â— Console
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (node_modules/react/cjs/react.development.js:630:17)
+      at node_modules/react/cjs/react.development.js:920:17
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (node_modules/react/cjs/react.development.js:630:17)
+      at node_modules/react/cjs/react.development.js:920:17
+
+  â— OtpScreen â€º reports an expired session when the pending confirmation is gone
+
+    Unable to find an element with testID: otp-code
+
+      19 |
+      20 | const pressVerify = () => fireEvent.press(screen.getByTestId("otp-verify"));
+    > 21 | const typeCode = (code: string) => fireEvent.changeText(screen.getByTestId("otp-code"), code);
+         |                                                                ^
+      22 |
+      23 | describe("OtpScreen", () => {
+      24 |   beforeEach(() => {
+
+      at getByTestId (src/screens/auth/OtpScreen.test.tsx:21:64)
+      at Object.typeCode (src/screens/auth/OtpScreen.test.tsx:47:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— OtpScreen â€º shows the wrong-code message when confirm rejects
+
+    Unable to find an element with testID: otp-code
+
+      19 |
+      20 | const pressVerify = () => fireEvent.press(screen.getByTestId("otp-verify"));
+    > 21 | const typeCode = (code: string) => fireEvent.changeText(screen.getByTestId("otp-code"), code);
+         |                                                                ^
+      22 |
+      23 | describe("OtpScreen", () => {
+      24 |   beforeEach(() => {
+
+      at getByTestId (src/screens/auth/OtpScreen.test.tsx:21:64)
+      at Object.typeCode (src/screens/auth/OtpScreen.test.tsx:58:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— OtpScreen â€º clears the pending confirmation after a successful verify
+
+    Unable to find an element with testID: otp-code
+
+      19 |
+      20 | const pressVerify = () => fireEvent.press(screen.getByTestId("otp-verify"));
+    > 21 | const typeCode = (code: string) => fireEvent.changeText(screen.getByTestId("otp-code"), code);
+         |                                                                ^
+      22 |
+      23 | describe("OtpScreen", () => {
+      24 |   beforeEach(() => {
+
+      at getByTestId (src/screens/auth/OtpScreen.test.tsx:21:64)
+      at Object.typeCode (src/screens/auth/OtpScreen.test.tsx:70:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— OtpScreen â€º enables resend after the cooldown and re-requests the code
+
+    Unable to find an element with text: Resend code
+
+      84 |         });
+      85 |       }
+    > 86 |       expect(screen.getByText("Resend code")).toBeTruthy();
+         |                     ^
+      87 |       expect(screen.getByTestId("otp-resend").props.accessibilityState.disabled).toBe(false);
+      88 |       await act(async () => {
+      89 |         fireEvent.press(screen.getByTestId("otp-resend"));
+
+      at Object.getByText (src/screens/auth/OtpScreen.test.tsx:86:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/auth/LoginScreen.test.tsx (6.359 s)
+  â— Console
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (node_modules/react/cjs/react.development.js:630:17)
+      at node_modules/react/cjs/react.development.js:920:17
+
+    console.error
+      You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one.
+
+      at popActScope (node_modules/react/cjs/react.development.js:630:17)
+      at node_modules/react/cjs/react.development.js:920:17
+
+  â— LoginScreen â€º sends the code, stores the pending confirmation, and moves to the code screen
+
+    Unable to find an element with testID: login-phone
+
+      45 |     authMock.signInWithPhoneNumber.mockResolvedValue({ confirm: jest.fn() });
+      46 |     await renderLogin();
+    > 47 |     fireEvent.changeText(screen.getByTestId("login-phone"), "+919876543210");
+         |                                 ^
+      48 |     fireEvent.press(screen.getByTestId("login-send"));
+      49 |     expect(await screen.findByText("Enter the code")).toBeTruthy();
+      50 |     await waitFor(() =>
+
+      at Object.getByTestId (src/screens/auth/LoginScreen.test.tsx:47:33)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— LoginScreen â€º surfaces the rate-limit error from Firebase
+
+    Unable to find an element with testID: login-phone
+
+      60 |     authMock.signInWithPhoneNumber.mockRejectedValue({ code: "auth/too-many-requests" });
+      61 |     await renderLogin();
+    > 62 |     fireEvent.changeText(screen.getByTestId("login-phone"), "+919876543210");
+         |                                 ^
+      63 |     fireEvent.press(screen.getByTestId("login-send"));
+      64 |     expect(
+      65 |       await screen.findByText("Too many attempts. Please wait a few minutes and try again."),
+
+      at Object.getByTestId (src/screens/auth/LoginScreen.test.tsx:62:33)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+Summary of all failing tests
+FAIL src/components/TextField.test.tsx
+  â— TextField â€º shows the hint only when there is no error
+
+    Unable to find an element with text: Not valid
+
+    <RNCSafeAreaProvider>
+      <View>
+        <Text
+          testID="tf-label"
+        >
+          Phone
+        </Text>
+        <TextInput
+          accessibilityLabel="Phone"
+          editable={true}
+          testID="tf"
+          value=""
+        />
+        <Text>
+          Hint text
+        </Text>
+      </View>
+    </RNCSafeAreaProvider>
+
+      45 |       />,
+      46 |     );
+    > 47 |     expect(screen.getByText("Not valid")).toBeTruthy();
+         |                   ^
+      48 |     expect(screen.queryByText("Hint text")).toBeNull();
+      49 |   });
+      50 |
+
+      at Object.getByText (src/components/TextField.test.tsx:47:19)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/auth/OtpScreen.test.tsx
+  â— OtpScreen â€º reports an expired session when the pending confirmation is gone
+
+    Unable to find an element with testID: otp-code
+
+      19 |
+      20 | const pressVerify = () => fireEvent.press(screen.getByTestId("otp-verify"));
+    > 21 | const typeCode = (code: string) => fireEvent.changeText(screen.getByTestId("otp-code"), code);
+         |                                                                ^
+      22 |
+      23 | describe("OtpScreen", () => {
+      24 |   beforeEach(() => {
+
+      at getByTestId (src/screens/auth/OtpScreen.test.tsx:21:64)
+      at Object.typeCode (src/screens/auth/OtpScreen.test.tsx:47:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— OtpScreen â€º shows the wrong-code message when confirm rejects
+
+    Unable to find an element with testID: otp-code
+
+      19 |
+      20 | const pressVerify = () => fireEvent.press(screen.getByTestId("otp-verify"));
+    > 21 | const typeCode = (code: string) => fireEvent.changeText(screen.getByTestId("otp-code"), code);
+         |                                                                ^
+      22 |
+      23 | describe("OtpScreen", () => {
+      24 |   beforeEach(() => {
+
+      at getByTestId (src/screens/auth/OtpScreen.test.tsx:21:64)
+      at Object.typeCode (src/screens/auth/OtpScreen.test.tsx:58:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— OtpScreen â€º clears the pending confirmation after a successful verify
+
+    Unable to find an element with testID: otp-code
+
+      19 |
+      20 | const pressVerify = () => fireEvent.press(screen.getByTestId("otp-verify"));
+    > 21 | const typeCode = (code: string) => fireEvent.changeText(screen.getByTestId("otp-code"), code);
+         |                                                                ^
+      22 |
+      23 | describe("OtpScreen", () => {
+      24 |   beforeEach(() => {
+
+      at getByTestId (src/screens/auth/OtpScreen.test.tsx:21:64)
+      at Object.typeCode (src/screens/auth/OtpScreen.test.tsx:70:5)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— OtpScreen â€º enables resend after the cooldown and re-requests the code
+
+    Unable to find an element with text: Resend code
+
+      84 |         });
+      85 |       }
+    > 86 |       expect(screen.getByText("Resend code")).toBeTruthy();
+         |                     ^
+      87 |       expect(screen.getByTestId("otp-resend").props.accessibilityState.disabled).toBe(false);
+      88 |       await act(async () => {
+      89 |         fireEvent.press(screen.getByTestId("otp-resend"));
+
+      at Object.getByText (src/screens/auth/OtpScreen.test.tsx:86:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+FAIL src/screens/auth/LoginScreen.test.tsx (6.359 s)
+  â— LoginScreen â€º sends the code, stores the pending confirmation, and moves to the code screen
+
+    Unable to find an element with testID: login-phone
+
+      45 |     authMock.signInWithPhoneNumber.mockResolvedValue({ confirm: jest.fn() });
+      46 |     await renderLogin();
+    > 47 |     fireEvent.changeText(screen.getByTestId("login-phone"), "+919876543210");
+         |                                 ^
+      48 |     fireEvent.press(screen.getByTestId("login-send"));
+      49 |     expect(await screen.findByText("Enter the code")).toBeTruthy();
+      50 |     await waitFor(() =>
+
+      at Object.getByTestId (src/screens/auth/LoginScreen.test.tsx:47:33)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  â— LoginScreen â€º surfaces the rate-limit error from Firebase
+
+    Unable to find an element with testID: login-phone
+
+      60 |     authMock.signInWithPhoneNumber.mockRejectedValue({ code: "auth/too-many-requests" });
+      61 |     await renderLogin();
+    > 62 |     fireEvent.changeText(screen.getByTestId("login-phone"), "+919876543210");
+         |                                 ^
+      63 |     fireEvent.press(screen.getByTestId("login-send"));
+      64 |     expect(
+      65 |       await screen.findByText("Too many attempts. Please wait a few minutes and try again."),
+
+      at Object.getByTestId (src/screens/auth/LoginScreen.test.tsx:62:33)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+Test Suites: 3 failed, 25 passed, 28 total
+Tests:       7 failed, 295 passed, 302 total
+Snapshots:   0 total
+Time:        10.197 s
+Ran all test suites.
+

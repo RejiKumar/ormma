@@ -29,6 +29,7 @@ jest.mock("@react-native-firebase/app");
 jest.mock("@react-native-firebase/auth");
 jest.mock("@react-native-firebase/firestore");
 jest.mock("@react-native-firebase/functions");
+jest.mock("@react-native-firebase/messaging");
 
 // Firebase mocks: reset per test so auth state and callable history never leak between tests.
 afterEach(async () => {

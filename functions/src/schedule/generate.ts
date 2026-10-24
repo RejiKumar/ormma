@@ -131,6 +131,7 @@ export async function generateDoseEventsHandler(
         confirmationNote: null,
         lastCallAt: null,
         reminderAt: null,
+        lastDispatchFailure: false,
       };
 
       try {

@@ -1,0 +1,75 @@
+
+> mobile@1.0.0 test
+> jest --testPathPatterns diag
+
+FAIL src/auth/diag.test.tsx
+  ● diagnostic › subscription sees the user set before render
+
+    Unable to find an element with text: diag1
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<Text[39m
+        [33mtestID[39m=[32m"diag"[39m
+      [36m>[39m
+        [0mnull[0m
+      [36m</Text>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+    [0m [90m 25 |[39m     m[33m.[39m__setUser({ uid[33m:[39m [32m"diag1"[39m[33m,[39m phoneNumber[33m:[39m [32m"+919876543210"[39m })[33m;[39m
+     [90m 26 |[39m     [36mawait[39m renderApp([33m<[39m[33mProbe[39m [33m/[39m[33m>[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 27 |[39m     expect([36mawait[39m screen[33m.[39mfindByText([32m"diag1"[39m))[33m.[39mtoBeTruthy()[33m;[39m
+     [90m    |[39m                         [31m[1m^[22m[39m
+     [90m 28 |[39m   })[33m;[39m
+     [90m 29 |[39m
+     [90m 30 |[39m   it([32m"two module instances?"[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.findByText (src/auth/diag.test.tsx:27:25)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● diagnostic › two module instances?
+
+    Unable to find an element with text: diag2
+
+    [36m<RNCSafeAreaProvider>[39m
+      [36m<Text[39m
+        [33mtestID[39m=[32m"diag"[39m
+      [36m>[39m
+        [0mnull[0m
+      [36m</Text>[39m
+    [36m</RNCSafeAreaProvider>[39m
+
+    [0m [90m 37 |[39m     expect(direct)[33m.[39mtoBe([32m"diag2"[39m)[33m;[39m
+     [90m 38 |[39m     [36mawait[39m renderApp([33m<[39m[33mProbe[39m [33m/[39m[33m>[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 39 |[39m     expect([36mawait[39m screen[33m.[39mfindByText([32m"diag2"[39m))[33m.[39mtoBeTruthy()[33m;[39m
+     [90m    |[39m                         [31m[1m^[22m[39m
+     [90m 40 |[39m   })[33m;[39m
+     [90m 41 |[39m })[33m;[39m
+     [90m 42 |[39m[0m
+
+      at Object.findByText (src/auth/diag.test.tsx:39:25)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+  ● instance identity › requireMock vs import
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: [Function mockConstructor]
+    Received: serializes to the same string
+
+    [0m [90m 45 |[39m     [36mconst[39m m [33m=[39m jest[33m.[39mrequireMock([32m"@react-native-firebase/auth"[39m) [36mas[39m [33mRecord[39m[33m<[39m[33mstring[39m[33m,[39m unknown[33m>[39m[33m;[39m
+     [90m 46 |[39m     [36mconst[39m f [33m=[39m jest[33m.[39mrequireMock([32m"@react-native-firebase/firestore"[39m) [36mas[39m [33mRecord[39m[33m<[39m[33mstring[39m[33m,[39m unknown[33m>[39m[33m;[39m
+    [31m[1m>[22m[39m[90m 47 |[39m     expect(m[33m.[39mgetAuth)[33m.[39mtoBe(getAuth)[33m;[39m
+     [90m    |[39m                       [31m[1m^[22m[39m
+     [90m 48 |[39m     expect(m[33m.[39monAuthStateChanged)[33m.[39mtoBe(onAuthStateChanged)[33m;[39m
+     [90m 49 |[39m     expect(f[33m.[39mgetDoc)[33m.[39mtoBe(getDoc)[33m;[39m
+     [90m 50 |[39m   })[33m;[39m[0m
+
+      at Object.toBe (src/auth/diag.test.tsx:47:23)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 3 total
+Snapshots:   0 total
+Time:        3.563 s, estimated 4 s
+Ran all test suites matching diag.

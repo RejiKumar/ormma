@@ -24,6 +24,7 @@ const ALERT_TYPE_KEY = {
   no_answer: "alertTypes.no_answer",
   trend_flag: "alertTypes.trend_flag",
   weekly_summary: "alertTypes.weekly_summary",
+  urgent: "alertTypes.urgent",
 } as const satisfies Record<AlertType, string>;
 
 /** One parent's today: clock time in the parent's timezone plus the event's status chip. */

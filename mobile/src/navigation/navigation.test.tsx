@@ -17,14 +17,20 @@ const renderTabs = (opts?: Parameters<typeof renderApp>[1]) =>
   );
 
 describe("tab routes", () => {
-  it("has Today, Medicines and Family in production", () => {
-    expect(getTabRoutes(false).map((r) => r.name)).toEqual(["Today", "Medicines", "Family"]);
+  it("has Today, Medicines, Alerts and Family in production", () => {
+    expect(getTabRoutes(false).map((r) => r.name)).toEqual([
+      "Today",
+      "Medicines",
+      "Alerts",
+      "Family",
+    ]);
   });
 
   it("adds the component gallery only in development", () => {
     expect(getTabRoutes(true).map((r) => r.name)).toEqual([
       "Today",
       "Medicines",
+      "Alerts",
       "Family",
       "Gallery",
     ]);
@@ -56,17 +62,19 @@ describe("AppTabs", () => {
     await renderTabs();
     expect(screen.getByTestId("today-no-parents")).toBeTruthy();
     expect(screen.getByText("Nothing here yet")).toBeTruthy();
-    for (const label of ["Today", "Medicines", "Family"]) {
+    for (const label of ["Today", "Medicines", "Alerts", "Family"]) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
     expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
   });
 
-  it("switches to the Medicines and Family tabs", async () => {
+  it("switches to the Medicines, Alerts and Family tabs", async () => {
     await renderTabs();
     await fireEvent.press(screen.getByRole("button", { name: "Medicines" }));
     expect(await screen.findByTestId("medicines-empty")).toBeTruthy();
-    await fireEvent.press(screen.getByRole("button", { name: "Family" }));
+    await fireEvent.press(screen.getAllByRole("button", { name: "Alerts" })[0]);
+    expect(await screen.findByText("No alerts yet")).toBeTruthy();
+    await fireEvent.press(screen.getAllByRole("button", { name: "Family" })[0]);
     expect(await screen.findByTestId("family-empty")).toBeTruthy();
   });
 
