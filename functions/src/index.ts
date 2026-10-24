@@ -1,4 +1,4 @@
-import { setGlobalOptions } from "firebase-functions/v2";
+﻿import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getDb } from "./db";
@@ -10,6 +10,7 @@ import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } fr
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
 import { missedDoseCheckerHandler } from "./schedule/missedDose";
+import { confirmPrescriptionMedicine, scanPrescription } from "./prescription";
 import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
@@ -115,3 +116,4 @@ export const exotelWebhook = onRequest({ secrets: WEBHOOK_SECRETS }, async (requ
     response.status(500).json({ error: "internal" });
   }
 });
+export { scanPrescription, confirmPrescriptionMedicine };
