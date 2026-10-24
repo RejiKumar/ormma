@@ -11,6 +11,7 @@ import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
 import { missedDoseCheckerHandler } from "./schedule/missedDose";
 import { confirmPrescriptionMedicine, scanPrescription } from "./prescription";
+import { deleteParent, exportParentData } from "./data/exportDelete";
 import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
@@ -117,3 +118,4 @@ export const exotelWebhook = onRequest({ secrets: WEBHOOK_SECRETS }, async (requ
   }
 });
 export { scanPrescription, confirmPrescriptionMedicine };
+export { exportParentData, deleteParent };
