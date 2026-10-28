@@ -14,7 +14,9 @@
     "test:fns": "npm run prereqs && firebase emulators:exec --only firestore --project demo-ormma \"npm --prefix functions run test:fns:run\"",
     "check:isolated": "node scripts/check-functions-isolated.mjs",
     "test:rules": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"npm --prefix functions run test:rules:run\"",
-    "test:rules:mutations": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"node scripts/mutation-check-rules.mjs\""
+    "test:rules:mutations": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"node scripts/mutation-check-rules.mjs\"",
+    "deploy:staging": "firebase deploy --only functions,firestore:rules,storage:rules --project staging",
+    "deploy:prod": "firebase deploy --only functions,firestore:rules,storage:rules --project prod"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

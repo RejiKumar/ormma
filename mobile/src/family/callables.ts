@@ -40,3 +40,33 @@ export function redeemInvite(
 ): Promise<{ parentId: string; role: Role }> {
   return invoke("redeemInvite", payload);
 }
+
+export interface ParentScopedPayload {
+  parentId: string;
+}
+
+export function exportParentData(payload: ParentScopedPayload): Promise<unknown> {
+  return invoke("exportParentData", payload);
+}
+
+export function deleteParent(payload: ParentScopedPayload): Promise<{ deleted: boolean }> {
+  return invoke("deleteParent", payload);
+}
+
+export interface RevokeConsentPayload {
+  parentId: string;
+  method?: "family_attested";
+}
+
+export function revokeConsent(payload: RevokeConsentPayload): Promise<{ ok: boolean }> {
+  return invoke("revokeConsent", payload);
+}
+
+export interface GrantConsentPayload {
+  parentId: string;
+  method?: "family_attested";
+}
+
+export function grantConsent(payload: GrantConsentPayload): Promise<{ ok: boolean }> {
+  return invoke("grantConsent", payload);
+}

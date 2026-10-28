@@ -52,3 +52,12 @@ Voice-first, local-language care coordination app for elderly parents and their 
 
 ## License
 Private - All rights reserved
+
+
+## Deployment
+- Staging: npm run deploy:staging
+- Production: npm run deploy:prod
+
+## Monitoring
+- Logs: Firebase Functions logs (asia-south1)
+- Alerts: via FCM/missed-dose alerts

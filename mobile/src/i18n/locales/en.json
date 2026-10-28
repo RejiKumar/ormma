@@ -133,7 +133,13 @@
       "addParent": "Add a parent",
       "redeem": "Have an invite code?",
       "invite": "Invite",
-      "consentPending": "Calls start after consent is granted"
+      "consentPending": "Calls start after consent is granted",
+      "exportData": "Export data",
+      "revokeConsent": "Revoke consent",
+      "grantConsent": "Grant consent",
+      "revokeConfirm": "Revoke consent for this parent? Data visibility for non-owners will change.",
+      "deleteParent": "Delete parent",
+      "deleteConfirm": "Permanently delete this parent and all data? This cannot be undone."
     },
     "addParent": {
       "title": "Add a parent",

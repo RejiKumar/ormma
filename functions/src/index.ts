@@ -12,6 +12,7 @@ import { generateDoseEventsHandler } from "./schedule/generate";
 import { missedDoseCheckerHandler } from "./schedule/missedDose";
 import { confirmPrescriptionMedicine, scanPrescription } from "./prescription";
 import { deleteParent, exportParentData } from "./data/exportDelete";
+import { grantConsentHandler, revokeConsentHandler } from "./consent";
 import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
@@ -30,6 +31,8 @@ export const createInvite = onCall((request: CallableRequest<CreateInvitePayload
   createInviteHandler(request),
 );
 export const redeemInvite = onCall(redeemInviteHandler);
+export const revokeConsent = onCall(revokeConsentHandler);
+export const grantConsent = onCall(grantConsentHandler);
 
 // Daily at 00:30 India time. Creates the next 24 hours of dose events per parent (idempotent).
 export const generateDoseEvents = onSchedule(
