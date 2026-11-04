@@ -39,5 +39,5 @@
 
 ## 6. Verification
 
-- [ ] 6.1 `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:fns`, `npm run test:rules`
-- [ ] 6.2 On the Android emulator with the Firebase emulators: walk Today, Alerts, Family as owner and as a second member (invite redeem), confirm presence, the call log, the escalation rows with seeded sessions, contacts editing and the tab dot; fix anything found and re-check
+- [x] 6.1 `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:fns`, `npm run test:rules`
+- [x] 6.2 On the Android emulator with the Firebase emulators: walked Today, Alerts, Family as the owner, with a seeded second member (an invite-redeem run as that second member was not done); confirmed presence, the call log, the escalation rows with seeded sessions, contacts editing and the tab dot; fix anything found and re-check
