@@ -51,7 +51,7 @@ function ParentEscalation({ parent, events }: { parent: FamilyParent; events: To
   const { theme } = useTheme();
   const cards = groupCards(events, {});
   const missed = cards.find((card) => card.kind === "not_confirmed") ?? null;
-  const firstAt = missed?.scheduledFor ?? nextCard(cards, Date.now())?.scheduledFor ?? cards[0]?.scheduledFor ?? null;
+  const firstAt = missed?.scheduledFor ?? nextCard(cards, Date.now())?.scheduledFor ?? cards[cards.length - 1]?.scheduledFor ?? null;
   return (
     <View testID={`escalation-section-${parent.id}`} style={{ gap: theme.spacing.md }}>
       {missed ? (

@@ -3,7 +3,7 @@
 // screens turn the returned keys and values into text.
 import type { TodayDoseEvent } from "./useTodayEvents";
 
-/** A dose resolved within this long after its scheduled time counts as taken on time. */
+/** A dose resolved within this long before or after its scheduled time counts as taken on time. */
 export const ON_TIME_WINDOW_MS = 30 * 60 * 1000;
 
 const NOT_CONFIRMED = new Set(["missed", "no_answer", "not_taken"]);
@@ -115,7 +115,7 @@ export function cardKind(events: TodayDoseEvent[]): CardKind {
   if (events.every((e) => e.status === "taken")) {
     const scheduled = events[0].scheduledFor;
     const resolved = events.map((e) => e.resolvedAt).filter((v): v is number => v !== null);
-    if (resolved.length > 0 && Math.max(...resolved) - scheduled <= ON_TIME_WINDOW_MS) return "taken_on_time";
+    if (resolved.length > 0 && Math.abs(Math.max(...resolved) - scheduled) <= ON_TIME_WINDOW_MS) return "taken_on_time";
     return "taken";
   }
   if (events.some((e) => e.status === "unclear")) return "unclear";

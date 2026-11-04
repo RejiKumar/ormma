@@ -17,7 +17,7 @@ The Today screen SHALL show one card per scheduled time for each parent, in time
 - **THEN** their cards are named Morning, Afternoon and Night
 
 ### Requirement: Status badge wording
-Each card SHALL show one badge. A card whose events are all `taken` SHALL read "Taken on time" followed by the time taken when it was taken within 30 minutes after the scheduled time, otherwise "Taken" followed by the time taken. A card with any `missed`, `no_answer` or `not_taken` event SHALL read "Not confirmed". A card with `calling` SHALL read "Calling now", with `unclear` SHALL read "Unclear", and otherwise "Scheduled". Times SHALL use the parent's timezone.
+Each card SHALL show one badge. A card whose events are all `taken` SHALL read "Taken on time" followed by the time taken when it was taken within 30 minutes before or after the scheduled time, otherwise "Taken" followed by the time taken. A card with any `missed`, `no_answer` or `not_taken` event SHALL read "Not confirmed". A card with `calling` SHALL read "Calling now", with `unclear` SHALL read "Unclear", and otherwise "Scheduled". Times SHALL use the parent's timezone.
 
 #### Scenario: On time
 - **WHEN** a dose scheduled at 08:30 was resolved as taken at 08:34

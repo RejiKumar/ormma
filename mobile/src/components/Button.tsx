@@ -49,7 +49,7 @@ export function Button({
         minHeight: variant === "primary" ? 56 : MIN_TOUCH_TARGET,
         minWidth: MIN_TOUCH_TARGET,
         borderRadius: theme.radius.lg,
-        paddingHorizontal: theme.spacing.xl,
+        paddingHorizontal: variant === "quiet" ? theme.spacing.md : theme.spacing.xl,
         paddingVertical: theme.spacing.md,
         flexDirection: "row",
         alignItems: "center",

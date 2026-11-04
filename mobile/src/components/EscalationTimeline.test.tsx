@@ -48,13 +48,13 @@ describe("EscalationTimeline", () => {
     await renderApp(<EscalationTimeline parent={parent} doseEventId="e1" />);
 
     expect(await screen.findByText("Call 1")).toBeTruthy();
-    expect(screen.getByText("08:30 · No answer")).toBeTruthy();
+    expect(screen.getByText("8:30 AM · No answer")).toBeTruthy();
     expect(screen.getByText("Retry 1")).toBeTruthy();
-    expect(screen.getByText("08:40 · No answer")).toBeTruthy();
+    expect(screen.getByText("8:40 AM · No answer")).toBeTruthy();
     expect(screen.getByText("Retry 2")).toBeTruthy();
-    expect(screen.getByText("08:50 · Call failed")).toBeTruthy();
+    expect(screen.getByText("8:50 AM · Call failed")).toBeTruthy();
     expect(screen.getByText("Family alerted")).toBeTruthy();
-    expect(screen.getByText("09:30")).toBeTruthy();
+    expect(screen.getByText("9:30 AM")).toBeTruthy();
     expect(screen.getByText("Sreeja")).toBeTruthy();
     expect(screen.getByText("Dr. Nair")).toBeTruthy();
     expect(callable("getDoseEscalation")).toHaveBeenCalledWith({ parentId: "p1", doseEventId: "e1" });

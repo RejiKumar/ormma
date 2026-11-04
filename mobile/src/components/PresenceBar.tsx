@@ -6,12 +6,13 @@ import { useTheme } from "../design/ThemeProvider";
 import { logFamilyCall } from "../family/callables";
 import type { FamilyParent } from "../family/useParents";
 import { pickPresenceMember, relativeAgo, usePresence } from "../family/usePresence";
-import { formatLocalClock, localDateKey } from "../family/visibility";
+import { clock12 } from "../family/cards";
+import { localDateKey } from "../family/visibility";
 import { Avatar } from "./Avatar";
 
 /** Clock time in the parent's zone for a call today, otherwise the day and month first. */
 function lastCallLabel(timezone: string, ms: number, now: number): string {
-  const clock = formatLocalClock(timezone, ms);
+  const clock = clock12(timezone, ms);
   if (localDateKey(timezone, ms) === localDateKey(timezone, now)) return clock;
   const day = new Date(ms).toLocaleDateString("en-IN", { timeZone: timezone, day: "numeric", month: "short" });
   return `${day} ${clock}`;

@@ -6,7 +6,7 @@ import type { StatusKey } from "../design/tokens";
 import type { EscalationAttempt } from "../family/callables";
 import type { FamilyParent } from "../family/useParents";
 import { useEscalation } from "../family/useEscalation";
-import { formatLocalClock } from "../family/visibility";
+import { clock12 } from "../family/cards";
 import { ContactsBlock } from "./ContactsBlock";
 import { Icon, type IconName } from "./Icon";
 
@@ -85,7 +85,7 @@ export function EscalationTimeline({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { data, loading, failed } = useEscalation(parent.id, doseEventId, true);
-  const clock = (ms: number) => formatLocalClock(parent.timezone, ms);
+  const clock = (ms: number) => clock12(parent.timezone, ms);
 
   const steps: Array<{ key: string; node: Omit<StepProps, "last"> }> = [];
   if (data) {

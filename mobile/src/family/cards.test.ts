@@ -82,6 +82,10 @@ describe("dose cards", () => {
     const late = groupCards([ev("b", ist(13, 30), "taken", { resolvedAt: ist(14, 20) })], medicines)[0];
     expect(late.kind).toBe("taken");
     expect(late.takenAt).toBe(ist(14, 20));
+    const early = groupCards([ev("c", ist(16), "taken", { resolvedAt: ist(14, 8) })], medicines)[0];
+    expect(early.kind).toBe("taken");
+    const slightlyEarly = groupCards([ev("d", ist(16), "taken", { resolvedAt: ist(15, 40) })], medicines)[0];
+    expect(slightlyEarly.kind).toBe("taken_on_time");
   });
 
   it("reads Not confirmed for missed, no answer or not taken, Calling for calling, Unclear, otherwise Scheduled", () => {

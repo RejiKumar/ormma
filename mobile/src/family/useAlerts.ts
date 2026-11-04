@@ -54,11 +54,14 @@ function toAlert(
 export function useAlerts(parents: DatedParent[], window: { start: number; end: number }): UseAlertsResult {
   const [alerts, setAlerts] = useState<FamilyAlert[]>([]);
   const [loading, setLoading] = useState(parents.length > 0);
+  // The subscription set (parents plus window) whose first snapshots have all arrived.
+  const [settledKey, setSettledKey] = useState("");
 
   const parentsKey = parents
     .map((p) => `${p.id}:${p.role}:${p.consent?.revokedAt ?? ""}:${p.consent?.regrantedAt ?? ""}`)
     .join("|");
   const windowKey = `${window.start}:${window.end}`;
+  const currentKey = `${parentsKey}@${windowKey}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +74,10 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
       const merged = new Map<string, FamilyAlert>();
       for (const docs of docsByKey.values()) for (const [id, alert] of docs) merged.set(id, alert);
       setAlerts([...merged.values()].sort((a, b) => b.createdAt - a.createdAt));
-      if (pending.size === 0) setLoading(false);
+      if (pending.size === 0) {
+        setLoading(false);
+        setSettledKey(currentKey);
+      }
     };
 
     let totalQueries = 0;
@@ -118,6 +124,7 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
     if (totalQueries === 0) {
       setAlerts((prev) => (prev.length === 0 ? prev : []));
       setLoading((prev) => (prev === false ? prev : false));
+      setSettledKey(currentKey);
     } else if (pending.size > 0) {
       setLoading((prev) => (prev === true ? prev : true));
     }
@@ -130,5 +137,7 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
     // only when role, consent or the window actually change).
   }, [parentsKey, windowKey]);
 
-  return { alerts, loading };
+  // Until this set of parents has produced its first snapshots, report loading so a screen never
+  // shows "no alerts" for the render between the parents arriving and the subscriptions starting.
+  return { alerts, loading: loading || (parents.length > 0 && settledKey !== currentKey) };
 }
