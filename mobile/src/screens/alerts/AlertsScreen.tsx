@@ -91,7 +91,7 @@ function ParentEscalation({ parent, events }: { parent: FamilyParent; events: To
       ) : (
         <>
           <ProtocolCard parent={parent} firstAt={firstAt} dimmed />
-          <ContactsBlock contacts={parent.emergencyContacts} disabled />
+          <ContactsBlock contacts={parent.emergencyContacts} parent={{ name: parent.name, phone: parent.phone }} disabled />
         </>
       )}
     </View>

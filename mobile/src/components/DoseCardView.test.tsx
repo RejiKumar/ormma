@@ -78,7 +78,7 @@ describe("DoseCardView", () => {
   it("offers Mark as taken on a scheduled card", async () => {
     const onMarkTaken = jest.fn();
     await render([ev("c", ist(21), "pending", { medicineId: "m2" })], { onMarkTaken });
-    expect(screen.getByTestId("card-badge")).toHaveTextContent("Scheduled");
+    expect(screen.getByTestId("card-badge")).toHaveTextContent("Scheduled for 9:00 PM");
     expect(screen.getByText("Night")).toBeTruthy();
     await fireEvent.press(screen.getByTestId("card-mark"));
     expect(onMarkTaken).toHaveBeenCalledTimes(1);

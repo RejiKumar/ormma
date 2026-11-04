@@ -58,7 +58,18 @@ const parentsSnap = (rows: Array<{ id: string; name: string; consent?: Record<st
   })),
 });
 
-const medicineSnap = (rows: Array<{ id: string; name: string; dose: string; times: string[]; active: boolean }>) => ({
+const medicineSnap = (
+  rows: Array<{
+    id: string;
+    name: string;
+    dose: string;
+    times: string[];
+    active: boolean;
+    source?: "manual" | "prescription_scan";
+    confirmed?: boolean;
+    prescriptionId?: string | null;
+  }>,
+) => ({
   docs: rows.map((row) => ({
     id: row.id,
     data: () => ({
@@ -68,9 +79,9 @@ const medicineSnap = (rows: Array<{ id: string; name: string; dose: string; time
       startDate: "2026-10-01",
       endDate: null,
       active: row.active,
-      source: "manual",
-      confirmedByHuman: true,
-      prescriptionId: null,
+      source: row.source ?? "manual",
+      confirmedByHuman: row.confirmed ?? true,
+      prescriptionId: row.prescriptionId ?? null,
       createdBy: "u1",
     }),
   })),
@@ -202,6 +213,30 @@ describe("MedicinesListScreen", () => {
     expect(screen.queryByTestId("medicine-add")).toBeNull();
     await fireEvent.press(screen.getByTestId("medicine-m1"));
     expect(screen.queryByText("Edit medicine")).toBeNull();
+  });
+
+  it("shows the neutral Visual match tag only on a scanned, confirmed medicine", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+    stubGetDoc({ p1: "owner" });
+    const { listeners } = captureListeners();
+    await renderStack();
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+    await waitFor(() => listeners[0].next(parentsSnap([{ id: "p1", name: "Amma" }])));
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(1));
+    await waitFor(() =>
+      listeners[1].next(
+        medicineSnap([
+          { id: "m1", name: "Metformin", dose: "1 tablet", times: ["08:00"], active: true, source: "prescription_scan", prescriptionId: "rx1" },
+          { id: "m2", name: "Amlodipine", dose: "5 mg", times: ["09:00"], active: true },
+          { id: "m3", name: "Atorvastatin", dose: "10 mg", times: ["21:00"], active: true, source: "prescription_scan", confirmed: false, prescriptionId: "rx1" },
+        ]),
+      ),
+    );
+    expect(await screen.findByText(/^Metformin/)).toBeTruthy();
+    expect(screen.getByTestId("medicine-visual-match-m1")).toBeTruthy();
+    expect(screen.getByText("Visual match")).toBeTruthy();
+    expect(screen.queryByTestId("medicine-visual-match-m2")).toBeNull();
+    expect(screen.queryByTestId("medicine-visual-match-m3")).toBeNull();
   });
 
   it("opens the edit screen for an editor and switches the list when another parent is chosen", async () => {

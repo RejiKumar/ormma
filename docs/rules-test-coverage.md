@@ -1,6 +1,6 @@
 # Rules test coverage
 
-Which spec requirement each emulator test covers. Tests live in `functions/test/rules/` and run with `npm run test:rules` (Firestore and Storage emulators, project `demo-ormma`). `npm run test:rules:mutations` weakens one rule at a time and checks that the covering test fails (30 mutations).
+Which spec requirement each emulator test covers. Tests live in `functions/test/rules/` and run with `npm run test:rules` (Firestore and Storage emulators, project `demo-ormma`). `npm run test:rules:mutations` weakens one rule at a time and checks that the covering test fails (43 mutations).
 
 Files: `numbered.test.ts` (Rules test 1 to 16 of the spec, by number), `paths.test.ts` (every path rule, refinements, list queries), `storage.test.ts` (Storage rules). Test names below are the `describe` or `it` titles.
 
@@ -23,7 +23,8 @@ Files: `numbered.test.ts` (Rules test 1 to 16 of the spec, by number), `paths.te
 | Rules test 13 | Re-grant: before T1 and from T2 visible, T1 up to T2 hidden, owner reads all                                   | Consent visibility                                                                             |
 | Rules test 14 | Second revocation (first revokedAt kept, regrantedAt null): only data before T1 for non-owners                 | Second revocation fails closed; Fail-closed rationale                                          |
 | Rules test 15 | A client cannot create a parent directly                                                                       | parents path rule                                                                              |
-| Rules test 16 | A viewer cannot write confirmedByHuman true; owner/editor can                                                  | medicines path rule                                                                            |
+| Rules test 16 | A viewer cannot write confirmedByHuman true; an editor can confirm; no client can create a scan-sourced medicine | medicines path rule                                                                            |
+| paths: scan-sourced medicine | A client cannot create a `prescription_scan` medicine or change `source` or `prescriptionId`; an editor can confirm and edit display fields | medicines path rule (server-created scan medicines, Visual match tag) |
 
 ## Every access-control requirement
 

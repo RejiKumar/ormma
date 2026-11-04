@@ -13,20 +13,34 @@ import { Icon } from "./Icon";
  */
 export function ContactsBlock({
   contacts,
+  parent,
   disabled = false,
 }: {
   contacts: EmergencyContact[];
+  /** The parent's own line, listed first. Hidden when there is no phone number. */
+  parent?: { name: string; phone: string };
   disabled?: boolean;
 }) {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  if (contacts.length === 0) return null;
+  const rows: Array<{ label: string; phone: string; note: string }> = [
+    ...(parent && parent.phone.length > 0 ? [{ label: parent.name, phone: parent.phone, note: t("escalation.kindParent") }] : []),
+    ...contacts.map((contact) => ({
+      label: contact.label,
+      phone: contact.phone,
+      note:
+        contact.note && contact.note.length > 0
+          ? contact.note
+          : t(contact.kind === "clinic" ? "escalation.kindClinic" : "escalation.kindNeighbour"),
+    })),
+  ];
+  if (rows.length === 0) return null;
   return (
     <View style={{ gap: theme.spacing.sm }} testID="contacts-block">
       <Text variant="label" tone="muted">
         {t("escalation.contactsTitle")}
       </Text>
-      {contacts.map((contact, index) => (
+      {rows.map((contact, index) => (
         <View
           key={`${contact.phone}-${index}`}
           style={{
@@ -57,9 +71,7 @@ export function ContactsBlock({
           <View style={{ flex: 1 }}>
             <Text variant="bodyMedium">{contact.label}</Text>
             <Text variant="small" tone="muted">
-              {contact.note && contact.note.length > 0
-                ? contact.note
-                : t(contact.kind === "clinic" ? "escalation.kindClinic" : "escalation.kindNeighbour")}
+              {contact.note}
             </Text>
           </View>
           <PressableScale

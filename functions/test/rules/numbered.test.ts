@@ -317,11 +317,12 @@ describe("Rules test suite", () => {
     await assertFails(
       setDoc(
         doc(asUser(env, VIEWER), `parents/${PARENT}/medicines/scan2`),
-        medicineDoc({ source: "prescription_scan", confirmedByHuman: true, createdBy: VIEWER }),
+        medicineDoc({ confirmedByHuman: true, createdBy: VIEWER }),
       ),
     );
     await assertSucceeds(updateDoc(doc(asUser(env, EDITOR), path), { confirmedByHuman: true }));
-    await assertSucceeds(
+    // A client cannot create a scan-sourced medicine at all (the server does), even as an owner.
+    await assertFails(
       setDoc(
         doc(asUser(env, OWNER), `parents/${PARENT}/medicines/scan3`),
         medicineDoc({ source: "prescription_scan", confirmedByHuman: true, createdBy: OWNER }),

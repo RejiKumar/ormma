@@ -70,7 +70,7 @@ export function DoseCardView({
             ? t("screens.today.badgeCalling")
             : card.kind === "unclear"
               ? t("screens.today.badgeUnclear")
-              : t("screens.today.badgeScheduled");
+              : t("screens.today.badgeScheduled", { time });
   const seen = card.seen
     .filter((entry) => entry.uid !== viewerUid && (names[entry.uid] ?? "").length > 0)
     .map((entry) => `${names[entry.uid]} ${clock12(timezone, entry.at)}`);

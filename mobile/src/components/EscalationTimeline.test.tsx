@@ -66,7 +66,7 @@ describe("EscalationTimeline", () => {
     });
     const open = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
     await renderApp(<EscalationTimeline parent={parent} doseEventId="e1" />);
-    await fireEvent.press(await screen.findByTestId("escalation-contact-1"));
+    await fireEvent.press(await screen.findByTestId("escalation-contact-2"));
     expect(open).toHaveBeenCalledWith("tel:+919876500002");
     open.mockRestore();
   });
@@ -78,7 +78,9 @@ describe("EscalationTimeline", () => {
     await renderApp(<EscalationTimeline parent={{ ...parent, emergencyContacts: [] }} doseEventId="e2" />);
     expect(await screen.findByText("No calls have been made yet.")).toBeTruthy();
     expect(screen.getByText("2 attempts were not placed")).toBeTruthy();
-    expect(screen.queryByText("People who can check in")).toBeNull();
+    // Only the parent's own line is listed when there are no emergency contacts.
+    expect(screen.getByTestId("escalation-contact-0")).toBeTruthy();
+    expect(screen.queryByTestId("escalation-contact-1")).toBeNull();
   });
 
   it("shows a short message when the callable fails", async () => {

@@ -224,6 +224,24 @@ describe("dispatchDueCallsHandler (emulator)", () => {
     expect(provider.startCall).toHaveBeenCalledTimes(1);
   });
 
+  it("never starts a call before the scheduled time and starts it within 60 seconds after", async () => {
+    const parentId = await seedParent();
+    const medicineId = await seedMedicine(parentId);
+    await seedEvent(parentId, "evt_timing", medicineId, nowMs);
+    const provider = fakeProvider();
+
+    const early = await dispatchDueCallsHandler({ nowMs: nowMs - 1000, provider });
+    expect(early.called).toBe(0);
+    expect(provider.startCall).not.toHaveBeenCalled();
+
+    const late = await dispatchDueCallsHandler({ nowMs: nowMs + 59_000, provider });
+    expect(late.called).toBe(1);
+    const session = await db().doc(`parents/${parentId}/callSessions/CA_evt_timing`).get();
+    const delayMs = session.data()?.startedAt.toMillis() - nowMs;
+    expect(delayMs).toBeGreaterThanOrEqual(0);
+    expect(delayMs).toBeLessThanOrEqual(60_000);
+  });
+
   it("claims same-minute events for one parent as a single grouped call", async () => {
     const parentId = await seedParent();
     const m1 = await seedMedicine(parentId);

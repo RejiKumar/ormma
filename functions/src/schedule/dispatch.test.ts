@@ -65,6 +65,12 @@ describe("planCallGroups eligibility", () => {
     expect(result.calls[0].eventIds).toEqual(["e1"]);
   });
 
+  it("still accepts an event 59 seconds after its scheduled time (dispatch timing tolerance)", () => {
+    const result = planCallGroups({ events: [event()], now: now + 59_000, ...maps() });
+    expect(result.skipped).toEqual([]);
+    expect(result.calls).toHaveLength(1);
+  });
+
   it("requires an active parent with granted consent", () => {
     const inactive = planCallGroups({ events: [event()], now, ...maps([parent({ active: false })]) });
     expect(inactive.skipped).toEqual([{ eventId: "e1", reason: "parent_inactive" }]);

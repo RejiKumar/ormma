@@ -9,6 +9,7 @@ import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
 import { Text } from "../../design/Text";
+import { isVisualMatch } from "../../family/visualMatch";
 import { useTheme } from "../../design/ThemeProvider";
 import { shortDate } from "../../family/cards";
 import { useMedicines } from "../../family/useMedicines";
@@ -217,6 +218,19 @@ export function MedicinesListScreen({ navigation }: Props) {
                         <Text variant="micro">
                           {t("screens.medicines.forPurpose", { purpose: medicine.purpose })}
                         </Text>
+                      </View>
+                    ) : null}
+                    {isVisualMatch(medicine) ? (
+                      <View
+                        testID={`medicine-visual-match-${medicine.id}`}
+                        style={{
+                          backgroundColor: theme.colors.primaryTint,
+                          borderRadius: theme.radius.pill,
+                          paddingHorizontal: theme.spacing.sm + 2,
+                          paddingVertical: 4,
+                        }}
+                      >
+                        <Text variant="micro">{t("screens.medicines.visualMatch")}</Text>
                       </View>
                     ) : null}
                   </View>

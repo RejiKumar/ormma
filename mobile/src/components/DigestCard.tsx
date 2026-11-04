@@ -1,9 +1,10 @@
 import * as Clipboard from "expo-clipboard";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Share, View } from "react-native";
+import { Linking, Share, View } from "react-native";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
+import { fitsWhatsApp, whatsAppUrl } from "../family/whatsapp";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { Toast } from "./Toast";
@@ -23,6 +24,20 @@ export function DigestCard({ parentId, text }: { parentId: string; text: string 
       setMessage(t("screens.today.digestCopied"));
     } catch {
       setMessage(t("screens.today.digestCopyFailed"));
+    }
+  };
+
+  // WhatsApp opens with the update as an unsent message; anything that fails falls back to the share sheet.
+  const shareSheet = () => void Share.share({ message: text });
+  const openWhatsApp = async () => {
+    if (!fitsWhatsApp(text)) {
+      shareSheet();
+      return;
+    }
+    try {
+      await Linking.openURL(whatsAppUrl(text));
+    } catch {
+      shareSheet();
     }
   };
 
@@ -58,7 +73,15 @@ export function DigestCard({ parentId, text }: { parentId: string; text: string 
         icon="people"
         label={t("screens.today.digestShare")}
         testID={`digest-share-${parentId}`}
-        onPress={() => void Share.share({ message: text })}
+        onPress={shareSheet}
+      />
+      <Button
+        compact
+        variant="secondary"
+        icon="people"
+        label={t("screens.today.digestWhatsApp")}
+        testID={`digest-whatsapp-${parentId}`}
+        onPress={() => void openWhatsApp()}
       />
       {message ? <Toast message={message} testID={`digest-message-${parentId}`} /> : null}
     </Card>

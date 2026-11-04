@@ -43,6 +43,27 @@ const M = [
     "medicine display fields",
   ],
   [
+    "client can create a scan-sourced medicine",
+    "fs",
+    "&& request.resource.data.source == 'manual'",
+    "&& request.resource.data.source in ['manual', 'prescription_scan']",
+    "scan-sourced medicine is server-created",
+  ],
+  [
+    "client can change a medicine source",
+    "fs",
+    "&& request.resource.data.source == resource.data.source",
+    "&& request.resource.data.source in ['manual', 'prescription_scan']",
+    "scan-sourced medicine is server-created",
+  ],
+  [
+    "client can change a medicine prescriptionId",
+    "fs",
+    "&& request.resource.data.prescriptionId == resource.data.prescriptionId",
+    "&& (request.resource.data.prescriptionId == null || request.resource.data.prescriptionId is string)",
+    "scan-sourced medicine is server-created",
+  ],
+  [
     "medicine allows unknown field",
     "fs",
     "'frequencyText', 'pillDescription', 'purpose'])",

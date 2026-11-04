@@ -17,3 +17,5 @@ Need deterministic trend flagging for BP and sugar (7-day vs previous 7-day, con
 
 ## Impact
 Uses Haiku 5.5 from functions; secrets for API key; FCM; mobile share/export.
+
+> **Deferred 2026-11-04 (brd-alignment):** not part of the BRD scope for now; kept as is, not deleted. See docs/DECISIONS.md #109.

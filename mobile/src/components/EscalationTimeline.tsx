@@ -135,7 +135,7 @@ export function EscalationTimeline({
           {t("escalation.unplaced", { count: data.unplaced })}
         </Text>
       ) : null}
-      <ContactsBlock contacts={parent.emergencyContacts} />
+      <ContactsBlock contacts={parent.emergencyContacts} parent={{ name: parent.name, phone: parent.phone }} />
     </View>
   );
 }

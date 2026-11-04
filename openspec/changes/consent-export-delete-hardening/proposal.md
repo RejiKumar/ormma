@@ -15,3 +15,5 @@ Need voice/DTMF consent flow with family-attested fallback, revocation in-app/by
 
 ## Impact
 New callables, rules already cover access; need tests.
+
+> **Deferred 2026-11-04 (brd-alignment):** not part of the BRD scope for now; kept as is, not deleted. See docs/DECISIONS.md #109.

@@ -163,11 +163,23 @@ describe("medicines path rule / medicines document shape", () => {
     await assertFails(updateDoc(ref("f"), { source: "prescription_scan2" }));
   });
 
-  it("a medicine from a prescription scan can be written unconfirmed and confirmed by an editor", async () => {
+  it("a scan-sourced medicine is server-created: a client cannot create one or change source or prescriptionId, but an editor can confirm it", async () => {
     const db = asUser(env, EDITOR);
-    const scan = medicineDoc({ source: "prescription_scan", confirmedByHuman: false });
-    await assertSucceeds(setDoc(doc(db, p("medicines/scan")), scan));
+    // The server (Admin SDK, rules skipped) creates the unconfirmed scan medicine.
+    await put(env, [
+      [p("medicines/scan"), medicineDoc({ source: "prescription_scan", confirmedByHuman: false, prescriptionId: "rx1" })],
+    ]);
+    await assertFails(
+      setDoc(doc(db, p("medicines/clientscan")), medicineDoc({ source: "prescription_scan", confirmedByHuman: true, prescriptionId: "rx1" })),
+    );
+    await assertFails(updateDoc(doc(db, p("medicines/scan")), { source: "manual" }));
+    await assertFails(updateDoc(doc(db, p("medicines/scan")), { prescriptionId: "rx2" }));
+    await assertFails(updateDoc(doc(db, p("medicines/scan")), { prescriptionId: null }));
     await assertSucceeds(updateDoc(doc(db, p("medicines/scan")), { confirmedByHuman: true }));
+    await assertSucceeds(updateDoc(doc(db, p("medicines/scan")), { purpose: "Sugar" }));
+    // A manual medicine cannot be turned into a scan one either.
+    await assertSucceeds(setDoc(doc(db, p("medicines/hand")), medicineDoc()));
+    await assertFails(updateDoc(doc(db, p("medicines/hand")), { source: "prescription_scan", prescriptionId: "rx1" }));
   });
 });
 

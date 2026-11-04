@@ -16,3 +16,5 @@ The prescription-reading spec defines reading a prescription photo with Sonnet 5
 - Uses Sonnet 5.5 (claude-sonnet-5-5) from Cloud Functions with image input. API key in secrets.
 - Uses Firebase Storage `prescriptions/{parentId}/...` (rules already allow owner/editor, 10MB, images only).
 - No changes to firestore.rules required if we keep all writes via callables (Admin SDK). Client updates remain restricted as-is.
+
+> **Deferred 2026-11-04 (brd-alignment):** not part of the BRD scope for now; kept as is, not deleted. See docs/DECISIONS.md #109.

@@ -170,11 +170,17 @@ service cloud.firestore {
       match /medicines/{medicineId} {
         allow read: if isMember(parentId);
         // confirmedByHuman: true can only be written by an owner or editor because only they can write at all.
+        // Medicines with source 'prescription_scan' are created only by the server (Admin SDK, which skips
+        // these rules), so a client cannot fake the Visual match tag: clients create 'manual' medicines and
+        // cannot change source or prescriptionId.
         allow create: if canEdit(parentId)
           && validMedicine(request.resource.data)
+          && request.resource.data.source == 'manual'
           && request.resource.data.createdBy == request.auth.uid;
         allow update: if canEdit(parentId)
           && validMedicine(request.resource.data)
+          && request.resource.data.source == resource.data.source
+          && request.resource.data.prescriptionId == resource.data.prescriptionId
           && request.resource.data.createdBy == resource.data.createdBy
           && request.resource.data.createdAt == resource.data.createdAt;
         allow delete: if false;

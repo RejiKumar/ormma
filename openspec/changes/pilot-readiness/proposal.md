@@ -14,3 +14,5 @@ Prepare for pilot with staging vs production config, deploy script, basic monito
 
 ## Impact
 Docs/scripts only.
+
+> **Deferred 2026-11-04 (brd-alignment):** not part of the BRD scope for now; kept as is, not deleted. See docs/DECISIONS.md #109.

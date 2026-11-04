@@ -145,7 +145,7 @@ describe("TodayDashboardScreen", () => {
     expect(screen.getByText("Evening")).toBeTruthy();
     expect(screen.getByText("Small round white tablet")).toBeTruthy();
     expect(screen.getByText("Metformin 500mg")).toBeTruthy();
-    expect(screen.getByText("Scheduled")).toBeTruthy();
+    expect(screen.getByText("Scheduled for 6:00 PM")).toBeTruthy();
     expect(screen.getByText("No recent alerts")).toBeTruthy();
     // The hero summary and the shareable family update appear for a parent with consent granted.
     expect(screen.getByTestId("today-hero-p1")).toBeTruthy();
@@ -156,7 +156,7 @@ describe("TodayDashboardScreen", () => {
       events.next(eventSnap([{ id: "a1", ms: T0 + 8 * HOUR, status: "taken" }]));
     });
     expect(await screen.findByText("Taken")).toBeTruthy();
-    expect(screen.queryByText("Scheduled")).toBeNull();
+    expect(screen.queryByText("Scheduled for 6:00 PM")).toBeNull();
   });
 
   it("offers no family update while consent is not granted", async () => {
