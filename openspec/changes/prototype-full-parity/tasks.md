@@ -39,5 +39,5 @@
 
 ## 6. Verification
 
-- [ ] 6.1 `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:fns`, `npm run test:rules`
-- [ ] 6.2 Rebuild the x86_64 dev client (new native module), run on `flutter_emulator` with the Firebase emulators, compare each tab with the prototype, fix and re-check
+- [x] 6.1 `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:fns`, `npm run test:rules`
+- [x] 6.2 Rebuild the x86_64 dev client (new native module), run on `flutter_emulator` with the Firebase emulators, compare each tab with the prototype, fix and re-check
