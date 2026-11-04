@@ -36,7 +36,7 @@ export function AppHeader({ parentName, extraParents = 0, alert }: AppHeaderProp
         justifyContent: "space-between",
       }}
     >
-      <Text variant="title" tone="primary" accessibilityRole="header" style={{ letterSpacing: -0.6 }}>
+      <Text variant="brand" accessibilityRole="header" style={{ letterSpacing: -0.3 }}>
         {t("app.brand")}
       </Text>
       {label ? (
@@ -46,25 +46,22 @@ export function AppHeader({ parentName, extraParents = 0, alert }: AppHeaderProp
             flexDirection: "row",
             alignItems: "center",
             gap: theme.spacing.sm,
-            backgroundColor: c.surface,
-            borderWidth: 1,
-            borderColor: c.border,
+            backgroundColor: c.primaryTint,
             borderRadius: theme.radius.pill,
-            paddingVertical: 6,
-            paddingLeft: 10,
-            paddingRight: 14,
+            paddingVertical: theme.spacing.xs,
+            paddingHorizontal: theme.spacing.md,
           }}
         >
           <View
             testID="app-header-dot"
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
+              width: 6,
+              height: 6,
+              borderRadius: 3,
               backgroundColor: dot,
             }}
           />
-          <Text variant="caption" style={{ fontWeight: "500" }}>
+          <Text variant="chip">
             {label}
           </Text>
         </View>

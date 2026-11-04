@@ -102,7 +102,8 @@ export function DoseRing({
         importantForAccessibility="no-hide-descendants"
       >
         <Text
-          variant={size >= 100 ? "headline" : "label"}
+          variant={size >= 100 ? "headline" : "cardTitle"}
+          numeric
           tone={onPrimary ? "onPrimary" : undefined}
         >{`${taken}/${total}`}</Text>
       </View>

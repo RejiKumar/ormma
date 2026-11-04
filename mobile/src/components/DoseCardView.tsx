@@ -77,19 +77,8 @@ export function DoseCardView({
 
   return (
     <View testID={testID} style={{ flexDirection: "row", gap: theme.spacing.md }}>
-      <View style={{ alignItems: "center", width: 32 }}>
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: status.bg,
-          }}
-        >
-          <Icon name={KIND_ICON[card.kind]} color={status.icon} size={18} />
-        </View>
+      <View style={{ alignItems: "center", width: 24 }}>
+        <TimelineDot kind={card.kind} />
         {last ? null : (
           <View style={{ flex: 1, width: 2, marginVertical: 4, backgroundColor: theme.colors.border }} />
         )}
@@ -97,10 +86,10 @@ export function DoseCardView({
       <Card style={{ flex: 1, gap: theme.spacing.sm, marginBottom: last ? 0 : theme.spacing.md }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: theme.spacing.sm }}>
           <View style={{ flexShrink: 1 }}>
-            <Text variant="caption" tone="muted" testID={`${testID}-time`}>
+            <Text variant="chip" tone="muted" numeric testID={`${testID}-time`}>
               {time}
             </Text>
-            <Text variant="title">{period}</Text>
+            <Text variant="cardTitle">{period}</Text>
           </View>
           <View
             style={{
@@ -111,47 +100,53 @@ export function DoseCardView({
               flexShrink: 1,
             }}
           >
-            <Text variant="caption" style={{ color: status.fg, fontWeight: "600" }} testID={`${testID}-badge`}>
+            <Text variant="badge" numeric style={{ color: status.fg }} testID={`${testID}-badge`}>
               {badge}
             </Text>
           </View>
         </View>
-        {card.medicines.length > 0 ? <Text variant="bodyStrong">{card.medicines}</Text> : null}
+        {card.medicines.length > 0 ? (
+          <Text variant="meta" tone="muted">
+            {card.medicines}
+          </Text>
+        ) : null}
         {card.pills.map((pill) => (
           <View
             key={pill}
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
               alignSelf: "flex-start",
-              backgroundColor: theme.colors.background,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              borderRadius: theme.radius.pill,
-              paddingHorizontal: theme.spacing.sm + 2,
-              paddingVertical: 4,
+              backgroundColor: theme.colors.primaryTint,
+              borderRadius: theme.radius.chip,
+              paddingHorizontal: theme.spacing.md,
+              paddingVertical: 6,
             }}
           >
-            <View style={{ width: 9, height: 9, borderRadius: 5, borderWidth: 1.5, borderColor: theme.colors.inkMuted }} />
-            <Text variant="caption" tone="muted">
-              {pill}
-            </Text>
+            <Text variant="chip">{pill}</Text>
           </View>
         ))}
         {card.notes.map((note) => (
           <View
             key={note}
             testID={`${testID}-note`}
-            style={{ backgroundColor: theme.colors.primaryTint, borderRadius: theme.radius.md, padding: theme.spacing.md }}
+            style={{
+              backgroundColor: theme.colors.background,
+              borderRadius: theme.radius.chip,
+              padding: theme.spacing.md,
+              gap: theme.spacing.xs,
+            }}
           >
-            <Text variant="body">{note}</Text>
+            <Text variant="tag" tone="muted" style={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
+              {t("screens.today.confirmationNote")}
+            </Text>
+            <Text variant="note" style={{ lineHeight: 21 }}>
+              {note}
+            </Text>
           </View>
         ))}
         {seen.length > 0 ? (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Icon name="eye" color={theme.colors.inkMuted} size={14} />
-            <Text variant="caption" tone="muted" testID={`${testID}-seen`} style={{ flexShrink: 1 }}>
+            <Text variant="receipt" tone="muted" numeric testID={`${testID}-seen`} style={{ flexShrink: 1 }}>
               {t("screens.today.seenBy", { names: seen.join(" · ") })}
             </Text>
           </View>
@@ -165,6 +160,35 @@ export function DoseCardView({
           />
         ) : null}
       </Card>
+    </View>
+  );
+}
+
+/** 24 px node: solid primary with a check (taken), solid coral with an alert (missed), dashed with a clock (scheduled). */
+function TimelineDot({ kind }: { kind: CardKind }) {
+  const { theme } = useTheme();
+  const c = theme.colors;
+  const status = c.status[KIND_STATUS[kind]];
+  const taken = kind === "taken_on_time" || kind === "taken";
+  const missed = kind === "not_confirmed";
+  const scheduled = kind === "scheduled";
+  return (
+    <View
+      style={{
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: taken ? c.primary : missed ? status.icon : scheduled ? "transparent" : status.bg,
+        ...(scheduled ? { borderWidth: 2, borderStyle: "dashed" as const, borderColor: c.mutedGraphic } : null),
+      }}
+    >
+      <Icon
+        name={KIND_ICON[kind]}
+        color={taken || missed ? c.inkOnPrimary : scheduled ? c.mutedGraphic : status.icon}
+        size={14}
+      />
     </View>
   );
 }

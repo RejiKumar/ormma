@@ -24,11 +24,16 @@ export function tabBarStyles(theme: Theme, bottomInset = 0) {
     bar: {
       backgroundColor: theme.colors.surface,
       borderTopColor: theme.colors.border,
-      height: 62 + bottomInset,
+      height: 64 + bottomInset,
       paddingTop: theme.spacing.xs,
       paddingBottom: bottomInset + theme.spacing.xs,
     },
-    item: { minHeight: MIN_TOUCH_TARGET, minWidth: MIN_TOUCH_TARGET },
+    // The active tab draws a tint pill with a 16 px radius behind its icon and label (see tabBarIcon).
+    item: {
+      minHeight: MIN_TOUCH_TARGET,
+      minWidth: MIN_TOUCH_TARGET,
+      paddingVertical: 2,
+    },
   };
 }
 
@@ -56,6 +61,7 @@ export function AppTabs() {
         tabBarInactiveTintColor: theme.colors.inkMuted,
         tabBarStyle: styles.bar,
         tabBarItemStyle: styles.item,
+        tabBarLabelPosition: "below-icon",
       }}
     >
       {getTabRoutes(__DEV__).map((route) => (
@@ -66,33 +72,28 @@ export function AppTabs() {
           options={{
             tabBarAccessibilityLabel: route.labelKey ? t(route.labelKey) : route.name,
             tabBarIcon: ({ color, focused }) => (
-              <View
-                style={{
-                  backgroundColor: focused ? theme.colors.primaryTint : "transparent",
-                  paddingHorizontal: theme.spacing.md,
-                  paddingVertical: 3,
-                  borderRadius: theme.radius.pill,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Icon
-                  name={route.icon}
-                  color={color}
-                  size={22}
-                  strokeWidth={focused ? 2.3 : 1.8}
-                />
+              <View style={{ alignItems: "center", justifyContent: "center" }}>
+                {focused ? (
+                  <View
+                    testID="tab-active-pill"
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      top: -6,
+                      left: -25,
+                      width: 72,
+                      height: 52,
+                      borderRadius: theme.radius.chip,
+                      backgroundColor: theme.colors.primaryTint,
+                    }}
+                  />
+                ) : null}
+                <Icon name={route.icon} color={color} size={22} strokeWidth={focused ? 2.3 : 1.8} />
                 {route.name === "Alerts" && unreadUrgent > 0 ? <AlertDot /> : null}
               </View>
             ),
-            tabBarLabel: ({ color, focused }) => (
-              <Text
-                variant="caption"
-                style={{
-                  color,
-                  fontWeight: focused ? "600" : "400",
-                }}
-              >
+            tabBarLabel: ({ color }) => (
+              <Text variant="micro" style={{ color }} numberOfLines={1} maxFontSizeMultiplier={1.25}>
                 {route.labelKey ? t(route.labelKey) : route.name}
               </Text>
             ),

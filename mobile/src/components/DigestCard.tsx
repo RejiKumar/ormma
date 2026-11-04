@@ -6,6 +6,7 @@ import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import { Button } from "./Button";
 import { Card } from "./Card";
+import { Toast } from "./Toast";
 
 /**
  * The family update as plain text with "Copy update for WhatsApp" and "Share update". The text is built
@@ -27,41 +28,39 @@ export function DigestCard({ parentId, text }: { parentId: string; text: string 
 
   return (
     <Card testID={`digest-${parentId}`} style={{ gap: theme.spacing.md }}>
-      <View>
-        <Text variant="label" tone="muted">
-          {t("screens.today.digestTitle")}
+      <View style={{ gap: 2 }}>
+        <Text variant="cardTitle">{t("screens.today.digestTitle")}</Text>
+        <Text variant="chip" tone="muted">
+          {t("screens.today.digestSubtitle")}
         </Text>
-        <Text variant="title">{t("screens.today.digestSubtitle")}</Text>
       </View>
       <View
         style={{
-          backgroundColor: theme.colors.primaryTint,
-          borderRadius: theme.radius.md,
+          backgroundColor: theme.colors.surfaceAlt,
+          borderRadius: theme.radius.chip,
           padding: theme.spacing.md,
         }}
       >
-        <Text variant="body" testID={`digest-text-${parentId}`}>
+        <Text variant="meta" style={{ fontWeight: "400", lineHeight: 20 }} testID={`digest-text-${parentId}`}>
           {text}
         </Text>
       </View>
       <Button
+        compact
         icon="copy"
         label={t("screens.today.digestCopy")}
         testID={`digest-copy-${parentId}`}
         onPress={() => void copy()}
       />
       <Button
+        compact
         variant="secondary"
         icon="people"
         label={t("screens.today.digestShare")}
         testID={`digest-share-${parentId}`}
         onPress={() => void Share.share({ message: text })}
       />
-      {message ? (
-        <Text variant="caption" tone="muted" testID={`digest-message-${parentId}`}>
-          {message}
-        </Text>
-      ) : null}
+      {message ? <Toast message={message} testID={`digest-message-${parentId}`} /> : null}
     </Card>
   );
 }

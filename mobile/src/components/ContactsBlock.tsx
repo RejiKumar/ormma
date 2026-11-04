@@ -3,7 +3,8 @@ import { Linking, View } from "react-native";
 import type { EmergencyContact } from "../../../shared/types";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
-import { Button } from "./Button";
+import { PressableScale } from "../design/PressableScale";
+import { Icon } from "./Icon";
 
 /**
  * The people who can check in, as in the prototype: an initial avatar, the label, a short note (or the
@@ -54,21 +55,38 @@ export function ContactsBlock({
             </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text variant="bodyStrong">{contact.label}</Text>
-            <Text variant="caption" tone="muted">
+            <Text variant="bodyMedium">{contact.label}</Text>
+            <Text variant="small" tone="muted">
               {contact.note && contact.note.length > 0
                 ? contact.note
                 : t(contact.kind === "clinic" ? "escalation.kindClinic" : "escalation.kindNeighbour")}
             </Text>
           </View>
-          <Button
-            variant="secondary"
-            icon="phone"
-            label={t("escalation.contactCall", { label: contact.label })}
+          <PressableScale
+            accessibilityRole="button"
+            accessibilityLabel={t("escalation.contactCall", { label: contact.label })}
+            accessibilityState={{ disabled }}
             testID={`escalation-contact-${index}`}
             disabled={disabled}
             onPress={() => void Linking.openURL(`tel:${contact.phone}`).catch(() => undefined)}
-          />
+            style={{
+              minHeight: 48,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: theme.spacing.sm,
+              borderRadius: theme.radius.pill,
+              borderWidth: 1.5,
+              borderColor: theme.colors.primary,
+              paddingHorizontal: theme.spacing.md,
+              opacity: disabled ? 0.5 : 1,
+            }}
+          >
+            <Icon name="phone" color={theme.colors.primary} size={16} />
+            <Text variant="chipStrong" tone="primary">
+              {t("escalation.contactCall", { label: contact.label })}
+            </Text>
+          </PressableScale>
         </View>
       ))}
     </View>

@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable } from "react-native";
+import { ActivityIndicator } from "react-native";
+import { PressableScale } from "../design/PressableScale";
 import { Text, type TextTone } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import { MIN_TOUCH_TARGET } from "../design/tokens";
@@ -15,6 +16,8 @@ export interface ButtonProps {
   icon?: IconName;
   loading?: boolean;
   disabled?: boolean;
+  /** 42 dp tall pill; the touch area stays 48 dp through hitSlop. */
+  compact?: boolean;
   accessibilityHint?: string;
   testID?: string;
 }
@@ -27,6 +30,7 @@ export function Button({
   icon,
   loading = false,
   disabled = false,
+  compact = false,
   accessibilityHint,
   testID,
 }: ButtonProps) {
@@ -37,16 +41,17 @@ export function Button({
   const fg = variant === "primary" ? c.inkOnPrimary : c.primary;
 
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
+      hitSlop={compact ? { top: 3, bottom: 3 } : undefined}
       onPress={onPress}
       testID={testID}
-      style={({ pressed }) => ({
-        minHeight: variant === "primary" ? 56 : MIN_TOUCH_TARGET,
+      style={{
+        minHeight: compact ? 42 : variant === "primary" ? 56 : MIN_TOUCH_TARGET,
         minWidth: MIN_TOUCH_TARGET,
         borderRadius: theme.radius.lg,
         paddingHorizontal: variant === "quiet" ? theme.spacing.md : theme.spacing.xl,
@@ -59,14 +64,14 @@ export function Button({
           variant === "primary" ? c.primary : variant === "secondary" ? c.surface : "transparent",
         borderWidth: variant === "secondary" ? 1.5 : 0,
         borderColor: c.primary,
-        opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
-      })}
+        opacity: disabled ? 0.5 : 1,
+      }}
     >
       {loading ? <ActivityIndicator color={fg} testID="button-spinner" /> : null}
       {icon && !loading ? <Icon name={icon} color={fg} size={22} /> : null}
       <Text variant="bodyStrong" tone={tone} style={{ textAlign: "center", flexShrink: 1 }}>
         {label}
       </Text>
-    </Pressable>
+    </PressableScale>
   );
 }

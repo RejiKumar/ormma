@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Pressable, View, type StyleProp, type ViewStyle } from "react-native";
+import { View, type StyleProp, type ViewStyle } from "react-native";
+import { PressableScale } from "../design/PressableScale";
 import { useTheme } from "../design/ThemeProvider";
 import { MIN_TOUCH_TARGET } from "../design/tokens";
 
@@ -16,7 +17,7 @@ export interface CardProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** Bento-style card: rounded, padded surface. A soft shadow in light mode, a hairline in dark mode. */
+/** Card: 24 px radius, 1 px border, level 1 shadow in light mode (hairline only in dark mode); pressable cards scale on press. */
 export function Card({
   children,
   tone = "surface",
@@ -31,26 +32,23 @@ export function Card({
     backgroundColor: tone === "surface" ? c.surface : tone === "alt" ? c.surfaceAlt : c.primaryTint,
     borderRadius: theme.radius.lg,
     padding: theme.spacing.lg,
-    ...(name === "light" && tone === "surface"
-      ? { shadowColor: c.shadow, ...theme.elevation.card }
-      : { borderWidth: 1, borderColor: c.border }),
+    borderWidth: 1,
+    borderColor: c.border,
+    ...(name === "light" && tone === "surface" ? { shadowColor: c.shadow, ...theme.elevation.card } : null),
   };
 
   if (onPress) {
     return (
-      <Pressable
+      <PressableScale
+        restShadowOpacity={name === "light" && tone === "surface" ? theme.elevation.card.shadowOpacity : 0}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         testID={testID}
-        style={({ pressed }) => [
-          base,
-          { minHeight: MIN_TOUCH_TARGET, opacity: pressed ? 0.9 : 1 },
-          style,
-        ]}
+        style={[base, { minHeight: MIN_TOUCH_TARGET }, style]}
       >
         {children}
-      </Pressable>
+      </PressableScale>
     );
   }
   return (

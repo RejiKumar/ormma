@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
+import { PressableScale } from "../design/PressableScale";
+import { useAuth } from "../auth/AuthProvider";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import { logFamilyCall } from "../family/callables";
@@ -9,6 +11,7 @@ import { pickPresenceMember, relativeAgo, usePresence } from "../family/usePrese
 import { clock12 } from "../family/cards";
 import { localDateKey } from "../family/visibility";
 import { Avatar } from "./Avatar";
+import { Card } from "./Card";
 
 /** Clock time in the parent's zone for a call today, otherwise the day and month first. */
 function lastCallLabel(timezone: string, ms: number, now: number): string {
@@ -25,6 +28,7 @@ function lastCallLabel(timezone: string, ms: number, now: number): string {
 export function PresenceBar({ parent }: { parent: FamilyParent }) {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const { user } = useAuth();
   const presence = usePresence(parent);
   const [logged, setLogged] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -64,53 +68,47 @@ export function PresenceBar({ parent }: { parent: FamilyParent }) {
   };
 
   return (
-    <View
+    <Card
       testID={`presence-${parent.id}`}
-      style={{
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.radius.lg,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        padding: theme.spacing.md,
-        gap: theme.spacing.sm,
-      }}
+      style={{ padding: theme.spacing.md, gap: theme.spacing.sm }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.md }}>
         <View style={{ flexDirection: "row" }}>
           {presence.members.slice(0, 4).map((m, index) => (
             <View key={m.uid} style={{ marginLeft: index === 0 ? 0 : -10 }}>
-              <Avatar name={m.name || "?"} size={32} />
+              <Avatar name={m.name || "?"} size={32} tone={m.uid === user?.uid ? "primary" : "tint"} />
             </View>
           ))}
         </View>
-        <Text variant="caption" style={{ flex: 1 }} testID={`presence-line-${parent.id}`}>
+        <Text variant="receipt" tone="muted" numeric style={{ flex: 1, lineHeight: 15 }} testID={`presence-line-${parent.id}`}>
           {line}
         </Text>
       </View>
-      <Pressable
+      <PressableScale
         accessibilityRole="button"
         testID={`presence-called-${parent.id}`}
         disabled={busy || logged}
         onPress={() => void onCalled()}
-        style={({ pressed }) => ({
+        style={{
           alignSelf: "flex-start",
           minHeight: 44,
           justifyContent: "center",
           borderRadius: theme.radius.pill,
-          paddingHorizontal: theme.spacing.lg,
+          paddingVertical: theme.spacing.sm,
+          paddingHorizontal: 14,
           backgroundColor: logged ? theme.colors.primaryTint : theme.colors.surfaceAlt,
-          opacity: pressed || busy ? 0.7 : 1,
-        })}
+          opacity: busy ? 0.7 : 1,
+        }}
       >
-        <Text variant="label" tone="primary">
+        <Text variant="chipStrong" tone="primary">
           {logged ? t("presence.callLogged") : t("presence.called", { name: parent.name })}
         </Text>
-      </Pressable>
+      </PressableScale>
       {failed ? (
         <Text variant="caption" tone="muted" testID={`presence-error-${parent.id}`}>
           {t("presence.callFailed")}
         </Text>
       ) : null}
-    </View>
+    </Card>
   );
 }

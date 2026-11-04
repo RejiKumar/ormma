@@ -41,24 +41,22 @@ export function AlertDot() {
       testID="alerts-tab-dot"
       accessible
       accessibilityLabel={t("alerts.unreadDot")}
-      style={{ position: "absolute", top: -1, right: 6, width: 10, height: 10 }}
+      style={{ position: "absolute", top: -1, right: -4, width: 6, height: 6 }}
     >
       {reduceMotion ? null : (
         <Animated.View
           style={[
-            { position: "absolute", width: 10, height: 10, borderRadius: 5, backgroundColor: color },
+            { position: "absolute", width: 6, height: 6, borderRadius: 3, backgroundColor: color },
             ringStyle,
           ]}
         />
       )}
       <View
         style={{
-          width: 10,
-          height: 10,
-          borderRadius: 5,
+          width: 6,
+          height: 6,
+          borderRadius: 3,
           backgroundColor: color,
-          borderWidth: 2,
-          borderColor: theme.colors.surface,
         }}
       />
     </View>

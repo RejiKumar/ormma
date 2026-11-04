@@ -38,13 +38,15 @@ export interface TextProps extends RNTextProps {
   tone?: TextTone;
   /** Force the script of this text (for example a parent's language). By default it follows the content. */
   lang?: string;
+  /** Tabular numerals for times, counters, dates and durations, so digits keep a fixed width. */
+  numeric?: boolean;
 }
 
 /**
  * Themed text. Picks the font of the text's script (Inter, or Noto Sans for ml, ta, hi), the line
  * height for that script, and respects the OS font scale up to MAX_FONT_SCALE.
  */
-export function Text({ variant = "body", tone = "ink", lang, style, ...rest }: TextProps) {
+export function Text({ variant = "body", tone = "ink", lang, numeric = false, style, ...rest }: TextProps) {
   const { theme } = useTheme();
   const { i18n } = useTranslation();
   const script = resolveScript(lang, rest.children, scriptFor(i18n.language));
@@ -59,6 +61,7 @@ export function Text({ variant = "body", tone = "ink", lang, style, ...rest }: T
           fontFamily: fontFamilyFor(script, token.weight),
           fontSize: token.size,
           lineHeight: lineHeightFor(script, token.size),
+          ...(numeric ? { fontVariant: ["tabular-nums" as const] } : null),
         },
         style,
       ]}

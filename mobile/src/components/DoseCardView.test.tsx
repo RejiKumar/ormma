@@ -54,7 +54,13 @@ describe("DoseCardView", () => {
     expect(screen.getByText("Metformin 500mg + Amlodipine 5mg")).toBeTruthy();
     expect(screen.getByText("Small round white tablet in silver strip")).toBeTruthy();
     expect(screen.getByText(note)).toBeTruthy();
+    expect(screen.getByText("Confirmation note")).toBeTruthy();
     expect(screen.getByTestId("card-seen")).toHaveTextContent("Seen by Rahul 8:42 AM · Meera 9:10 AM");
+  });
+
+  it("shows no note label when there is no note", async () => {
+    await render([ev("a", ist(8, 30), "taken", { resolvedAt: ist(8, 34) })]);
+    expect(screen.queryByText("Confirmation note")).toBeNull();
   });
 
   it("reads Taken with the later time when it was not on time", async () => {

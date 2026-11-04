@@ -24,10 +24,14 @@ export interface ThemeColors {
   border: string;
   ink: string;
   inkMuted: string;
+  /** Muted grey for graphics that are not text (dashed borders). */
+  mutedGraphic: string;
   inkOnPrimary: string;
   inkOnAccent: string;
   primary: string;
   primaryTint: string;
+  /** End colour of the hero gradient. */
+  heroEnd: string;
   /** Amber. Used for fills and highlights, with `inkOnAccent` text on top; never as text on the background. */
   accent: string;
   /** Keyboard and screen-reader focus outline. */
@@ -43,31 +47,37 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
-  background: "#FAF7F2",
+  background: "#F8F7F4",
   surface: "#FFFFFF",
-  surfaceAlt: "#F3ECE2",
-  border: "#EBE6DD",
-  ink: "#1F2A2E",
-  inkMuted: "#506068",
+  /** Neutral chip. */
+  surfaceAlt: "#EDEAE4",
+  border: "#E5E2DC",
+  ink: "#1A2421",
+  /** Muted text. A shade of #6B7470 that reaches 4.5:1 on every light surface, chip included. */
+  inkMuted: "#626B67",
+  /** The supplied muted grey, for dashed borders and other graphics only. */
+  mutedGraphic: "#6B7470",
   inkOnPrimary: "#FFFFFF",
   inkOnAccent: "#1F2A2E",
   primary: "#2D5A4C",
-  primaryTint: "#E8F0EC",
+  primaryTint: "#EBF1EE",
+  /** End colour of the hero gradient (starts at `primary`). */
+  heroEnd: "#204237",
   accent: "#F2A93B",
   focus: "#1C3B31",
   status: {
-    taken: { fg: "#17613D", bg: "#E4F3EA", icon: "#1F7A4D" },
-    pending: { fg: "#4B5860", bg: "#EDEFF0", icon: "#5B6870" },
-    missed: { fg: "#9F3326", bg: "#FCE8E4", icon: "#C2432F" },
+    taken: { fg: "#1C3B32", bg: "#EBF1EE", icon: "#2D5A4C" },
+    pending: { fg: "#626B67", bg: "#EDEAE4", icon: "#626B67" },
+    missed: { fg: "#B04E28", bg: "#FCEEE8", icon: "#C85A32" },
     unclear: { fg: "#5E4388", bg: "#EFE9F7", icon: "#7452B0" },
     calling: { fg: "#0F6B6B", bg: "#DDEFEE", icon: "#0F6B6B" },
     not_taken: { fg: "#7A5210", bg: "#F7EDD4", icon: "#8F6415" },
     no_answer: { fg: "#38536E", bg: "#E8EEF5", icon: "#46617D" },
   },
-  urgent: { fg: "#8F2418", bg: "#FDE3DE", icon: "#C2432F" },
-  reading: { fg: "#1F2A2E", bg: "#F3ECE2" },
+  urgent: { fg: "#9F3326", bg: "#FCEEE8", icon: "#C85A32" },
+  reading: { fg: "#1A2421", bg: "#F1EFEA" },
   avatars: ["#F6D9C7", "#D3E6E3", "#E2D8EF", "#F2E3B3", "#D6E2F0", "#E2DED2"],
-  shadow: "#3A2E1F",
+  shadow: "#1A2421",
 };
 
 export const darkColors: ThemeColors = {
@@ -77,10 +87,12 @@ export const darkColors: ThemeColors = {
   border: "#333D39",
   ink: "#E8EFF0",
   inkMuted: "#A6B5BA",
+  mutedGraphic: "#7F8E93",
   inkOnPrimary: "#082626",
   inkOnAccent: "#1B1406",
   primary: "#8FBEA4",
   primaryTint: "#233029",
+  heroEnd: "#7AAA92",
   accent: "#F2A93B",
   focus: "#A3D0B5",
   status: {
@@ -101,7 +113,28 @@ export const darkColors: ThemeColors = {
 // ---------- type ----------
 export type FontWeight = "400" | "500" | "600" | "700";
 export type TextVariant =
-  "caption" | "label" | "body" | "bodyStrong" | "bodyLarge" | "title" | "headline" | "display";
+  | "caption"
+  | "label"
+  | "body"
+  | "bodyStrong"
+  | "bodyLarge"
+  | "title"
+  | "headline"
+  | "display"
+  | "tag"
+  | "receipt"
+  | "badge"
+  | "small"
+  | "heading"
+  | "bodyMedium"
+  | "micro"
+  | "chip"
+  | "chipStrong"
+  | "meta"
+  | "note"
+  | "cardTitle"
+  | "section"
+  | "brand";
 
 export interface TextStyleToken {
   /** Font size in dp before the OS font scale. */
@@ -118,14 +151,42 @@ export const typeScale: Record<TextVariant, TextStyleToken> = {
   title: { size: 22, weight: "600" },
   headline: { size: 28, weight: "700" },
   display: { size: 36, weight: "700" },
+  /** 10 uppercase tag, e.g. the confirmation note label. */
+  tag: { size: 10, weight: "600" },
+  /** 11 read receipts, badges and presence text. */
+  receipt: { size: 11, weight: "400" },
+  /** 18 semibold tab headings. */
+  heading: { size: 18, weight: "600" },
+  /** 14 medium names. */
+  bodyMedium: { size: 14, weight: "500" },
+  /** 11 medium chips and tab labels. */
+  micro: { size: 11, weight: "500" },
+  /** 12 regular captions on the hero. */
+  small: { size: 12, weight: "400" },
+  /** 11 semibold status badges. */
+  badge: { size: 11, weight: "600" },
+  /** 12 medium chips. */
+  chip: { size: 12, weight: "500" },
+  /** 12 semibold action pills. */
+  chipStrong: { size: 12, weight: "600" },
+  /** 13 medicine line. */
+  meta: { size: 13, weight: "500" },
+  /** 14 note body. */
+  note: { size: 14, weight: "400" },
+  /** 15 card heading. */
+  cardTitle: { size: 15, weight: "600" },
+  /** 16 section heading. */
+  section: { size: 16, weight: "600" },
+  /** 18 bold brand mark. */
+  brand: { size: 18, weight: "700" },
 };
 
 /** Maximum OS font scale applied to text. Components grow instead of clipping. */
 export const MAX_FONT_SCALE = 2;
 
 // ---------- layout ----------
-export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 } as const;
-export const radius = { sm: 8, md: 14, lg: 24, xl: 28, pill: 999 } as const;
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, hero: 20, xl: 24, xxl: 32, xxxl: 48 } as const;
+export const radius = { sm: 8, md: 14, chip: 16, lg: 24, xl: 28, pill: 999 } as const;
 /** Minimum touch target in dp. */
 export const MIN_TOUCH_TARGET = 48;
 
@@ -136,20 +197,13 @@ export interface Elevation {
   /** Android elevation. */
   elevation: number;
 }
-export const elevation: Record<"none" | "card" | "raised", Elevation> = {
+/** Five levels: none, card (1), hero (2, tinted by the theme shadow colour), toast (3), modal (4). */
+export const elevation: Record<"none" | "card" | "hero" | "toast" | "modal", Elevation> = {
   none: { shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
-  card: {
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  },
-  raised: {
-    shadowOpacity: 0.14,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-  },
+  card: { shadowOpacity: 0.05, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+  hero: { shadowOpacity: 0.18, shadowRadius: 15, shadowOffset: { width: 0, height: 10 }, elevation: 6 },
+  toast: { shadowOpacity: 0.18, shadowRadius: 15, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  modal: { shadowOpacity: 0.25, shadowRadius: 25, shadowOffset: { width: 0, height: 25 }, elevation: 12 },
 };
 
 // ---------- motion ----------
@@ -211,11 +265,17 @@ export function contrastPairs(c: ThemeColors): ContrastPair[] {
     ["background", c.background],
     ["surface", c.surface],
     ["surfaceAlt", c.surfaceAlt],
+    ["primaryTint", c.primaryTint],
   ] as const) {
     add(`inkMuted on ${bgName}`, "inkMuted", c.inkMuted, bg, "text");
     add(`primary text on ${bgName}`, "primary", c.primary, bg, "text");
   }
   add("inkOnPrimary on primary", "inkOnPrimary", c.inkOnPrimary, c.primary, "text");
+  add("inkOnPrimary on hero end", "inkOnPrimary", c.inkOnPrimary, c.heroEnd, "text");
+  add("mutedGraphic on surface", "mutedGraphic", c.mutedGraphic, c.surface, "graphic");
+  add("toast text on ink", "background", c.background, c.ink, "text");
+  add("timeline check on primary", "inkOnPrimary", c.inkOnPrimary, c.primary, "graphic");
+  add("timeline alert on missed dot", "inkOnPrimary", c.inkOnPrimary, c.status.missed.icon, "graphic");
   add("inkOnAccent on accent", "inkOnAccent", c.inkOnAccent, c.accent, "text");
 
   for (const key of STATUS_KEYS) {
@@ -244,6 +304,8 @@ export function foregroundTokenNames(c: ThemeColors): string[] {
   return [
     "ink",
     "inkMuted",
+    "background",
+    "mutedGraphic",
     "inkOnPrimary",
     "inkOnAccent",
     "primary",

@@ -127,10 +127,10 @@ export function MedicinesListScreen({ navigation }: Props) {
           ) : (
             <>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
-                <Text variant="title" lang={selected?.language}>
+                <Text variant="heading" lang={selected?.language}>
                   {t("screens.medicines.heading", { name: selected?.name ?? "" })}
                 </Text>
-                <Text variant="caption" tone="muted" testID="medicines-active-count">
+                <Text variant="small" tone="muted" testID="medicines-active-count">
                   {t("screens.medicines.activeCount", { count: medicines.filter((m) => m.active).length })}
                 </Text>
               </View>
@@ -158,7 +158,7 @@ export function MedicinesListScreen({ navigation }: Props) {
                     >
                       <Icon name="pill" color={theme.colors.primary} size={22} />
                     </View>
-                    <Text variant="title" style={{ flex: 1 }}>
+                    <Text variant="cardTitle" style={{ flex: 1 }}>
                       {[medicine.name, medicine.doseText].filter((part) => part.length > 0).join(" ")}
                     </Text>
                     <View
@@ -170,17 +170,16 @@ export function MedicinesListScreen({ navigation }: Props) {
                       }}
                     >
                       <Text
-                        variant="caption"
+                        variant="badge"
                         style={{
                           color: medicine.active ? theme.colors.status.taken.fg : theme.colors.status.pending.fg,
-                          fontWeight: "600",
                         }}
                       >
                         {medicine.active ? t("screens.medicines.active") : t("screens.medicines.inactive")}
                       </Text>
                     </View>
                   </View>
-                  <Text variant="body">
+                  <Text variant="small" tone="muted">
                     {medicine.frequencyText.length > 0 ? medicine.frequencyText : medicine.times.join(", ")}
                   </Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
@@ -199,7 +198,7 @@ export function MedicinesListScreen({ navigation }: Props) {
                         }}
                       >
                         <View style={{ width: 9, height: 9, borderRadius: 5, borderWidth: 1.5, borderColor: theme.colors.inkMuted }} />
-                        <Text variant="caption" tone="muted">
+                        <Text variant="micro">
                           {medicine.pillDescription}
                         </Text>
                       </View>
@@ -215,7 +214,7 @@ export function MedicinesListScreen({ navigation }: Props) {
                           paddingVertical: 4,
                         }}
                       >
-                        <Text variant="caption" tone="muted">
+                        <Text variant="micro">
                           {t("screens.medicines.forPurpose", { purpose: medicine.purpose })}
                         </Text>
                       </View>

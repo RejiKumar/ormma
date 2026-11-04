@@ -53,6 +53,8 @@ describe("tab bar styles", () => {
 
   it("uses the surface colour from the theme", () => {
     expect(tabBarStyles(lightTheme).bar.backgroundColor).toBe(lightTheme.colors.surface);
+    expect(tabBarStyles(lightTheme).bar.height).toBe(64);
+    expect(tabBarStyles(lightTheme, 20).bar.height).toBe(84);
     expect(tabBarStyles(darkTheme).bar.backgroundColor).toBe(darkTheme.colors.surface);
   });
 });

@@ -3,6 +3,8 @@ import { renderApp } from "../test-utils";
 import type { FamilyParent } from "../family/useParents";
 import { PresenceBar } from "./PresenceBar";
 
+jest.mock("../auth/AuthProvider", () => ({ useAuth: () => ({ user: { uid: "me" } }) }));
+
 const mockUsePresence = jest.fn();
 jest.mock("../family/usePresence", () => {
   const actual = jest.requireActual("../family/usePresence");

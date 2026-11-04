@@ -1,15 +1,17 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { DoseRing } from "../../components/DoseRing";
 import { EmptyState } from "../../components/EmptyState";
 import { DigestCard } from "../../components/DigestCard";
+import { HeroGradient } from "../../components/HeroGradient";
 import { Icon } from "../../components/Icon";
 import { PresenceBar } from "../../components/PresenceBar";
 import { DoseCardView } from "../../components/DoseCardView";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
+import { PressableScale } from "../../design/PressableScale";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useAlerts } from "../../family/useAlerts";
@@ -70,48 +72,58 @@ function HeroCard({ parent, cards }: { parent: FamilyParent; cards: DoseCard[] }
     <View
       testID={`today-hero-${parent.id}`}
       style={{
-        backgroundColor: theme.colors.primary,
-        borderRadius: theme.radius.xl,
-        padding: theme.spacing.lg,
+        borderRadius: theme.radius.lg,
+        padding: theme.spacing.hero,
         gap: theme.spacing.lg,
+        overflow: "hidden",
+        backgroundColor: theme.colors.primary,
+        shadowColor: theme.colors.shadow,
+        ...theme.elevation.hero,
       }}
     >
+      <HeroGradient />
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.sm }}>
         <Icon name="home" color={theme.colors.inkOnPrimary} size={18} />
-        <Text variant="caption" tone="onPrimary">
+        <Text variant="small" tone="onPrimary" numeric style={{ opacity: 0.9 }}>
           {heroDate(parent.timezone, Date.now())}
         </Text>
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.lg }}>
-        <DoseRing onPrimary taken={taken} total={total} size={84} strokeWidth={9} />
+        <DoseRing onPrimary taken={taken} total={total} size={76} strokeWidth={8} />
         <View style={{ flex: 1, gap: theme.spacing.xs }}>
-          <Text variant="title" tone="onPrimary" lang={parent.language}>
+          <Text variant="title" tone="onPrimary" lang={parent.language} style={{ lineHeight: 28, letterSpacing: -0.4 }}>
             {title}
           </Text>
-          <Text variant="caption" tone="onPrimary" testID={`today-hero-sub-${parent.id}`}>
+          <Text
+            variant="small"
+            tone="onPrimary"
+            numeric
+            testID={`today-hero-sub-${parent.id}`}
+            style={{ opacity: 0.8, lineHeight: 16 }}
+          >
             {subtitle}
           </Text>
         </View>
       </View>
       {attention ? (
-        <Pressable
+        <PressableScale
           accessibilityRole="button"
           testID={`today-see-alerts-${parent.id}`}
           onPress={() => navigation.navigate("Alerts" as never)}
-          style={({ pressed }) => ({
+          style={{
             alignSelf: "flex-start",
             minHeight: 44,
             justifyContent: "center",
             borderRadius: theme.radius.pill,
+            paddingVertical: 10,
             paddingHorizontal: theme.spacing.lg,
-            backgroundColor: theme.colors.surface,
-            opacity: pressed ? 0.85 : 1,
-          })}
+            backgroundColor: theme.colors.primaryTint,
+          }}
         >
           <Text variant="label" tone="primary">
             {t("screens.today.heroSeeAlerts")}
           </Text>
-        </Pressable>
+        </PressableScale>
       ) : null}
     </View>
   );

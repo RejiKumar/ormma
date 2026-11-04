@@ -22,14 +22,18 @@ export interface AvatarProps {
   /** Language of the name, so Indic initials use the right font. */
   lang?: string;
   size?: number;
+  /** "primary": white initials on the primary colour (the signed-in viewer); "tint": tint ink on the primary tint. Default: warm palette. */
+  tone?: "primary" | "tint";
   testID?: string;
 }
 
 /** Initials on a warm neutral tint. Avatar colours are never status colours. */
-export function Avatar({ name, lang, size = 48, testID }: AvatarProps) {
+export function Avatar({ name, lang, size = 48, tone, testID }: AvatarProps) {
   const { theme } = useTheme();
   const palette = theme.colors.avatars;
-  const bg = palette[hashName(name) % palette.length];
+  const c = theme.colors;
+  const bg = tone === "primary" ? c.primary : tone === "tint" ? c.primaryTint : palette[hashName(name) % palette.length];
+  const fg = tone === "primary" ? c.inkOnPrimary : tone === "tint" ? c.status.taken.fg : c.ink;
   return (
     <View
       testID={testID}
@@ -45,7 +49,7 @@ export function Avatar({ name, lang, size = 48, testID }: AvatarProps) {
         justifyContent: "center",
       }}
     >
-      <Text variant="bodyStrong" lang={lang} style={{ fontSize: Math.round(size * 0.38) }}>
+      <Text variant="bodyStrong" lang={lang} style={{ fontSize: Math.round(size * 0.38), color: fg }}>
         {initialsOf(name)}
       </Text>
     </View>

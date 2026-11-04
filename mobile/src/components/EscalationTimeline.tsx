@@ -62,8 +62,8 @@ function Step({ icon, bg, fg, last, title, meta, testID }: StepProps) {
         )}
       </View>
       <View style={{ flex: 1, paddingBottom: last ? 0 : theme.spacing.md, gap: 2 }}>
-        <Text variant="bodyStrong">{title}</Text>
-        <Text variant="caption" tone="muted">
+        <Text variant="label">{title}</Text>
+        <Text variant="small" tone="muted" numeric>
           {meta}
         </Text>
       </View>

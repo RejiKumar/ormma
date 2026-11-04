@@ -85,12 +85,12 @@ export function ProtocolCard({
             </View>
             <View style={{ flex: 1, paddingBottom: isLast ? 0 : theme.spacing.md, gap: 2 }}>
               {firstAt !== null ? (
-                <Text variant="caption" tone="muted">
+                <Text variant="small" tone="muted" numeric>
                   {clock12(parent.timezone, step.at)}
                 </Text>
               ) : null}
-              <Text variant="bodyStrong">{title}</Text>
-              <Text variant="caption" tone="muted">
+              <Text variant="label">{title}</Text>
+              <Text variant="small" tone="muted" numeric>
                 {desc}
               </Text>
             </View>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
+import { PressableScale } from "../design/PressableScale";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import { Icon } from "./Icon";
@@ -66,14 +67,14 @@ export function ListItem({
     );
   }
   return (
-    <Pressable
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? title}
       onPress={onPress}
       testID={testID}
-      style={({ pressed }) => [style, { opacity: pressed ? 0.8 : 1 }]}
+      style={style}
     >
       {row}
-    </Pressable>
+    </PressableScale>
   );
 }

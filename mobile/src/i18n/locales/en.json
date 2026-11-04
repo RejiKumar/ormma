@@ -116,6 +116,7 @@
       "badgeUnclear": "Unclear",
       "badgeScheduled": "Scheduled",
       "seenBy": "Seen by {{names}}",
+      "confirmationNote": "Confirmation note",
       "markTaken": "Mark as taken",
       "digestSubtitle": "Share with the family",
       "digestCopy": "Copy update for WhatsApp",
