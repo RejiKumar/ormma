@@ -1,7 +1,7 @@
 // Recent alerts across the member's parents, newest first, consent-correct per parent.
 // Alerts are a single list, so this hook takes every parent at once and merges N subscriptions
 // (0-2 provable ranges each, from src/family/visibility.ts) into one createdAt-desc stream.
-import { collection, getFirestore, limit, onSnapshot, orderBy, query, where } from "@react-native-firebase/firestore";
+import { collection, getFirestore, limit, onSnapshot, orderBy, query, Timestamp, where } from "@react-native-firebase/firestore";
 import { useEffect, useState } from "react";
 import type { AlertType } from "../../../shared/types";
 import type { DatedParent } from "./useParents";
@@ -85,8 +85,8 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
         const db = getFirestore();
         const alertsQuery = query(
           collection(db, "parents", parent.id, "alerts"),
-          where("createdAt", ">=", range.gte),
-          where("createdAt", "<", range.lt),
+          where("createdAt", ">=", Timestamp.fromMillis(range.gte)),
+          where("createdAt", "<", Timestamp.fromMillis(range.lt)),
           orderBy("createdAt", "desc"),
           limit(ALERTS_LIMIT),
         );

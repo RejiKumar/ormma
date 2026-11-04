@@ -86,3 +86,25 @@ export async function createParentHandler(
   console.log(`createParent ok uid=${uid} parentId=${parentRef.id} status=created`);
   return { parentId: parentRef.id };
 }
+
+export interface ListMyParentsResult {
+  parentIds: string[];
+}
+
+/**
+ * Parent ids the caller is a member of. The ids are device-local for offline-first privacy, so a
+ * reinstall or a new phone would otherwise lose the family list; the app merges this result back
+ * into local storage on startup.
+ */
+export async function listMyParentsHandler(request: CallableRequest): Promise<ListMyParentsResult> {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "Sign in required.");
+
+  const db = getDb();
+  const parents = await db.collection("parents").get();
+  const memberSnaps = await db.getAll(
+    ...parents.docs.map((parent) => db.doc(`parents/${parent.id}/members/${uid}`)),
+  );
+  const parentIds = parents.docs.filter((_, index) => memberSnaps[index]?.exists).map((d) => d.id);
+  return { parentIds };
+}

@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, View } from "react-native";
+import { Pressable, Share, View } from "react-native";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { FormError } from "../../components/FormError";
@@ -56,6 +56,7 @@ export function InviteScreen({ route }: Props) {
 
   return (
     <Screen
+      belowHeader
       primaryAction={
         code ? undefined : (
           <Button
@@ -76,6 +77,15 @@ export function InviteScreen({ route }: Props) {
             {code}
           </Text>
           <Text tone="muted">{t("screens.invite.codeInstructions")}</Text>
+          <Button
+            variant="secondary"
+            icon="people"
+            label={t("screens.invite.share")}
+            testID="invite-share"
+            onPress={() =>
+              void Share.share({ message: t("screens.invite.shareMessage", { name: parentName, code }) })
+            }
+          />
         </Card>
       ) : (
         <>
@@ -105,7 +115,7 @@ export function InviteScreen({ route }: Props) {
                       paddingVertical: theme.spacing.md,
                     }}
                   >
-                    {selected ? <Icon name="check" color={theme.colors.primary} size={20} /> : null}
+                    <View style={{ width: 20 }}>{selected ? <Icon name="check" color={theme.colors.primary} size={20} /> : null}</View>
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text variant="body">{t(ROLE_KEY[value])}</Text>
                       <Text variant="caption" tone="muted">

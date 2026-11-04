@@ -88,13 +88,31 @@ service cloud.firestore {
         && p.quietHours.end is string;
     }
 
+    // Up to 3 contacts for the escalation view: label, kind and an E.164 phone, nothing else.
+    function validContact(c) {
+      return c is map
+        && c.keys().hasOnly(['label', 'kind', 'phone'])
+        && c.keys().hasAll(['label', 'kind', 'phone'])
+        && c.label is string && c.label.size() >= 1 && c.label.size() <= 40
+        && c.kind in ['neighbour', 'clinic']
+        && isE164(c.phone);
+    }
+
+    function validContacts(list) {
+      return list is list && list.size() <= 3
+        && (list.size() < 1 || validContact(list[0]))
+        && (list.size() < 2 || validContact(list[1]))
+        && (list.size() < 3 || validContact(list[2]));
+    }
+
     function validParentUpdate(data) {
       return data.name is string && data.name.size() > 0
         && isE164(data.phone)
         && data.language in ['ml-IN', 'ta-IN', 'hi-IN', 'en-IN']
         && data.timezone is string
         && data.active is bool
-        && validCallPolicy(data.callPolicy);
+        && validCallPolicy(data.callPolicy)
+        && (!('emergencyContacts' in data) || validContacts(data.emergencyContacts));
     }
 
     match /parents/{parentId} {
@@ -104,7 +122,7 @@ service cloud.firestore {
       // Owner only. The whitelist excludes consent (and createdBy, createdAt).
       allow update: if isOwner(parentId)
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy'])
+             .hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts'])
         && validParentUpdate(request.resource.data);
       // Deleting a parent is the owner's callable with recursive delete.
       allow delete: if false;
@@ -188,6 +206,12 @@ service cloud.firestore {
       // ---------- callSessions: no client access at all ----------
       match /callSessions/{sessionId} {
         allow read, write: if false;
+      }
+
+      // ---------- familyCalls: read by members under consent visibility, written only by the function ----------
+      match /familyCalls/{callId} {
+        allow read: if canReadDated(parentId, resource.data.at);
+        allow write: if false;
       }
 
       // ---------- prescriptions ----------

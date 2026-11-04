@@ -11,6 +11,14 @@ type FirestoreMock = {
   collection: jest.Mock;
 };
 const fsMock = jest.requireMock("@react-native-firebase/firestore") as FirestoreMock;
+/** Firestore bounds must be Timestamps: a raw number never matches a timestamp field. */
+function expectBound(field: string, op: string, ms: number) {
+  const found = fsMock.where.mock.calls.some(
+    ([f, o, value]) =>
+      f === field && o === op && typeof value?.toMillis === "function" && value.toMillis() === ms,
+  );
+  expect(found).toBe(true);
+}
 
 type AuthMock = { __setUser: (user: { uid: string; phoneNumber: string | null }) => void };
 const authMock = jest.requireMock("@react-native-firebase/auth") as AuthMock;
@@ -71,8 +79,8 @@ describe("useTodayEvents", () => {
     const { result } = await renderHook(() => useTodayEvents([owner], NOW), { wrapper });
     await waitFor(() => expect(listeners).toHaveLength(1));
     expect(fsMock.collection).toHaveBeenCalledWith(expect.anything(), "parents", "p1", "doseEvents");
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", ">=", T0);
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", "<", T0 + 24 * HOUR);
+    expectBound("scheduledFor", ">=", T0);
+    expectBound("scheduledFor", "<", T0 + 24 * HOUR);
     expect(fsMock.orderBy).toHaveBeenCalledWith("scheduledFor", "asc");
 
     await act(async () => {
@@ -92,8 +100,8 @@ describe("useTodayEvents", () => {
     captureListeners();
     await renderHook(() => useTodayEvents([revokedViewer], NOW), { wrapper });
     await waitFor(() => expect(fsMock.onSnapshot).toHaveBeenCalledTimes(1));
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", "<", T0 + 6 * HOUR);
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", ">=", T0);
+    expectBound("scheduledFor", "<", T0 + 6 * HOUR);
+    expectBound("scheduledFor", ">=", T0);
     expect(fsMock.where).not.toHaveBeenCalledWith("scheduledFor", "<=", expect.anything());
   });
 
@@ -107,8 +115,8 @@ describe("useTodayEvents", () => {
     };
     const { result } = await renderHook(() => useTodayEvents([regranted], NOW), { wrapper });
     await waitFor(() => expect(listeners).toHaveLength(2));
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", "<", T0 + 6 * HOUR);
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", ">=", T0 + 18 * HOUR);
+    expectBound("scheduledFor", "<", T0 + 6 * HOUR);
+    expectBound("scheduledFor", ">=", T0 + 18 * HOUR);
 
     await act(async () => {
       listeners[0].next(eventSnap([{ id: "e1", ms: T0 + 2 * HOUR }]));
@@ -160,8 +168,8 @@ describe("useTodayEvents", () => {
     const utcParent: DatedParent = { ...owner, timezone: "UTC" };
     await renderHook(() => useTodayEvents([utcParent], NOW), { wrapper });
     await waitFor(() => expect(fsMock.onSnapshot).toHaveBeenCalledTimes(1));
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", ">=", Date.UTC(2026, 9, 22, 0, 0));
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", "<", Date.UTC(2026, 9, 23, 0, 0));
+    expectBound("scheduledFor", ">=", Date.UTC(2026, 9, 22, 0, 0));
+    expectBound("scheduledFor", "<", Date.UTC(2026, 9, 23, 0, 0));
   });
 
   it("stops loading on error, logs only the code, and unsubscribes on unmount", async () => {

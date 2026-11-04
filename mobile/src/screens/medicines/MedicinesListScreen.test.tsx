@@ -95,7 +95,7 @@ describe("MedicinesListScreen", () => {
     stubGetDoc({});
     captureListeners();
     await renderStack();
-    expect(await screen.findByTestId("medicines-empty")).toBeTruthy();
+    expect(await screen.findByTestId("medicines-no-parents")).toBeTruthy();
     expect(screen.queryByTestId("medicine-add")).toBeNull();
   });
 

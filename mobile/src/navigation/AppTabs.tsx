@@ -1,6 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useTranslation } from "react-i18next";
+import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AlertDot } from "../components/AlertDot";
 import { Icon } from "../components/Icon";
+import { useUnreadUrgentAlertCount } from "../family/useUnreadAlerts";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import { MIN_TOUCH_TARGET, type Theme } from "../design/tokens";
@@ -8,13 +12,19 @@ import { getTabRoutes } from "./routes";
 
 const Tab = createBottomTabNavigator();
 
-/** Styling of the bottom tab bar from the tokens. Items are at least 48 dp high (thumb zone). */
-export function tabBarStyles(theme: Theme) {
+/**
+ * Styling of the bottom tab bar from the tokens. Items are at least 48 dp high (thumb zone).
+ * The bar reserves the gesture area plus a little breathing room, so labels never sit on the
+ * gesture pill.
+ */
+export function tabBarStyles(theme: Theme, bottomInset = 0) {
   return {
     bar: {
       backgroundColor: theme.colors.surface,
       borderTopColor: theme.colors.border,
+      height: 62 + bottomInset,
       paddingTop: theme.spacing.xs,
+      paddingBottom: bottomInset + theme.spacing.xs,
     },
     item: { minHeight: MIN_TOUCH_TARGET, minWidth: MIN_TOUCH_TARGET },
   };
@@ -24,7 +34,9 @@ export function tabBarStyles(theme: Theme) {
 export function AppTabs() {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const styles = tabBarStyles(theme);
+  const insets = useSafeAreaInsets();
+  const styles = tabBarStyles(theme, insets.bottom);
+  const unreadUrgent = useUnreadUrgentAlertCount();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -42,9 +54,34 @@ export function AppTabs() {
           component={route.component}
           options={{
             tabBarAccessibilityLabel: route.labelKey ? t(route.labelKey) : route.name,
-            tabBarIcon: ({ color }) => <Icon name={route.icon} color={color} size={24} />,
-            tabBarLabel: ({ color }) => (
-              <Text variant="caption" style={{ color }}>
+            tabBarIcon: ({ color, focused }) => (
+              <View
+                style={{
+                  backgroundColor: focused ? theme.colors.primaryTint : "transparent",
+                  paddingHorizontal: theme.spacing.md,
+                  paddingVertical: 3,
+                  borderRadius: theme.radius.pill,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon
+                  name={route.icon}
+                  color={color}
+                  size={22}
+                  strokeWidth={focused ? 2.3 : 1.8}
+                />
+                {route.name === "Alerts" && unreadUrgent > 0 ? <AlertDot /> : null}
+              </View>
+            ),
+            tabBarLabel: ({ color, focused }) => (
+              <Text
+                variant="caption"
+                style={{
+                  color,
+                  fontWeight: focused ? "600" : "400",
+                }}
+              >
                 {route.labelKey ? t(route.labelKey) : route.name}
               </Text>
             ),

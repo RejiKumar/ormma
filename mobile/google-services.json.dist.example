@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:REPLACE_PROJECT_NUMBER:android:REPLACE_APP_ID",
         "android_client_info": {
-          "package_name": "com.example.ormma"
+          "package_name": "com.ormma.app"
         }
       },
       "oauth_client": [],

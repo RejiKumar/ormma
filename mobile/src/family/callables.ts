@@ -2,8 +2,7 @@
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import type { Language, Role } from "../../../shared/types";
-
-const REGION = "asia-south1";
+import { FUNCTIONS_REGION } from "../firebase/region";
 
 export interface CreateParentPayload {
   name: string;
@@ -21,12 +20,18 @@ export interface RedeemInvitePayload {
 }
 
 function invoke<Req, Res>(name: string, payload: Req): Promise<Res> {
-  const callable = httpsCallable<Req, Res>(getFunctions(getApp(), REGION), name);
+  const fns = getFunctions(getApp(), FUNCTIONS_REGION);
+  const callable = httpsCallable<Req, Res>(fns, name);
   return callable(payload).then((result) => result.data);
 }
 
 export function createParent(payload: CreateParentPayload): Promise<{ parentId: string }> {
   return invoke("createParent", payload);
+}
+
+/** Parent ids the signed-in member belongs to (rebuilds the device-local list after a reinstall). */
+export function listMyParents(): Promise<{ parentIds: string[] }> {
+  return invoke("listMyParents", {});
 }
 
 export function createInvite(
@@ -45,7 +50,20 @@ export interface ParentScopedPayload {
   parentId: string;
 }
 
-export function exportParentData(payload: ParentScopedPayload): Promise<unknown> {
+/** Shape returned by the owner-only exportParentData callable. */
+export interface ParentExportData {
+  parent: unknown;
+  members: unknown[];
+  medicines: unknown[];
+  doseEvents: unknown[];
+  healthLogs: unknown[];
+  callSessions: unknown[];
+  prescriptions: unknown[];
+  alerts: unknown[];
+  invites: unknown[];
+}
+
+export function exportParentData(payload: ParentScopedPayload): Promise<ParentExportData> {
   return invoke("exportParentData", payload);
 }
 
@@ -69,4 +87,36 @@ export interface GrantConsentPayload {
 
 export function grantConsent(payload: GrantConsentPayload): Promise<{ ok: boolean }> {
   return invoke("grantConsent", payload);
+}
+
+/** One Ormma call attempt for a dose, as returned by the read-only escalation callable. */
+export interface EscalationAttempt {
+  ordinal: number;
+  startedAtMs: number;
+  outcome: "answered" | "no_answer" | "failed" | "calling";
+}
+
+export interface DoseEscalation {
+  status: string;
+  attempts: EscalationAttempt[];
+  /** Attempts counted by the dispatcher that never produced a call session. */
+  unplaced: number;
+  alertAtMs: number | null;
+}
+
+export function getDoseEscalation(payload: {
+  parentId: string;
+  doseEventId: string;
+}): Promise<DoseEscalation> {
+  return invoke("getDoseEscalation", payload);
+}
+
+/** Records that the signed-in member opened Today; the server throttles it to once per 5 minutes. */
+export function touchPresence(payload: ParentScopedPayload): Promise<{ updated: boolean }> {
+  return invoke("touchPresence", payload);
+}
+
+/** Logs "I called <parent>" for the signed-in member (one entry per minute). */
+export function logFamilyCall(payload: ParentScopedPayload): Promise<{ id: string }> {
+  return invoke("logFamilyCall", payload);
 }

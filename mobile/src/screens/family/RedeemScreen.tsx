@@ -25,7 +25,7 @@ const REDEEM_ERROR_MESSAGE = {
 /** Same alphabet as functions/src/validation.ts: no 0/O/1/I, upper case. */
 const CODE_PATTERN = /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/;
 
-/** Accept an invite: enter the 8-character code → redeemInvite → the parent joins the list. */
+/** Accept an invite: enter the 8-character code â†’ redeemInvite â†’ the parent joins the list. */
 export function RedeemScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const [code, setCode] = useState("");
@@ -57,6 +57,7 @@ export function RedeemScreen({ navigation }: Props) {
 
   return (
     <Screen
+      belowHeader
       primaryAction={
         <Button
           label={t("screens.redeem.join")}

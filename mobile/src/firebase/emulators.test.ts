@@ -64,6 +64,16 @@ describe("connectAuthEmulator", () => {
   });
 });
 
+describe("connectEmulators", () => {
+  it("connects the asia-south1 Functions instance the callables use", () => {
+    const functions = jest.requireMock("@react-native-firebase/functions") as {
+      getFunctions: jest.Mock;
+    };
+    connectEmulators(flags());
+    expect(functions.getFunctions).toHaveBeenCalledWith(expect.anything(), "asia-south1");
+  });
+});
+
 describe("Jest environment", () => {
   it("detects Jest and the real connectEmulators is a no-op here", () => {
     expect(currentEmulatorFlags().isJest).toBe(true);

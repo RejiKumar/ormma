@@ -4,9 +4,10 @@
 import { collection, documentId, getDoc, onSnapshot, query, where } from "@react-native-firebase/firestore";
 import { getFirestore, doc } from "@react-native-firebase/firestore";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ConsentStatus, Language, Role } from "../../../shared/types";
+import type { ConsentStatus, EmergencyContact, Language, Role } from "../../../shared/types";
 import { useAuth } from "../auth/AuthProvider";
-import { readParentIds } from "./parentIds";
+import { readParentIds, addParentId, removeParentId } from "./parentIds";
+import { listMyParents } from "./callables";
 
 /** Firestore `in` clauses accept at most 30 values. */
 const CHUNK_SIZE = 30;
@@ -26,6 +27,8 @@ export interface FamilyParent {
   timezone: string;
   /** Null when the parent document has no consent map at all — fail closed for dated queries. */
   consent: FamilyParentConsent | null;
+  /** Up to 3 people the family can call when a dose is missed; empty when none are set. */
+  emergencyContacts: EmergencyContact[];
   /** The signed-in member's role for this parent; null when the membership doc is unreadable. */
   role: Role | null;
 }
@@ -45,6 +48,7 @@ interface ParentSnapshot {
   language: Language;
   timezone: string;
   consent: FamilyParentConsent | null;
+  emergencyContacts: EmergencyContact[];
 }
 
 /** A parent as the dated-query hooks need it: identity, timezone, consent map and this member's role. */
@@ -74,7 +78,40 @@ function toSnapshot(id: string, data: Record<string, unknown> | undefined): Pare
     language: (typeof data?.language === "string" ? data.language : "en-IN") as Language,
     timezone: typeof data?.timezone === "string" && data.timezone ? data.timezone : "Asia/Kolkata",
     consent,
+    emergencyContacts: toContacts(data?.emergencyContacts),
   };
+}
+
+function toContacts(value: unknown): EmergencyContact[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry): EmergencyContact[] => {
+    const c = entry as Partial<EmergencyContact> | null;
+    if (!c || typeof c.label !== "string" || typeof c.phone !== "string") return [];
+    return [{ label: c.label, phone: c.phone, kind: c.kind === "clinic" ? "clinic" : "neighbour" }];
+  });
+}
+
+/**
+ * One id the member can no longer read (the parent was deleted, or the member was removed) makes the
+ * whole `in` query fail with permission-denied. Probe each id and forget the unreadable ones so the
+ * rest of the list recovers. Returns true when at least one id was dropped.
+ */
+async function pruneUnreadable(ids: string[]): Promise<boolean> {
+  const db = getFirestore();
+  let removed = false;
+  await Promise.all(
+    ids.map(async (id) => {
+      try {
+        await getDoc(doc(db, "parents", id));
+      } catch (error) {
+        if (((error as { code?: string } | null)?.code ?? "").endsWith("permission-denied")) {
+          await removeParentId(id);
+          removed = true;
+        }
+      }
+    }),
+  );
+  return removed;
 }
 
 /** Ordered by the stored id list, de-duplicated, with the freshest data and roles. */
@@ -126,7 +163,20 @@ export function useParents(): UseParentsResult {
     };
 
     void (async () => {
-      const ids = await readParentIds();
+      let ids = await readParentIds();
+      if (cancelled) return;
+      // A reinstall or a new phone starts with an empty local list. Ask the server for the ids the
+      // account is a member of and store the missing ones; offline, keep whatever is local.
+      try {
+        const remote = await listMyParents();
+        const missing = (remote?.parentIds ?? []).filter((id) => !ids.includes(id));
+        if (missing.length > 0) {
+          await Promise.all(missing.map((id) => addParentId(id)));
+          ids = [...ids, ...missing];
+        }
+      } catch {
+        // Offline or functions unavailable: the local list is still valid.
+      }
       if (cancelled) return;
       orderRef.current = ids;
       if (ids.length === 0) {
@@ -154,6 +204,11 @@ export function useParents(): UseParentsResult {
             // Ids and statuses only in logs (hard rule 6).
             const code = (error as { code?: string } | null)?.code ?? "unknown";
             console.warn(`parents snapshot failed code=${code}`);
+            if (code.endsWith("permission-denied")) {
+              void pruneUnreadable(chunk).then((removed) => {
+                if (removed && !cancelled) setVersion((v) => v + 1);
+              });
+            }
             if (pendingFirstSnapshots > 0) {
               pendingFirstSnapshots -= 1;
               if (pendingFirstSnapshots === 0 && !cancelled) setLoading(false);

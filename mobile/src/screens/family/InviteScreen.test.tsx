@@ -1,3 +1,4 @@
+import { Share } from "react-native";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { renderApp } from "../../test-utils";
 import { InviteScreen } from "./InviteScreen";
@@ -49,6 +50,16 @@ describe("InviteScreen", () => {
     expect(await screen.findByTestId("invite-code")).toHaveTextContent("K7M2P9XA");
     expect(createInvite).toHaveBeenCalledWith({ parentId: "p1", role: "editor" });
     expect(screen.queryByTestId("invite-create")).toBeNull();
+  });
+
+  it("shares the invite code through the system share sheet", async () => {
+    const shareSpy = jest.spyOn(Share, "share").mockResolvedValue({ action: "sharedAction", activityType: undefined });
+    callable("createInvite").mockResolvedValue({ data: { code: "K7M2P9XA", expiresAt: "2026-01-01" } });
+    await renderInvite();
+    await fireEvent.press(screen.getByTestId("invite-create"));
+    await fireEvent.press(await screen.findByTestId("invite-share"));
+    expect(shareSpy).toHaveBeenCalledWith({ message: expect.stringContaining("K7M2P9XA") });
+    shareSpy.mockRestore();
   });
 
   it("sends the viewer role when selected", async () => {

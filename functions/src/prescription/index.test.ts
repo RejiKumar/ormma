@@ -1,7 +1,11 @@
-import { createPrescriptionReview } from "./scan";
+/* eslint-disable @typescript-eslint/no-explicit-any -- test doubles */
+
+import { getDb } from "../db";
 import { confirmPrescriptionMedicineHandler } from "./index";
 
 jest.mock("./scan");
+// The handler reads its database through getDb(); hand it the test double so no real Firestore is needed.
+jest.mock("../db");
 
 describe("prescription handlers", () => {
   it("confirmPrescriptionMedicine creates medicine with prescription_scan and confirmedByHuman true", async () => {
@@ -15,7 +19,7 @@ describe("prescription handlers", () => {
         }),
       }),
       collection: () => ({
-        doc: () => ({ set }),
+        doc: () => ({ set, id: "m1" }),
       }),
     };
     db.doc = jest.fn((path: string) => {
@@ -27,6 +31,8 @@ describe("prescription handlers", () => {
         }),
       };
     });
+
+    (getDb as jest.Mock).mockReturnValue(db);
 
     const result = await confirmPrescriptionMedicineHandler({
       auth: { uid: "uid1" },

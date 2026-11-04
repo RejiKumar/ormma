@@ -1,17 +1,23 @@
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Card } from "../../components/Card";
+import { DoseRing } from "../../components/DoseRing";
 import { EmptyState } from "../../components/EmptyState";
+import { DigestCard } from "../../components/DigestCard";
+import { Icon } from "../../components/Icon";
+import { PresenceBar } from "../../components/PresenceBar";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
-import { StatusChip } from "../../components/StatusChip";
+import { STATUS_ICON, StatusChip } from "../../components/StatusChip";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useAlerts } from "../../family/useAlerts";
 import type { DatedParent, FamilyParent } from "../../family/useParents";
 import { useParents } from "../../family/useParents";
 import { useTodayEvents, type TodayDoseEvent } from "../../family/useTodayEvents";
+import { buildDigest, dayLabel } from "../../family/digest";
 import { formatLocalClock } from "../../family/visibility";
 import type { AlertType } from "../../../../shared/types";
 
@@ -27,7 +33,116 @@ const ALERT_TYPE_KEY = {
   urgent: "alertTypes.urgent",
 } as const satisfies Record<AlertType, string>;
 
-/** One parent's today: clock time in the parent's timezone plus the event's status chip. */
+const ATTENTION: ReadonlySet<string> = new Set(["missed", "no_answer", "not_taken"]);
+
+/** Reassurance card: date, progress ring and one sentence on how the day is going. */
+function HeroCard({ parent, events }: { parent: FamilyParent; events: TodayDoseEvent[] }) {
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const navigation = useNavigation();
+  const total = events.length;
+  const taken = events.filter((event) => event.status === "taken").length;
+  const attention = events.some((event) => ATTENTION.has(event.status));
+  const title = attention
+    ? t("screens.today.heroAttention", { name: parent.name })
+    : taken === total
+      ? t("screens.today.heroAllTaken", { name: parent.name })
+      : t("screens.today.heroOnTrack", { name: parent.name });
+  return (
+    <View
+      testID={`today-hero-${parent.id}`}
+      style={{
+        backgroundColor: theme.colors.primary,
+        borderRadius: theme.radius.xl,
+        padding: theme.spacing.lg,
+        gap: theme.spacing.lg,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.sm }}>
+        <Icon name="home" color={theme.colors.inkOnPrimary} size={18} />
+        <Text variant="caption" tone="onPrimary">
+          {dayLabel(parent.timezone, Date.now())}
+        </Text>
+      </View>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.lg }}>
+        <DoseRing onPrimary taken={taken} total={total} size={84} strokeWidth={9} />
+        <View style={{ flex: 1, gap: theme.spacing.xs }}>
+          <Text variant="title" tone="onPrimary" lang={parent.language}>
+            {title}
+          </Text>
+          <Text variant="caption" tone="onPrimary">
+            {t("screens.today.heroProgress", { taken, total })}
+          </Text>
+        </View>
+      </View>
+      {attention ? (
+        <Pressable
+          accessibilityRole="button"
+          testID={`today-see-alerts-${parent.id}`}
+          onPress={() => navigation.navigate("Alerts" as never)}
+          style={({ pressed }) => ({
+            alignSelf: "flex-start",
+            minHeight: 44,
+            justifyContent: "center",
+            borderRadius: theme.radius.pill,
+            paddingHorizontal: theme.spacing.lg,
+            backgroundColor: theme.colors.surface,
+            opacity: pressed ? 0.85 : 1,
+          })}
+        >
+          <Text variant="label" tone="primary">
+            {t("screens.today.heroSeeAlerts")}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+/** One dose on the timeline: a status node on a rail beside a card with the clock time and chip. */
+function DoseRow({
+  parent,
+  event,
+  last,
+}: {
+  parent: FamilyParent;
+  event: TodayDoseEvent;
+  last: boolean;
+}) {
+  const { theme } = useTheme();
+  const status = theme.colors.status[event.status];
+  return (
+    <View style={{ flexDirection: "row", gap: theme.spacing.md }}>
+      <View style={{ alignItems: "center", width: 32 }}>
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: status.bg,
+          }}
+        >
+          <Icon name={STATUS_ICON[event.status]} color={status.icon} size={18} />
+        </View>
+        {last ? null : (
+          <View style={{ flex: 1, width: 2, marginVertical: 4, backgroundColor: theme.colors.border }} />
+        )}
+      </View>
+      <Card style={{ flex: 1, paddingVertical: theme.spacing.xs, marginBottom: last ? 0 : theme.spacing.md }}>
+        <ListItem
+          testID={`today-event-${parent.id}-${event.id}`}
+          title={formatLocalClock(parent.timezone, event.scheduledFor)}
+          chevron={false}
+          trailing={<StatusChip status={event.status} testID={`today-chip-${event.id}`} />}
+        />
+      </Card>
+    </View>
+  );
+}
+
+/** One parent's today: hero summary, then the dose timeline in the parent's timezone. */
 function ParentTodaySection({
   parent,
   events,
@@ -39,8 +154,9 @@ function ParentTodaySection({
 }) {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const digest = buildDigest(t, parent, events, Date.now());
   return (
-    <View testID={`today-section-${parent.id}`} style={{ gap: theme.spacing.sm }}>
+    <View testID={`today-section-${parent.id}`} style={{ gap: theme.spacing.md }}>
       <Text variant="title" lang={parent.language}>
         {parent.name}
       </Text>
@@ -49,15 +165,21 @@ function ParentTodaySection({
       ) : events.length === 0 ? (
         <EmptyState testID={`today-empty-${parent.id}`} icon="pill" title={t("screens.today.noEvents")} />
       ) : (
-        events.map((event) => (
-          <ListItem
-            key={event.id}
-            testID={`today-event-${parent.id}-${event.id}`}
-            title={formatLocalClock(parent.timezone, event.scheduledFor)}
-            chevron={false}
-            trailing={<StatusChip status={event.status} testID={`today-chip-${event.id}`} />}
-          />
-        ))
+        <>
+          <PresenceBar parent={parent} />
+          <HeroCard parent={parent} events={events} />
+          <Text variant="label" tone="muted">
+            {t("screens.today.dosesTitle")}
+          </Text>
+          <View>
+            {events.map((event, index) => (
+              <DoseRow key={event.id} parent={parent} event={event} last={index === events.length - 1} />
+            ))}
+          </View>
+          {digest && parent.consent?.status === "granted" ? (
+            <DigestCard parentId={parent.id} text={digest} />
+          ) : null}
+        </>
       )}
     </View>
   );

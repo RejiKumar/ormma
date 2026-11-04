@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, View } from "react-native";
 import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
 import { ListItem } from "../../components/ListItem";
@@ -67,7 +68,7 @@ export function MedicinesListScreen({ navigation }: Props) {
         <Text tone="muted">{t("common.loading")}</Text>
       ) : parents.length === 0 ? (
         <EmptyState
-          testID="medicines-empty"
+          testID="medicines-no-parents"
           icon="pill"
           title={t("screens.medicines.emptyTitle")}
           description={t("screens.medicines.emptyDescription")}
@@ -121,31 +122,46 @@ export function MedicinesListScreen({ navigation }: Props) {
             />
           ) : (
             medicines.map((medicine) => (
-              <ListItem
-                key={medicine.id}
-                testID={`medicine-${medicine.id}`}
-                title={medicine.name}
-                subtitle={[medicine.doseText, medicine.times.join(", ")]
-                  .filter((part) => part.length > 0)
-                  .join(" · ")}
-                chevron={canEdit}
-                onPress={
-                  canEdit && selected
-                    ? () =>
-                        navigation.navigate("EditMedicine", {
-                          parentId: selected.id,
-                          medicine,
-                        })
-                    : undefined
-                }
-                trailing={
-                  medicine.active ? undefined : (
-                    <Text variant="label" tone="muted">
-                      {t("screens.medicines.inactive")}
-                    </Text>
-                  )
-                }
-              />
+              <Card key={medicine.id} style={{ paddingVertical: theme.spacing.xs }}>
+                <ListItem
+                  testID={`medicine-${medicine.id}`}
+                  leading={
+                    <View
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: theme.radius.md,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: theme.colors.primaryTint,
+                      }}
+                    >
+                      <Icon name="pill" color={theme.colors.primary} size={22} />
+                    </View>
+                  }
+                  title={medicine.name}
+                  subtitle={[medicine.doseText, medicine.times.join(", ")]
+                    .filter((part) => part.length > 0)
+                    .join(" · ")}
+                  chevron={canEdit}
+                  onPress={
+                    canEdit && selected
+                      ? () =>
+                          navigation.navigate("EditMedicine", {
+                            parentId: selected.id,
+                            medicine,
+                          })
+                      : undefined
+                  }
+                  trailing={
+                    medicine.active ? undefined : (
+                      <Text variant="label" tone="muted">
+                        {t("screens.medicines.inactive")}
+                      </Text>
+                    )
+                  }
+                />
+              </Card>
             ))
           )}
         </>

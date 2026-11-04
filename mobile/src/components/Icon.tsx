@@ -49,10 +49,9 @@ export const ICONS = {
     ],
   },
   pill: {
-    transform: "rotate(-45 12 12)",
     els: [
-      { t: "rect", x: 3, y: 8.5, w: 18, h: 7, rx: 3.5 },
-      { t: "path", d: "M12 8.5v7" },
+      { t: "path", d: "m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" },
+      { t: "path", d: "m8.5 8.5 7 7" },
     ],
   },
   bell: {
@@ -128,7 +127,7 @@ export function Icon({
       importantForAccessibility={decorative ? "no-hide-descendants" : "yes"}
       accessibilityElementsHidden={decorative}
     >
-      <G transform={def.transform}>
+      <G {...(def.transform ? { transform: def.transform } : {})}>
         {def.els.map((el, i) => {
           const common = {
             stroke: color,

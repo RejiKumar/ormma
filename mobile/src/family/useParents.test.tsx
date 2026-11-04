@@ -54,6 +54,33 @@ describe("useParents", () => {
     expect(fsMock.onSnapshot).not.toHaveBeenCalled();
   });
 
+  it("recovers parent ids from the server after a reinstall (empty local list)", async () => {
+    const fns = jest.requireMock("@react-native-firebase/functions") as {
+      __callables: Record<string, jest.Mock>;
+      httpsCallable: (f: unknown, name: string) => jest.Mock;
+    };
+    fns.httpsCallable({}, "listMyParents").mockResolvedValue({ data: { parentIds: ["p9"] } });
+    fsMock.getDoc.mockResolvedValue({ exists: () => true, data: () => ({ role: "owner" }) });
+
+    const listeners = captureListeners();
+    const { result } = await renderHook(() => useParents(), { wrapper });
+    await waitFor(() => expect(listeners).toHaveLength(1));
+    expect(fsMock.where).toHaveBeenCalledWith(expect.anything(), "in", ["p9"]);
+    expect(await AsyncStorage.getItem("ormma.parentIds")).toBe(JSON.stringify(["p9"]));
+
+    await act(async () => {
+      listeners[0].next({
+        docs: [
+          {
+            id: "p9",
+            data: () => ({ name: "Amma", language: "ml-IN", consent: { status: "granted" } }),
+          },
+        ],
+      });
+    });
+    await waitFor(() => expect(result.current.parents).toHaveLength(1));
+  });
+
   it("subscribes only to the known ids (documentId-in, decision #57) and maps the snapshot", async () => {
     await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
     const listeners = captureListeners();
@@ -75,6 +102,7 @@ describe("useParents", () => {
         language: "ml-IN",
         timezone: "Asia/Kolkata",
         consent: { status: "pending", revokedAt: null, regrantedAt: null },
+        emergencyContacts: [],
         role: "owner",
       },
     ]);
@@ -150,6 +178,31 @@ describe("useParents", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.parents).toEqual([]);
     expect(warn).toHaveBeenCalledWith("parents snapshot failed code=permission-denied");
+    warn.mockRestore();
+  });
+
+  it("forgets a stored id the member can no longer read, then re-subscribes with the rest", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["gone", "p2"]));
+    const listeners = captureListeners();
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+    // The deleted parent is denied; the other one is readable.
+    fsMock.getDoc.mockImplementation((ref: { path?: string; id?: string }) => {
+      const id = ref?.id ?? ref?.path?.split("/").pop();
+      if (id === "gone") return Promise.reject({ code: "firestore/permission-denied" });
+      return Promise.resolve({ exists: () => true, data: () => ({ role: "owner" }) });
+    });
+
+    await renderHook(() => useParents(), { wrapper });
+    await waitFor(() => expect(listeners).toHaveLength(1));
+    await act(async () => {
+      listeners[0].error({ code: "firestore/permission-denied" });
+    });
+
+    await waitFor(async () =>
+      expect(JSON.parse((await AsyncStorage.getItem("ormma.parentIds")) ?? "[]")).toEqual(["p2"]),
+    );
+    // A second subscription is made for the remaining id.
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(1));
     warn.mockRestore();
   });
 

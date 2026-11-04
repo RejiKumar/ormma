@@ -129,12 +129,35 @@ describe("TodayDashboardScreen", () => {
     expect(screen.getByText("18:00")).toBeTruthy();
     expect(screen.getByText("Pending")).toBeTruthy();
     expect(screen.getByText("No recent alerts")).toBeTruthy();
+    // The hero summary and the shareable family update appear for a parent with consent granted.
+    expect(screen.getByTestId("today-hero-p1")).toBeTruthy();
+    expect(screen.getByTestId("digest-p1")).toBeTruthy();
+    expect(screen.getByTestId("digest-text-p1")).toHaveTextContent(/0 of 1 doses confirmed\./);
 
     await act(async () => {
       events.next(eventSnap([{ id: "a1", ms: T0 + 8 * HOUR, status: "taken" }]));
     });
     expect(await screen.findByText("Taken")).toBeTruthy();
     expect(screen.queryByText("Pending")).toBeNull();
+  });
+
+  it("offers no family update while consent is not granted", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+    stubGetDoc("owner");
+    const { listeners } = captureListeners();
+
+    await renderDashboard();
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+    await act(async () => {
+      listeners[0].next(parentSnap({ name: "Amma", language: "ml-IN", consent: { status: "pending" } }));
+    });
+    await waitFor(() => expect(listeners.length).toBeGreaterThanOrEqual(3));
+    await act(async () => {
+      listeners[1].next(eventSnap([{ id: "a1", ms: T0 + 8 * HOUR, status: "pending" }]));
+    });
+    expect(await screen.findByTestId("today-section-p1")).toBeTruthy();
+    expect(screen.queryByTestId("digest-p1")).toBeNull();
+    expect(screen.queryByTestId("presence-p1")).toBeNull();
   });
 
   it("shows a per-parent empty state when that parent has no doses today", async () => {
@@ -209,8 +232,17 @@ describe("TodayDashboardScreen", () => {
     });
     await waitFor(() => expect(listeners.length).toBeGreaterThanOrEqual(3));
 
-    expect(fsMock.where).toHaveBeenCalledWith("scheduledFor", "<", revokedAt);
-    expect(fsMock.where).not.toHaveBeenCalledWith("scheduledFor", ">=", revokedAt);
+    // Firestore bounds must be Timestamps: a raw number never matches a timestamp field.
+    const cappedAt = (op: string) =>
+      fsMock.where.mock.calls.some(
+        ([field, operator, value]) =>
+          field === "scheduledFor" &&
+          operator === op &&
+          typeof value?.toMillis === "function" &&
+          value.toMillis() === revokedAt,
+      );
+    expect(cappedAt("<")).toBe(true);
+    expect(cappedAt(">=")).toBe(false);
 
     await act(async () => {
       listeners[1].next(eventSnap([]));

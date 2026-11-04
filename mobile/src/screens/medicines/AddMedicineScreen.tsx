@@ -1,6 +1,8 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
+import type { ComponentRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 import { getAuth } from "@react-native-firebase/auth";
 import { doc, getFirestore, setDoc, Timestamp } from "@react-native-firebase/firestore";
 import { Banner } from "../../components/Banner";
@@ -42,6 +44,10 @@ export function AddMedicineScreen({ navigation, route }: Props) {
   const [errorKey, setErrorKey] = useState<MedicineDraftError | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+
+  // Errors render below the last field; reveal them so a failed save is never silent.
+  const revealError = () => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
 
   useEffect(() => {
     if (!parent) return;
@@ -57,7 +63,10 @@ export function AddMedicineScreen({ navigation, route }: Props) {
     const invalid = validateMedicineDraft(draft);
     setErrorKey(invalid);
     setSaveFailed(false);
-    if (invalid) return;
+    if (invalid) {
+      revealError();
+      return;
+    }
 
     const uid = getAuth().currentUser?.uid;
     setSaving(true);
@@ -73,6 +82,7 @@ export function AddMedicineScreen({ navigation, route }: Props) {
       const code = (err as { code?: string } | null)?.code ?? "unknown";
       console.warn(`createMedicine failed code=${code}`);
       setSaveFailed(true);
+      revealError();
     } finally {
       setSaving(false);
     }
@@ -80,6 +90,8 @@ export function AddMedicineScreen({ navigation, route }: Props) {
 
   return (
     <Screen
+      belowHeader
+      scrollRef={scrollRef}
       primaryAction={
         canEdit ? (
           <Button

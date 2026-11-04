@@ -2,9 +2,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, View } from "react-native";
+import { Alert, Share, View } from "react-native";
+import { getAuth, signOut } from "@react-native-firebase/auth";
 import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
+import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
@@ -13,6 +15,7 @@ import { useTheme } from "../../design/ThemeProvider";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
 import { deleteParent, exportParentData, grantConsent, revokeConsent } from "../../family/callables";
+import { removeParentId } from "../../family/parentIds";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "FamilyList">;
 
@@ -40,12 +43,35 @@ export function FamilyListScreen({ navigation }: Props) {
     }, [reload]),
   );
 
-  const onExport = async (parentId: string) => {
+  const onExport = async (parentId: string, parentName: string) => {
     try {
       setBusyId(parentId);
       const data = await exportParentData({ parentId });
-      Alert.alert("OK", JSON.stringify(data).slice(0, 200));
-    } catch (e) {
+      const count = (rows: unknown[]) => rows.length;
+      // One countable line per record type, so a single record never reads "1 medicines".
+      const lines = [
+        t("screens.family.exportMedicines", { count: count(data.medicines) }),
+        t("screens.family.exportDoseEvents", { count: count(data.doseEvents) }),
+        t("screens.family.exportHealthLogs", { count: count(data.healthLogs) }),
+        t("screens.family.exportAlerts", { count: count(data.alerts) }),
+      ];
+      Alert.alert(
+        t("screens.family.exportReadyTitle"),
+        [t("screens.family.exportReadyMessage", { name: parentName }), ...lines].join("\n"),
+        [
+          { text: t("screens.family.exportDone"), style: "cancel" },
+          {
+            text: t("screens.family.exportShare"),
+            // The share sheet hands the file to the user's own app; nothing is logged (hard rule 6).
+            onPress: () =>
+              void Share.share({
+                title: t("screens.family.exportReadyTitle"),
+                message: JSON.stringify(data, null, 2),
+              }),
+          },
+        ],
+      );
+    } catch {
       Alert.alert(t("common.error"));
     } finally {
       setBusyId(null);
@@ -63,7 +89,7 @@ export function FamilyListScreen({ navigation }: Props) {
             setBusyId(parentId);
             await revokeConsent({ parentId, method: "family_attested" });
             reload();
-          } catch (e) {
+          } catch {
             Alert.alert(t("common.error"));
           } finally {
             setBusyId(null);
@@ -78,7 +104,7 @@ export function FamilyListScreen({ navigation }: Props) {
       setBusyId(parentId);
       await grantConsent({ parentId, method: "family_attested" });
       reload();
-    } catch (e) {
+    } catch {
       Alert.alert(t("common.error"));
     } finally {
       setBusyId(null);
@@ -95,8 +121,9 @@ export function FamilyListScreen({ navigation }: Props) {
           try {
             setBusyId(parentId);
             await deleteParent({ parentId });
+            await removeParentId(parentId);
             reload();
-          } catch (e) {
+          } catch {
             Alert.alert(t("common.error"));
           } finally {
             setBusyId(null);
@@ -106,8 +133,20 @@ export function FamilyListScreen({ navigation }: Props) {
     ]);
   };
 
+  const onSignOut = () => {
+    Alert.alert(t("screens.family.signOut"), t("screens.family.signOutConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("screens.family.signOut"),
+        style: "destructive",
+        // AuthProvider sees the change and the navigator returns to the sign-in screen.
+        onPress: () => void signOut(getAuth()).catch(() => Alert.alert(t("common.error"))),
+      },
+    ]);
+  };
+
   const rows = parents.map((parent) => (
-    <View key={parent.id} style={{ gap: theme.spacing.sm }}>
+    <Card key={parent.id} style={{ gap: theme.spacing.sm }}>
       <ListItem
         testID={`parent-${parent.id}`}
         title={parent.name}
@@ -131,10 +170,18 @@ export function FamilyListScreen({ navigation }: Props) {
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.xs }}>
           <Button
             variant="quiet"
+            label={t("screens.family.emergencyContacts")}
+            testID={`contacts-${parent.id}`}
+            onPress={() =>
+              navigation.navigate("EmergencyContacts", { parentId: parent.id, parentName: parent.name })
+            }
+          />
+          <Button
+            variant="quiet"
             label={t("screens.family.exportData")}
             testID={`export-${parent.id}`}
             disabled={busyId === parent.id}
-            onPress={() => onExport(parent.id)}
+            onPress={() => onExport(parent.id, parent.name)}
           />
           {parent.consent?.status === "granted" ? (
             <Button
@@ -165,7 +212,7 @@ export function FamilyListScreen({ navigation }: Props) {
       {parent.consent?.status !== "granted" ? (
         <Banner testID={`consent-${parent.id}`} message={t("screens.family.consentPending")} />
       ) : null}
-    </View>
+    </Card>
   ));
 
   return (
@@ -208,6 +255,14 @@ export function FamilyListScreen({ navigation }: Props) {
             onPress={() => navigation.navigate("Redeem")}
           />
         </>
+      )}
+      {loading ? null : (
+        <Button
+          variant="quiet"
+          label={t("screens.family.signOut")}
+          testID="family-sign-out"
+          onPress={onSignOut}
+        />
       )}
     </Screen>
   );

@@ -38,6 +38,7 @@ const avgSugar = (readings: Reading[]): number | null => {
   const vals = readings
     .filter((r) => r.type === "sugar")
     .map((r) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- reading shapes vary by source
       const v = Number((r.values as { value?: unknown; reading?: unknown }).value ?? (r.values as { value?: unknown }).value ?? (r.values as any).mgdl ?? (r.values as any).reading);
       if (!Number.isFinite(v)) return null;
       return v;

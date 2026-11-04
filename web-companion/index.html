@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ormma — Family Companion</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg-cream: #F8F7F4;
+      --primary-deep: #2D5A4C;
+      --secondary-soft: #EBF1EE;
+      --surface-card: #FFFFFF;
+      --card-border: #E5E2DC;
+      --alert-terracotta: #C85A32;
+      --alert-tint: #FCEEE8;
+      --text-primary: #1A2421;
+      --text-muted: #6B7470;
+      --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-inter);
+      background-color: #EFECE6;
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* iPhone 15 Pro container styling */
+    .device-frame {
+      width: 100%;
+      max-width: 393px;
+      height: 852px;
+      border-radius: 48px;
+      box-shadow: 0 25px 60px -15px rgba(26, 36, 33, 0.25), 0 0 0 10px #222927, 0 0 0 12px #3E4643;
+      position: relative;
+      background-color: var(--bg-cream);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island pill */
+    .dynamic-island {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 35px;
+      background-color: #000000;
+      border-radius: 20px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Custom scrollbar hiding */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Pulse animation for alert dot */
+    @keyframes pulseTerracotta {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 0.6;
+      }
+    }
+    .pulse-terracotta {
+      animation: pulseTerracotta 1.8s infinite ease-in-out;
+    }
+
+    /* Circular progress ring */
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    /* Audio wave animation */
+    @keyframes soundBar {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+    .audio-bar-1 { animation: soundBar 0.9s infinite ease-in-out; }
+    .audio-bar-2 { animation: soundBar 0.7s infinite ease-in-out 0.2s; }
+    .audio-bar-3 { animation: soundBar 1.1s infinite ease-in-out 0.4s; }
+    .audio-bar-4 { animation: soundBar 0.8s infinite ease-in-out 0.1s; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-6 bg-[#E8E4DC]">
+
+  <!-- Outer workspace preview bar -->
+  <header class="w-full max-w-[500px] mb-3 flex items-center justify-between px-2 text-xs text-[#525E5A]">
+    <div class="flex items-center gap-1.5 font-medium">
+      <span class="inline-block w-2.5 h-2.5 rounded-full bg-[#2D5A4C]"></span>
+      <span class="font-semibold text-[#1A2421]">Ormma</span> • Interactive Mobile Prototype
+    </div>
+    <div class="text-[11px] bg-[#DCD6CA] px-2 py-0.5 rounded-full text-[#384440]">
+      iPhone 15 Pro • 393 × 852
+    </div>
+  </header>
+
+  <!-- Main Device Frame -->
+  <main class="device-frame" id="app-container">
+
+    <!-- Top Status Bar & Dynamic Island -->
+    <div class="relative z-40 w-full pt-3 px-7 flex items-center justify-between text-[13px] font-semibold tracking-tight text-[#1A2421] select-none">
+      <span id="device-clock">9:41</span>
+      
+      <!-- Dynamic Island cutout -->
+      <div class="dynamic-island" id="island">
+        <div class="w-2.5 h-2.5 rounded-full bg-[#111] flex items-center justify-center">
+          <div class="w-1.5 h-1.5 rounded-full bg-[#0d2218]" id="island-sensor"></div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500" id="island-dot"></span>
+        </div>
+      </div>
+
+      <!-- Right system icons -->
+      <div class="flex items-center gap-1.5 text-xs text-[#1A2421]">
+        <!-- Signal bars SVG -->
+        <svg class="w-4 h-3 fill-current" viewBox="0 0 16 12">
+          <rect x="0" y="8" width="2.5" height="4" rx="0.75" />
+          <rect x="4" y="6" width="2.5" height="6" rx="0.75" />
+          <rect x="8" y="3" width="2.5" height="9" rx="0.75" />
+          <rect x="12" y="0" width="2.5" height="12" rx="0.75" />
+        </svg>
+        <!-- Wifi SVG -->
+        <svg class="w-3.5 h-3 fill-current" viewBox="0 0 16 12">
+          <path d="M8 9.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-4.2-2.5a5.9 5.9 0 0 1 8.4 0 .8.8 0 0 0 1.1-1.1 7.5 7.5 0 0 0-10.6 0 .8.8 0 1 0 1.1 1.1zm-3-3a10.1 10.1 0 0 1 14.4 0 .8.8 0 1 0 1.1-1.1 11.7 11.7 0 0 0-16.6 0 .8.8 0 1 0 1.1 1.1z"/>
+        </svg>
+        <!-- Battery SVG -->
+        <div class="w-5 h-2.5 border-[1.2px] border-[#1A2421] rounded-sm p-[1px] flex items-center">
+          <div class="h-full bg-[#1A2421] rounded-[1px] w-[85%]"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Bar & Global Switcher -->
+    <div class="w-full px-5 pt-4 pb-2 z-30 bg-[#F8F7F4]/90 backdrop-blur-md flex flex-col gap-2.5 border-b border-[#EBE6DD]">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-2xl font-bold tracking-tight text-[#2D5A4C]">ormma</span>
+          <span class="text-[11px] font-medium tracking-wide uppercase px-1.5 py-0.5 rounded bg-[#EBF1EE] text-[#2D5A4C]">Care</span>
+        </div>
+
+        <!-- Location & Status Pill -->
+        <button id="location-pill" onclick="switchTab('escalation')" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E5E2DC] shadow-sm text-xs font-medium text-[#1A2421] transition active:scale-95">
+          <span id="status-live-dot" class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span id="status-live-text">Amma · Thrissur</span>
+        </button>
+      </div>
+
+      <!-- Demo State Switcher Toggle -->
+      <div class="w-full bg-[#EDE8E0] p-1 rounded-full flex items-center shadow-inner text-xs">
+        <button id="mode-normal-btn" onclick="setAppMode('normal')" class="flex-1 py-1.5 px-3 rounded-full font-semibold transition-all duration-200 bg-white text-[#2D5A4C] shadow-sm">
+          ☀️ Normal Day
+        </button>
+        <button id="mode-missed-btn" onclick="setAppMode('missed')" class="flex-1 py-1.5 px-3 rounded-full font-semibold transition-all duration-200 text-[#6B7470]">
+          ⚠️ Missed Morning
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Screen Content Container -->
+    <div class="flex-1 overflow-y-auto no-scrollbar pb-24" id="screen-container">
+      
+      <!-- ==============================================
+           SCREEN 1: TODAY FEED
+           ============================================== -->
+      <div id="tab-today" class="flex flex-col gap-4 p-4 transition-opacity duration-200">
+        
+        <!-- Hero Reassurance Card -->
+        <div id="hero-card" class="relative overflow-hidden rounded-[24px] p-5 text-white transition-all duration-300" style="background: linear-gradient(145deg, #2D5A4C 0%, #1E3D33 100%); box-shadow: 0 4px 16px rgba(45, 90, 76, 0.18);">
+          <!-- Subtle decorative background blob -->
+          <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/5 blur-2xl pointer-events-none"></div>
+
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-xs font-medium text-[#EBF1EE]">
+              <svg class="w-3.5 h-3.5 fill-rose-300" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              <span>Mon, 19 October</span>
+            </div>
+            <span id="hero-time-badge" class="text-xs text-[#EBF1EE]/80 font-medium">IST • 2:15 PM</span>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <!-- Progress Ring (76x76) -->
+            <div class="relative w-[76px] h-[76px] shrink-0 flex items-center justify-center">
+              <svg class="w-[76px] h-[76px]" viewBox="0 0 76 76">
+                <!-- Background ring -->
+                <circle cx="38" cy="38" r="32" stroke="rgba(255,255,255,0.2)" stroke-width="6" fill="transparent"/>
+                <!-- Animated Progress Circle -->
+                <circle id="progress-circle" class="progress-ring__circle" cx="38" cy="38" r="32" stroke="#EBF1EE" stroke-width="6" stroke-linecap="round" fill="transparent" stroke-dasharray="201.06" stroke-dashoffset="67.02"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span id="hero-ratio" class="text-base font-bold text-white tracking-tight leading-none">2/3</span>
+                <span class="text-[10px] text-[#EBF1EE]/70 font-medium uppercase mt-0.5 tracking-wider">taken</span>
+              </div>
+            </div>
+
+            <!-- Title & Summary -->
+            <div class="flex-1">
+              <h2 id="hero-title" class="text-lg font-semibold leading-snug tracking-tight text-white">Amma is on track today</h2>
+              <p id="hero-subtitle" class="text-xs text-[#EBF1EE]/85 mt-1 leading-relaxed">Morning and afternoon doses confirmed via Malayalam voice check-in.</p>
+            </div>
+          </div>
+
+          <!-- Alert Mode Action Banner (Shown conditionally) -->
+          <div id="hero-alert-banner" class="hidden mt-4 pt-3 border-t border-white/15 flex items-center justify-between">
+            <span class="text-xs font-medium text-amber-200">Ormma called 3 times (no reply)</span>
+            <button onclick="switchTab('escalation')" class="px-3 py-1.5 rounded-full bg-[#C85A32] text-white text-xs font-semibold shadow-md active:scale-95 transition">
+              See what Ormma tried →
+            </button>
+          </div>
+        </div>
+
+        <!-- Family Presence Bar -->
+        <div class="bg-white rounded-[20px] p-3.5 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)] flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <!-- Stacked circular avatars -->
+            <div class="flex -space-x-2 shrink-0">
+              <div class="w-7 h-7 rounded-full bg-[#F6D9C7] border-2 border-white flex items-center justify-center text-[11px] font-bold text-[#1A2421]">R</div>
+              <div class="w-7 h-7 rounded-full bg-[#D3E6E3] border-2 border-white flex items-center justify-center text-[11px] font-bold text-[#1A2421]">M</div>
+              <div class="w-7 h-7 rounded-full bg-[#E2D8EF] border-2 border-white flex items-center justify-center text-[11px] font-bold text-[#1A2421]">Y</div>
+            </div>
+            <div class="min-w-0">
+              <p id="presence-text" class="text-xs font-medium text-[#1A2421] truncate">Rahul is viewing · last call 6:10 PM yesterday</p>
+              <p class="text-[11px] text-[#6B7470]">Care circle active</p>
+            </div>
+          </div>
+          <button onclick="openCheckinModal()" class="shrink-0 px-3 py-1.5 rounded-full bg-[#FCEEE8] text-[#C85A32] text-xs font-semibold active:scale-95 transition hover:bg-[#F8E0D7]">
+            + I called Amma
+          </button>
+        </div>
+
+        <!-- Section Title -->
+        <div class="flex items-center justify-between px-1 pt-1">
+          <h3 class="text-sm font-semibold tracking-tight text-[#1A2421]">Today’s Dose Schedule</h3>
+          <span class="text-xs text-[#6B7470]">3 Prescribed Times</span>
+        </div>
+
+        <!-- Chronological Dose Timeline -->
+        <div class="flex flex-col gap-3">
+          
+          <!-- Dose 1: Morning (8:30 AM) -->
+          <div id="dose-card-morning" class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)] transition-all">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-[#6B7470]">Morning · 8:30 AM</span>
+                  <span id="morning-status-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#EBF1EE] text-[#17613D] flex items-center gap-1">
+                    <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    Taken on time · 8:34 AM
+                  </span>
+                </div>
+                <h4 class="text-base font-semibold text-[#1A2421] mt-1.5">Metformin 500mg + Amlodipine 5mg</h4>
+              </div>
+            </div>
+
+            <!-- Pill Visual Identifier Tag -->
+            <div class="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FAF7F2] border border-[#EBE6DD] text-xs text-[#525E5A]">
+              <svg class="w-3.5 h-3.5 text-[#2D5A4C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+              <span>Small round white tablet in silver strip</span>
+            </div>
+
+            <!-- Confirmation Note Block & Voice Playback -->
+            <div id="morning-note-block" class="mt-3 p-3 rounded-2xl bg-[#F8F7F4] border border-[#EAE6DF] text-xs text-[#2A3532]">
+              <div class="flex items-start justify-between gap-2">
+                <p class="leading-relaxed">
+                  <span class="font-semibold text-[#2D5A4C]">Ormma Check-in:</span> Amma confirmed taking sugar medicine (<i class="text-[#2D5A4C]">"kazhichu mole"</i>) after morning tea at 8:34 AM.
+                </p>
+                <button onclick="playVoiceAudio('morning')" class="shrink-0 p-1.5 rounded-full bg-white border border-[#E5E2DC] text-[#2D5A4C] hover:bg-[#EBF1EE] transition shadow-xs" title="Play audio check-in recording">
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+
+              <!-- Collapsible Voice Waveform Snippet -->
+              <div id="audio-player-morning" class="hidden mt-2 pt-2 border-t border-[#E5E2DC] flex items-center justify-between text-[11px] text-[#6B7470]">
+                <div class="flex items-center gap-1 text-[#2D5A4C]">
+                  <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-1"></span>
+                  <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-2"></span>
+                  <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-3"></span>
+                  <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-4"></span>
+                  <span class="ml-1.5 font-medium">Voice note · 0:14s</span>
+                </div>
+                <span class="italic text-[#4A5551]">"Chaya kudinju kazhinju..."</span>
+              </div>
+            </div>
+
+            <!-- Read receipts -->
+            <div class="mt-2.5 flex items-center justify-between text-[11px] text-[#6B7470]">
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Seen by Rahul 8:42 AM · Meera 9:10 AM
+              </span>
+            </div>
+          </div>
+
+          <!-- Dose 2: Afternoon (1:30 PM) -->
+          <div class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-[#6B7470]">Afternoon · 1:30 PM</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#EBF1EE] text-[#17613D] flex items-center gap-1">
+                    <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    Taken on time · 1:35 PM
+                  </span>
+                </div>
+                <h4 class="text-base font-semibold text-[#1A2421] mt-1.5">Metformin 500mg</h4>
+              </div>
+            </div>
+
+            <!-- Pill Tag -->
+            <div class="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FAF7F2] border border-[#EBE6DD] text-xs text-[#525E5A]">
+              <svg class="w-3.5 h-3.5 text-[#2D5A4C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="8.5" y1="12" x2="15.5" y2="12"/></svg>
+              <span>White oval scored tablet with lunch</span>
+            </div>
+
+            <!-- Confirmation Note Block -->
+            <div class="mt-3 p-3 rounded-2xl bg-[#F8F7F4] border border-[#EAE6DF] text-xs text-[#2A3532] flex items-center justify-between">
+              <p class="leading-relaxed">
+                <span class="font-semibold text-[#2D5A4C]">Voice verified:</span> Amma answered on 1st ring. Confirmed post-lunch dose. Energy tone sounded lively.
+              </p>
+            </div>
+
+            <div class="mt-2.5 flex items-center justify-between text-[11px] text-[#6B7470]">
+              <span>Seen by Meera 1:40 PM</span>
+            </div>
+          </div>
+
+          <!-- Dose 3: Night (9:00 PM) -->
+          <div id="dose-card-night" class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-[#6B7470]">Night · 9:00 PM</span>
+                  <span id="night-status-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF7F2] text-[#6B7470] border border-dashed border-[#CDC7BC]">
+                    Scheduled · Upcoming
+                  </span>
+                </div>
+                <h4 class="text-base font-semibold text-[#1A2421] mt-1.5">Atorvastatin 10mg</h4>
+              </div>
+            </div>
+
+            <div class="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FAF7F2] border border-[#EBE6DD] text-xs text-[#525E5A]">
+              <svg class="w-3.5 h-3.5 text-[#6B7470]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+              <span>Small film-coated yellow tablet · bedtime</span>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between pt-2 border-t border-[#F0EBE1]">
+              <span class="text-xs text-[#6B7470]">Ormma call set for 9:05 PM</span>
+              <button id="toggle-night-btn" onclick="toggleNightDose()" class="px-3 py-1 rounded-full text-xs font-semibold bg-[#EBF1EE] text-[#2D5A4C] hover:bg-[#DDE7E2] transition active:scale-95">
+                Mark taken early
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- WhatsApp Summary Digest Card -->
+        <div class="bg-[#FFFFFF] rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)] mt-1">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-[#1F7A4D]">
+              <!-- WhatsApp icon SVG -->
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-5.46-4.45-9.92-9.91-9.92zm5.78 14.01c-.24.68-1.4 1.25-1.92 1.33-.52.08-1.2.12-1.94-.12-.45-.14-1.03-.34-1.78-.66-3.13-1.35-5.16-4.52-5.32-4.73-.16-.21-1.28-1.7-1.28-3.24 0-1.54.81-2.3 1.1-2.61.28-.31.62-.39.83-.39.21 0 .42 0 .6.01.19.01.44-.07.69.53.25.6.86 2.1.94 2.25.08.16.14.34.03.55-.11.21-.16.34-.32.53-.16.19-.34.42-.48.56-.16.16-.33.33-.14.65.19.32.84 1.38 1.8 2.24 1.24 1.11 2.28 1.45 2.61 1.61.32.16.51.14.7-.08.19-.22.82-.96 1.04-1.29.22-.33.44-.27.73-.16.29.11 1.85.87 2.17 1.03.32.16.53.24.61.37.08.13.08.77-.16 1.45z"/>
+              </svg>
+              <span>Daily Family Digest</span>
+            </div>
+            <span class="text-[11px] text-[#6B7470]">Ready to send</span>
+          </div>
+
+          <div class="p-3 bg-[#FAF7F2] rounded-xl text-xs font-mono text-[#384440] leading-relaxed border border-[#EDE8E0]" id="whatsapp-preview">
+🌿 *Ormma Daily Care Update — Amma*
+📅 Mon, 19 Oct 2026 • Thrissur
+✅ Morning: Metformin 500mg + Amlodipine 5mg (8:34 AM)
+✅ Afternoon: Metformin 500mg (1:35 PM)
+⏳ Night: Atorvastatin 10mg (Scheduled 9:00 PM)
+💬 "Amma confirmed after tea, sounded cheerful."
+          </div>
+
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-[11px] text-[#6B7470]">Formatted for WhatsApp family group</span>
+            <button onclick="copyWhatsAppUpdate()" id="copy-whatsapp-btn" class="px-3.5 py-1.5 rounded-full bg-[#2D5A4C] text-white text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+              <span>Copy for WhatsApp</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==============================================
+           SCREEN 2: MEDICINES CATALOG
+           ============================================== -->
+      <div id="tab-medicines" class="hidden flex-col gap-4 p-4 transition-opacity duration-200">
+        
+        <!-- Header & Prescription Info -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold tracking-tight text-[#1A2421]">Prescriptions</h2>
+            <p class="text-xs text-[#6B7470]">Dr. K. G. Nair · Renai Clinic Thrissur</p>
+          </div>
+          <button onclick="openDoctorModal()" class="px-3 py-1.5 rounded-full bg-white border border-[#E5E2DC] text-xs font-medium text-[#2D5A4C] shadow-xs active:scale-95 transition">
+            Doctor Contact
+          </button>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button onclick="filterMeds('all')" id="med-filter-all" class="px-3 py-1 rounded-full text-xs font-semibold bg-[#2D5A4C] text-white shrink-0">
+            All (4)
+          </button>
+          <button onclick="filterMeds('morning')" id="med-filter-morning" class="px-3 py-1 rounded-full text-xs font-medium bg-white border border-[#E5E2DC] text-[#525E5A] shrink-0">
+            Morning (2)
+          </button>
+          <button onclick="filterMeds('afternoon')" id="med-filter-afternoon" class="px-3 py-1 rounded-full text-xs font-medium bg-white border border-[#E5E2DC] text-[#525E5A] shrink-0">
+            Afternoon (1)
+          </button>
+          <button onclick="filterMeds('night')" id="med-filter-night" class="px-3 py-1 rounded-full text-xs font-medium bg-white border border-[#E5E2DC] text-[#525E5A] shrink-0">
+            Night (1)
+          </button>
+        </div>
+
+        <!-- Medicine Cards -->
+        <div class="flex flex-col gap-3" id="meds-list">
+          
+          <!-- Metformin -->
+          <div class="med-item bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]" data-time="morning afternoon">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-[#2D5A4C] px-2 py-0.5 rounded-full bg-[#EBF1EE]">Twice Daily</span>
+                  <span class="text-[11px] text-[#6B7470]">Diabetes</span>
+                </div>
+                <h3 class="text-base font-semibold text-[#1A2421] mt-1.5">Metformin Hydrochloride</h3>
+                <p class="text-xs font-medium text-[#525E5A]">500 mg · After breakfast & lunch</p>
+              </div>
+              <div class="w-10 h-10 rounded-2xl bg-[#F8F7F4] border border-[#E5E2DC] flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-[#2D5A4C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+              </div>
+            </div>
+
+            <div class="mt-3 p-2.5 rounded-xl bg-[#FAF7F2] text-xs text-[#4A5551] flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-[#1A2421]">Look:</span>
+                <span>White round tablet, stamped 'M500', silver blister strip</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-[#1A2421]">Instructions:</span>
+                <span>Take immediately after food with plenty of water.</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-[11px] text-[#6B7470] pt-2 border-t border-[#F0EBE1]">
+              <span class="text-emerald-700 font-medium">● Refill in 12 days</span>
+              <span>Prescribed by Dr. Nair</span>
+            </div>
+          </div>
+
+          <!-- Amlodipine -->
+          <div class="med-item bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]" data-time="morning">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-[#2D5A4C] px-2 py-0.5 rounded-full bg-[#EBF1EE]">Morning</span>
+                  <span class="text-[11px] text-[#6B7470]">Blood Pressure</span>
+                </div>
+                <h3 class="text-base font-semibold text-[#1A2421] mt-1.5">Amlodipine Besylate</h3>
+                <p class="text-xs font-medium text-[#525E5A]">5 mg · 8:30 AM with morning tea</p>
+              </div>
+              <div class="w-10 h-10 rounded-2xl bg-[#F8F7F4] border border-[#E5E2DC] flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+            </div>
+
+            <div class="mt-3 p-2.5 rounded-xl bg-[#FAF7F2] text-xs text-[#4A5551] flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-[#1A2421]">Look:</span>
+                <span>Small hexagonal light-yellow tablet</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-[#1A2421]">Instructions:</span>
+                <span>Maintain regular blood pressure readings every Saturday.</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-[11px] text-[#6B7470] pt-2 border-t border-[#F0EBE1]">
+              <span class="text-emerald-700 font-medium">● Active continuous</span>
+              <span>Next BP check: 24 Oct</span>
+            </div>
+          </div>
+
+          <!-- Atorvastatin -->
+          <div class="med-item bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]" data-time="night">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-[#2D5A4C] px-2 py-0.5 rounded-full bg-[#EBF1EE]">Bedtime</span>
+                  <span class="text-[11px] text-[#6B7470]">Cholesterol</span>
+                </div>
+                <h3 class="text-base font-semibold text-[#1A2421] mt-1.5">Atorvastatin Calcium</h3>
+                <p class="text-xs font-medium text-[#525E5A]">10 mg · 9:00 PM before sleep</p>
+              </div>
+              <div class="w-10 h-10 rounded-2xl bg-[#F8F7F4] border border-[#E5E2DC] flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="4"/></svg>
+              </div>
+            </div>
+
+            <div class="mt-3 p-2.5 rounded-xl bg-[#FAF7F2] text-xs text-[#4A5551] flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-[#1A2421]">Look:</span>
+                <span>White oval film-coated tablet</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-[#1A2421]">Instructions:</span>
+                <span>Take consistently at bedtime.</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-[11px] text-[#6B7470] pt-2 border-t border-[#F0EBE1]">
+              <span class="text-emerald-700 font-medium">● 28 days remaining</span>
+              <span>Annual lipid profile due Nov</span>
+            </div>
+          </div>
+
+          <!-- Vitamin D3 (Weekly) -->
+          <div class="med-item bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]" data-time="morning">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-[#7A5210] px-2 py-0.5 rounded-full bg-[#F7EDD4]">Weekly · Sun</span>
+                  <span class="text-[11px] text-[#6B7470]">Bone Health</span>
+                </div>
+                <h3 class="text-base font-semibold text-[#1A2421] mt-1.5">Cholecalciferol (D3)</h3>
+                <p class="text-xs font-medium text-[#525E5A]">60,000 IU · Sunday morning post-breakfast</p>
+              </div>
+              <div class="w-10 h-10 rounded-2xl bg-[#FAF7F2] border border-[#E5E2DC] flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-between text-[11px] text-[#6B7470] pt-2 border-t border-[#F0EBE1]">
+              <span class="text-[#2D5A4C] font-medium">Next dose: Sunday, 25 Oct</span>
+              <span>Softgel capsule</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ==============================================
+           SCREEN 3: ESCALATION FLOW
+           ============================================== -->
+      <div id="tab-escalation" class="hidden flex-col gap-4 p-4 transition-opacity duration-200">
+        
+        <!-- Top Status Banner -->
+        <div id="escalation-header-banner" class="rounded-[24px] p-4 text-white transition-all duration-300" style="background: linear-gradient(145deg, #2D5A4C 0%, #1A382F 100%);">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-white/15 text-[#EBF1EE]" id="escalation-protocol-status">
+              ● Protocol Standby
+            </span>
+            <span class="text-xs text-[#EBF1EE]/80">Automated Care Guard</span>
+          </div>
+          <h2 class="text-lg font-bold mt-2" id="escalation-main-title">Gentle Check-in Protocol</h2>
+          <p class="text-xs text-[#EBF1EE]/85 mt-1" id="escalation-main-desc">
+            When a dose time passes without confirmation, Ormma gently dials Amma’s phone 3 times before escalating to family and local contacts.
+          </p>
+        </div>
+
+        <!-- Timeline of Ormma's Protocol Steps -->
+        <div class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+          <h3 class="text-sm font-semibold text-[#1A2421] mb-3">Protocol Timeline (Morning Dose)</h3>
+
+          <div class="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#E5E2DC]">
+            
+            <!-- Step 1 -->
+            <div class="relative">
+              <span id="step-dot-1" class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center">
+                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+              </span>
+              <div>
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-semibold text-[#1A2421]">1. Scheduled Voice Call (8:30 AM)</h4>
+                  <span id="step-badge-1" class="text-[11px] font-medium text-emerald-700">Answered & Confirmed</span>
+                </div>
+                <p id="step-desc-1" class="text-xs text-[#6B7470] mt-0.5 leading-relaxed">
+                  Ormma placed Malayalam voice call to +91 94471 •••••. Amma picked up on 2nd ring and confirmed medicine.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="relative">
+              <span id="step-dot-2" class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#D5CFC5] border-2 border-white"></span>
+              <div>
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-semibold text-[#1A2421]">2. Gentle Retry #1 (8:40 AM)</h4>
+                  <span id="step-badge-2" class="text-[11px] font-medium text-[#6B7470]">Standby (+10 min)</span>
+                </div>
+                <p id="step-desc-2" class="text-xs text-[#6B7470] mt-0.5 leading-relaxed">
+                  Automated gentle retry with distinct ring rhythm.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="relative">
+              <span id="step-dot-3" class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#D5CFC5] border-2 border-white"></span>
+              <div>
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-semibold text-[#1A2421]">3. Final Automated Retry #2 (8:50 AM)</h4>
+                  <span id="step-badge-3" class="text-[11px] font-medium text-[#6B7470]">Standby (+20 min)</span>
+                </div>
+                <p id="step-desc-3" class="text-xs text-[#6B7470] mt-0.5 leading-relaxed">
+                  Final attempt before family escalation.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="relative">
+              <span id="step-dot-4" class="absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#D5CFC5] border-2 border-white"></span>
+              <div>
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-semibold text-[#1A2421]">4. Caregiver Circle Alert (9:00 AM)</h4>
+                  <span id="step-badge-4" class="text-[11px] font-medium text-[#6B7470]">Standby</span>
+                </div>
+                <p id="step-desc-4" class="text-xs text-[#6B7470] mt-0.5 leading-relaxed">
+                  High-priority WhatsApp alerts dispatched to Rahul (Bangalore) and Meera (Dubai).
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Emergency / Nearby Circle Cards -->
+        <div class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-[#1A2421]">Direct Caregiver Action Contacts</h3>
+            <span class="text-xs text-[#6B7470]">Thrissur Local</span>
+          </div>
+
+          <div class="flex flex-col gap-2.5">
+            
+            <!-- Contact 1: Neighbour -->
+            <div class="p-3 rounded-2xl bg-[#F8F7F4] border border-[#E5E2DC] flex items-center justify-between">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-semibold text-[#1A2421]">Sreeja Teacher</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#FAF7F2] text-[#2D5A4C] border border-[#DCE4DF] font-medium">Has spare key</span>
+                </div>
+                <p class="text-[11px] text-[#6B7470]">Next-door neighbour (20 meters away)</p>
+              </div>
+              <button onclick="triggerEmergencyCall('Sreeja Teacher', '+91 94471 23456', 'neighbour')" class="px-3 py-1.5 rounded-full bg-[#2D5A4C] text-white text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1">
+                <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Call Sreeja
+              </button>
+            </div>
+
+            <!-- Contact 2: Family Physician -->
+            <div class="p-3 rounded-2xl bg-[#F8F7F4] border border-[#E5E2DC] flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-[#1A2421]">Dr. K. G. Nair</span>
+                <p class="text-[11px] text-[#6B7470]">Clinic East Fort (1.2 km away)</p>
+              </div>
+              <button onclick="triggerEmergencyCall('Dr. K. G. Nair', '+91 487 242 1100', 'doctor')" class="px-3 py-1.5 rounded-full bg-white border border-[#E5E2DC] text-[#2D5A4C] text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1">
+                <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Call Clinic
+              </button>
+            </div>
+
+            <!-- Contact 3: Amma Direct Phone -->
+            <div class="p-3 rounded-2xl bg-[#F8F7F4] border border-[#E5E2DC] flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-[#1A2421]">Amma (Home Landline)</span>
+                <p class="text-[11px] text-[#6B7470]">BSNL Landline (Loud bell ringer)</p>
+              </div>
+              <button onclick="triggerEmergencyCall('Amma Landline', '0487 233 4567', 'amma')" class="px-3 py-1.5 rounded-full bg-white border border-[#E5E2DC] text-[#1A2421] text-xs font-semibold shadow-xs active:scale-95 transition flex items-center gap-1">
+                <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Call Amma
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==============================================
+           SCREEN 4: FAMILY CIRCLE
+           ============================================== -->
+      <div id="tab-family" class="hidden flex-col gap-4 p-4 transition-opacity duration-200">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold tracking-tight text-[#1A2421]">Care Circle</h2>
+            <p class="text-xs text-[#6B7470]">Family members checking in on Amma</p>
+          </div>
+          <button onclick="openInviteModal()" class="px-3 py-1.5 rounded-full bg-[#EBF1EE] text-xs font-semibold text-[#2D5A4C] active:scale-95 transition">
+            + Invite Member
+          </button>
+        </div>
+
+        <!-- Care Recipient Card -->
+        <div class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-[#F6D9C7] flex items-center justify-center text-base font-bold text-[#1A2421]">
+               അമ്മ
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h3 class="text-base font-bold text-[#1A2421]">Amma (Sarada Devi)</h3>
+                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#EBF1EE] text-[#2D5A4C]">Parent</span>
+              </div>
+              <p class="text-xs text-[#6B7470]">Thrissur, Kerala · Nokia 105 & BSNL Landline</p>
+              <p class="text-[11px] text-[#2D5A4C] font-medium mt-0.5">Language: Malayalam (മലയാളം)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Members List -->
+        <div class="flex flex-col gap-2.5">
+          <span class="text-xs font-semibold text-[#6B7470] px-1">Family Caregivers</span>
+
+          <!-- Member 1: Rahul -->
+          <div class="bg-white rounded-[20px] p-3.5 border border-[#E5E2DC] shadow-xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-[#D3E6E3] flex items-center justify-center text-xs font-bold text-[#1A2421]">
+                R
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-xs font-bold text-[#1A2421]">Rahul K. (You)</h4>
+                  <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-[#F8F7F4] text-[#6B7470] border border-[#E5E2DC]">Admin</span>
+                </div>
+                <p class="text-[11px] text-[#6B7470]">Bengaluru (IST) · Instant Push & WhatsApp</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-medium text-emerald-700">Active</span>
+          </div>
+
+          <!-- Member 2: Meera -->
+          <div class="bg-white rounded-[20px] p-3.5 border border-[#E5E2DC] shadow-xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-[#E2D8EF] flex items-center justify-center text-xs font-bold text-[#1A2421]">
+                M
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-[#1A2421]">Meera K.</h4>
+                <p class="text-[11px] text-[#6B7470]">Dubai (GST -1.5h) · Daily WhatsApp Digest</p>
+              </div>
+            </div>
+            <span class="text-[11px] text-[#6B7470]">Active</span>
+          </div>
+
+          <!-- Medical contact: Dr. Nair -->
+          <div class="bg-white rounded-[20px] p-3.5 border border-[#E5E2DC] shadow-xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-[#F2E3B3] flex items-center justify-center text-xs font-bold text-[#7A5210]">
+                Dr
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-[#1A2421]">Dr. K. G. Nair</h4>
+                <p class="text-[11px] text-[#6B7470]">Physician · View-only Prescription Sync</p>
+              </div>
+            </div>
+            <span class="text-[11px] text-[#6B7470]">Advisor</span>
+          </div>
+        </div>
+
+        <!-- Notification Preferences -->
+        <div class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+          <h3 class="text-xs font-semibold text-[#1A2421] mb-2.5">Alert Preferences</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-medium text-[#1A2421]">Instant Missed-Dose Alerts</p>
+                <p class="text-[11px] text-[#6B7470]">Immediate call & push if 3 attempts fail</p>
+              </div>
+              <input type="checkbox" checked class="w-4 h-4 accent-[#2D5A4C] rounded cursor-pointer">
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-[#F0EBE1]">
+              <div>
+                <p class="text-xs font-medium text-[#1A2421]">Evening WhatsApp Summary (9 PM)</p>
+                <p class="text-[11px] text-[#6B7470]">Consolidated status for family group</p>
+              </div>
+              <input type="checkbox" checked class="w-4 h-4 accent-[#2D5A4C] rounded cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="bg-white rounded-[24px] p-4 border border-[#E5E2DC] shadow-[0_2px_8px_rgba(26,36,33,0.04)]">
+          <h3 class="text-xs font-semibold text-[#1A2421] mb-2.5">Recent Family Check-ins</h3>
+          <div class="space-y-2.5 text-xs" id="family-activity-list">
+            <div class="flex items-start gap-2 text-[#4A5551]">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#2D5A4C] mt-1.5 shrink-0"></span>
+              <div>
+                <p><span class="font-semibold text-[#1A2421]">Rahul</span> logged a 12 min phone call with Amma</p>
+                <p class="text-[10px] text-[#6B7470]">Yesterday · 6:10 PM</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2 text-[#4A5551]">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0"></span>
+              <div>
+                <p><span class="font-semibold text-[#1A2421]">Ormma Voice</span> completed evening check-in (Malayalam)</p>
+                <p class="text-[10px] text-[#6B7470]">Yesterday · 9:02 PM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==============================================
+         FIXED BOTTOM TAB BAR (Today, Medicines, Escalation, Family)
+         ============================================== -->
+    <nav class="absolute bottom-0 left-0 right-0 h-[72px] bg-white/95 backdrop-blur-md border-t border-[#E5E2DC] px-4 flex items-center justify-around z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+      
+      <!-- Tab 1: Today -->
+      <button onclick="switchTab('today')" id="tab-btn-today" class="flex flex-col items-center justify-center flex-1 py-1 transition-all">
+        <div class="tab-indicator px-4 py-1 rounded-full bg-[#EBF1EE] text-[#2D5A4C] transition-colors flex items-center justify-center">
+          <!-- Sun/Today SVG -->
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zm0-13c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1V3c0-.55.45-1 1-1zm0 18c.55 0 1 .45 1 1v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-.55.45-1 1-1zm10-9c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1zM5 12c0 .55-.45 1-1 1H2c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1zm14.07-6.07c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-1.41 1.41c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l1.41-1.41zM6.34 17.66c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-1.41 1.41c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l1.41-1.41zm12.73 12.73c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41zM4.93 4.93c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41L4.93 7.75c-.39.39-1.02.39-1.41 0-.39-.39-.39-1.02 0-1.41l1.41-1.41z"/></svg>
+        </div>
+        <span class="tab-label text-[11px] font-semibold text-[#2D5A4C] mt-0.5">Today</span>
+      </button>
+
+      <!-- Tab 2: Medicines -->
+      <button onclick="switchTab('medicines')" id="tab-btn-medicines" class="flex flex-col items-center justify-center flex-1 py-1 transition-all">
+        <div class="tab-indicator px-4 py-1 rounded-full text-[#6B7470] transition-colors flex items-center justify-center">
+          <!-- Pill SVG -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+        </div>
+        <span class="tab-label text-[11px] font-medium text-[#6B7470] mt-0.5">Medicines</span>
+      </button>
+
+      <!-- Tab 3: Escalation -->
+      <button onclick="switchTab('escalation')" id="tab-btn-escalation" class="flex flex-col items-center justify-center flex-1 py-1 transition-all relative">
+        <!-- Terracotta pulsing badge -->
+        <span id="escalation-nav-badge" class="hidden absolute top-0.5 right-6 w-2.5 h-2.5 rounded-full bg-[#C85A32] pulse-terracotta border-2 border-white z-10"></span>
+        <div class="tab-indicator px-4 py-1 rounded-full text-[#6B7470] transition-colors flex items-center justify-center">
+          <!-- Alert Shield SVG -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <span class="tab-label text-[11px] font-medium text-[#6B7470] mt-0.5">Escalation</span>
+      </button>
+
+      <!-- Tab 4: Family -->
+      <button onclick="switchTab('family')" id="tab-btn-family" class="flex flex-col items-center justify-center flex-1 py-1 transition-all">
+        <div class="tab-indicator px-4 py-1 rounded-full text-[#6B7470] transition-colors flex items-center justify-center">
+          <!-- People SVG -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
+        </div>
+        <span class="tab-label text-[11px] font-medium text-[#6B7470] mt-0.5">Family</span>
+      </button>
+
+    </nav>
+
+    <!-- iOS Home Bar Pill -->
+    <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-36 h-1 bg-[#1A2421]/30 rounded-full pointer-events-none z-40"></div>
+
+    <!-- ==============================================
+         INTERACTIVE OVERLAYS & MODALS
+         ============================================== -->
+    
+    <!-- 1. "I called Amma" Check-in Modal -->
+    <div id="modal-checkin" class="hidden absolute inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-end justify-center p-4">
+      <div class="w-full bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-3 animate-slide-up">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-[#1A2421]">Log Call with Amma</h3>
+          <button onclick="closeCheckinModal()" class="w-7 h-7 rounded-full bg-[#F0EBE1] flex items-center justify-center text-[#6B7470] hover:text-[#1A2421]">✕</button>
+        </div>
+        <p class="text-xs text-[#6B7470]">Let your sister Meera know that you checked in with Amma.</p>
+        
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-[#1A2421]">How did Amma sound?</label>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <button onclick="selectMood(this, 'Cheerful & energetic')" class="mood-btn p-2 rounded-xl border border-[#2D5A4C] bg-[#EBF1EE] font-semibold text-[#2D5A4C]">🌸 Cheerful</button>
+            <button onclick="selectMood(this, 'Relaxed at home')" class="mood-btn p-2 rounded-xl border border-[#E5E2DC] bg-white font-medium text-[#525E5A]">🍵 Relaxed</button>
+            <button onclick="selectMood(this, 'A bit tired')" class="mood-btn p-2 rounded-xl border border-[#E5E2DC] bg-white font-medium text-[#525E5A]">😴 Tired</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-[#1A2421]">Quick Note</label>
+          <input type="text" id="checkin-note-input" value="Spoke for 10 mins. She was tending to her balcony plants and had afternoon tea." class="w-full mt-1 px-3 py-2 text-xs rounded-xl border border-[#E5E2DC] focus:border-[#2D5A4C] focus:outline-none">
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <button onclick="closeCheckinModal()" class="flex-1 py-2.5 rounded-full border border-[#E5E2DC] text-xs font-semibold text-[#525E5A]">Cancel</button>
+          <button onclick="submitCheckin()" class="flex-1 py-2.5 rounded-full bg-[#2D5A4C] text-xs font-semibold text-white shadow-md">Post to Family</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Emergency Call Simulated Active Screen -->
+    <div id="modal-calling" class="hidden absolute inset-0 bg-[#16221E] z-50 text-white flex flex-col items-center justify-between p-8 text-center">
+      <div class="pt-8 flex flex-col items-center">
+        <span class="text-xs font-medium uppercase tracking-wider text-emerald-400 px-3 py-1 rounded-full bg-emerald-950/80 mb-4">Outbound Call via Ormma Direct</span>
+        <div class="w-20 h-20 rounded-full bg-[#2D5A4C] border-2 border-emerald-400 flex items-center justify-center text-2xl font-bold mb-4 shadow-lg shadow-emerald-900/50" id="call-avatar">
+          ST
+        </div>
+        <h3 class="text-2xl font-bold tracking-tight" id="call-name">Sreeja Teacher</h3>
+        <p class="text-sm text-emerald-200 mt-1" id="call-number">+91 94471 23456</p>
+        <p class="text-xs text-[#8BA79E] mt-3" id="call-status-timer">Calling neighbour...</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 bg-emerald-400 rounded-full audio-bar-1"></span>
+        <span class="w-1.5 bg-emerald-400 rounded-full audio-bar-2"></span>
+        <span class="w-1.5 bg-emerald-400 rounded-full audio-bar-3"></span>
+        <span class="w-1.5 bg-emerald-400 rounded-full audio-bar-4"></span>
+      </div>
+
+      <div class="w-full flex flex-col gap-3 pb-6">
+        <button onclick="resolveByCall()" class="w-full py-3 rounded-full bg-emerald-700 hover:bg-emerald-600 text-xs font-bold text-white shadow-lg active:scale-95 transition">
+          ✓ Neighbour checked: Amma is safe!
+        </button>
+        <button onclick="endEmergencyCall()" class="w-full py-3 rounded-full bg-rose-700 hover:bg-rose-600 text-xs font-bold text-white shadow-lg active:scale-95 transition">
+          End Call
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. Toast feedback notification -->
+    <div id="toast-pill" class="hidden absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-[#1A2421] text-white text-xs font-medium shadow-xl flex items-center gap-2 border border-white/20 transition-all">
+      <span class="text-emerald-400">✓</span>
+      <span id="toast-message">Copied update for WhatsApp!</span>
+    </div>
+
+  </main>
+
+  <!-- ==============================================
+       CLIENT JAVASCRIPT APP LOGIC
+       ============================================== -->
+  <script>
+    // State storage
+    let currentMode = 'normal'; // 'normal' | 'missed'
+    let currentTab = 'today';
+    let nightDoseTaken = false;
+    let selectedMoodText = 'Cheerful & energetic';
+
+    // Clock update
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      hours = hours % 12 || 12;
+      const el = document.getElementById('device-clock');
+      if (el) el.textContent = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Mode Switcher: Normal Day vs Missed Morning
+    function setAppMode(mode) {
+      currentMode = mode;
+      const normalBtn = document.getElementById('mode-normal-btn');
+      const missedBtn = document.getElementById('mode-missed-btn');
+      const heroCard = document.getElementById('hero-card');
+      const heroTitle = document.getElementById('hero-title');
+      const heroSubtitle = document.getElementById('hero-subtitle');
+      const heroRatio = document.getElementById('hero-ratio');
+      const progressCircle = document.getElementById('progress-circle');
+      const heroAlertBanner = document.getElementById('hero-alert-banner');
+      const liveDot = document.getElementById('status-live-dot');
+      const morningBadge = document.getElementById('morning-status-badge');
+      const morningNote = document.getElementById('morning-note-block');
+      const morningCard = document.getElementById('dose-card-morning');
+      const escalationBadge = document.getElementById('escalation-nav-badge');
+      const escalationBanner = document.getElementById('escalation-header-banner');
+      const escalationStatus = document.getElementById('escalation-protocol-status');
+      const escalationTitle = document.getElementById('escalation-main-title');
+      const escalationDesc = document.getElementById('escalation-main-desc');
+
+      // Circumference = 201.06
+      if (mode === 'normal') {
+        // Switch buttons styling
+        normalBtn.className = "flex-1 py-1.5 px-3 rounded-full font-semibold transition-all duration-200 bg-white text-[#2D5A4C] shadow-sm";
+        missedBtn.className = "flex-1 py-1.5 px-3 rounded-full font-semibold transition-all duration-200 text-[#6B7470]";
+        
+        // Status dot
+        liveDot.className = "w-2 h-2 rounded-full bg-emerald-600";
+
+        // Hero card styling
+        heroCard.style.background = "linear-gradient(145deg, #2D5A4C 0%, #1E3D33 100%)";
+        heroTitle.textContent = "Amma is on track today";
+        heroSubtitle.textContent = "Morning and afternoon doses confirmed via Malayalam voice check-in.";
+        heroRatio.textContent = nightDoseTaken ? "3/3" : "2/3";
+        progressCircle.setAttribute("stroke-dashoffset", nightDoseTaken ? "0" : "67.02");
+        heroAlertBanner.classList.add('hidden');
+
+        // Morning dose card
+        morningCard.classList.remove('border-[#C85A32]', 'bg-[#FFF9F6]');
+        morningBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#EBF1EE] text-[#17613D] flex items-center gap-1";
+        morningBadge.innerHTML = `<svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Taken on time · 8:34 AM`;
+        morningNote.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <p class="leading-relaxed">
+              <span class="font-semibold text-[#2D5A4C]">Ormma Check-in:</span> Amma confirmed taking sugar medicine (<i class="text-[#2D5A4C]">"kazhichu mole"</i>) after morning tea at 8:34 AM.
+            </p>
+            <button onclick="playVoiceAudio('morning')" class="shrink-0 p-1.5 rounded-full bg-white border border-[#E5E2DC] text-[#2D5A4C] hover:bg-[#EBF1EE] transition shadow-xs">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+          <div id="audio-player-morning" class="hidden mt-2 pt-2 border-t border-[#E5E2DC] flex items-center justify-between text-[11px] text-[#6B7470]">
+            <div class="flex items-center gap-1 text-[#2D5A4C]">
+              <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-1"></span>
+              <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-2"></span>
+              <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-3"></span>
+              <span class="w-1 bg-[#2D5A4C] rounded-full audio-bar-4"></span>
+              <span class="ml-1.5 font-medium">Voice note · 0:14s</span>
+            </div>
+            <span class="italic text-[#4A5551]">"Chaya kudinju kazhinju..."</span>
+          </div>`;
+
+        // Escalation tab badge
+        escalationBadge.classList.add('hidden');
+
+        // Escalation screen content reset
+        escalationBanner.style.background = "linear-gradient(145deg, #2D5A4C 0%, #1A382F 100%)";
+        escalationStatus.textContent = "● Protocol Standby";
+        escalationStatus.className = "text-[11px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-white/15 text-[#EBF1EE]";
+        escalationTitle.textContent = "Gentle Check-in Protocol";
+        escalationDesc.textContent = "When a dose time passes without confirmation, Ormma gently dials Amma’s phone 3 times before escalating to family and local contacts.";
+        
+        resetProtocolSteps(false);
+        showToast("Switched to Normal Day mode");
+
+      } else {
+        // Missed Morning mode
+        missedBtn.className = "flex-1 py-1.5 px-3 rounded-full font-semibold transition-all duration-200 bg-[#C85A32] text-white shadow-sm";
+        normalBtn.className = "flex-1 py-1.5 px-3 rounded-full font-semibold transition-all duration-200 text-[#6B7470]";
+        
+        // Status dot pulses terracotta
+        liveDot.className = "w-2 h-2 rounded-full bg-[#C85A32] pulse-terracotta";
+
+        // Hero card styling (Alert state)
+        heroCard.style.background = "linear-gradient(145deg, #243530 0%, #1A2824 100%)";
+        heroTitle.textContent = "Amma hasn't confirmed morning dose";
+        heroSubtitle.textContent = "Ormma placed 3 voice calls without answer. Caregivers alerted at 9:00 AM.";
+        heroRatio.textContent = "1/3";
+        progressCircle.setAttribute("stroke-dashoffset", "134.04");
+        heroAlertBanner.classList.remove('hidden');
+
+        // Morning dose card highlights alert
+        morningCard.classList.add('border-[#C85A32]', 'bg-[#FFF9F6]');
+        morningBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FCEEE8] text-[#C85A32] flex items-center gap-1";
+        morningBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#C85A32]"></span> Not confirmed · 3 calls unanswered`;
+        morningNote.innerHTML = `
+          <div class="flex items-start justify-between gap-2 text-[#8F2418]">
+            <p class="leading-relaxed">
+              <span class="font-semibold text-[#C85A32]">Attention:</span> Ormma called at 8:30, 8:40, and 8:50 AM. Phone rang out. Family alerted via WhatsApp.
+            </p>
+            <button onclick="switchTab('escalation')" class="shrink-0 px-2 py-1 rounded-md bg-[#C85A32] text-white text-[10px] font-bold">
+              Resolve
+            </button>
+          </div>`;
+
+        // Escalation tab badge dot pulses!
+        escalationBadge.classList.remove('hidden');
+
+        // Escalation screen shows active alert
+        escalationBanner.style.background = "linear-gradient(145deg, #B84720 0%, #7A2810 100%)";
+        escalationStatus.textContent = "⚠️ Protocol Escalated";
+        escalationStatus.className = "text-[11px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white";
+        escalationTitle.textContent = "Morning Dose Unconfirmed";
+        escalationDesc.textContent = "Ormma completed all 3 automated call attempts at 8:50 AM without contact. Please reach out to Sreeja or Amma directly.";
+
+        resetProtocolSteps(true);
+        showToast("⚠️ Missed Morning simulated! Tap Escalation.");
+      }
+    }
+
+    // Reset or activate protocol steps in the Escalation timeline
+    function resetProtocolSteps(isAlert) {
+      const dot1 = document.getElementById('step-dot-1');
+      const badge1 = document.getElementById('step-badge-1');
+      const desc1 = document.getElementById('step-desc-1');
+
+      const dot2 = document.getElementById('step-dot-2');
+      const badge2 = document.getElementById('step-badge-2');
+      const desc2 = document.getElementById('step-desc-2');
+
+      const dot3 = document.getElementById('step-dot-3');
+      const badge3 = document.getElementById('step-badge-3');
+      const desc3 = document.getElementById('step-desc-3');
+
+      const dot4 = document.getElementById('step-dot-4');
+      const badge4 = document.getElementById('step-badge-4');
+      const desc4 = document.getElementById('step-desc-4');
+
+      if (!dot1) return;
+
+      if (isAlert) {
+        dot1.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center";
+        badge1.className = "text-[11px] font-medium text-amber-700";
+        badge1.textContent = "Unanswered (45s ring)";
+        desc1.textContent = "Outbound Malayalam check-in from Ormma Exotel line (+91 487 ••••). No pickup.";
+
+        dot2.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center";
+        badge2.className = "text-[11px] font-medium text-amber-700";
+        badge2.textContent = "Unanswered (+10 min)";
+        desc2.textContent = "Second attempt at 8:40 AM with higher frequency cadence. Phone rang out.";
+
+        dot3.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-amber-600 border-2 border-white flex items-center justify-center";
+        badge3.className = "text-[11px] font-medium text-amber-800";
+        badge3.textContent = "Unanswered (+20 min)";
+        desc3.textContent = "Final scheduled retry at 8:50 AM. Automated voice loop exhausted.";
+
+        dot4.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#C85A32] border-2 border-white pulse-terracotta";
+        badge4.className = "text-[11px] font-bold text-[#C85A32]";
+        badge4.textContent = "ACTIVE ALERT DISPATCHED";
+        desc4.textContent = "Rahul (Bangalore) and Meera (Dubai) alerted via WhatsApp template & high-priority push.";
+      } else {
+        dot1.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center";
+        badge1.className = "text-[11px] font-medium text-emerald-700";
+        badge1.textContent = "Answered & Confirmed";
+        desc1.textContent = "Ormma placed Malayalam voice call to +91 94471 •••••. Amma picked up on 2nd ring and confirmed medicine.";
+
+        dot2.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#D5CFC5] border-2 border-white";
+        badge2.className = "text-[11px] font-medium text-[#6B7470]";
+        badge2.textContent = "Standby (+10 min)";
+        desc2.textContent = "Automated gentle retry with distinct ring rhythm.";
+
+        dot3.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#D5CFC5] border-2 border-white";
+        badge3.className = "text-[11px] font-medium text-[#6B7470]";
+        badge3.textContent = "Standby (+20 min)";
+        desc3.textContent = "Final attempt before family escalation.";
+
+        dot4.className = "absolute -left-6 top-1 w-4 h-4 rounded-full bg-[#D5CFC5] border-2 border-white";
+        badge4.className = "text-[11px] font-medium text-[#6B7470]";
+        badge4.textContent = "Standby";
+        desc4.textContent = "High-priority WhatsApp alerts dispatched to Rahul (Bangalore) and Meera (Dubai).";
+      }
+    }
+
+    // Tab Navigation switching
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabs = ['today', 'medicines', 'escalation', 'family'];
+      
+      tabs.forEach(t => {
+        const screen = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (!screen || !btn) return;
+
+        const indicator = btn.querySelector('.tab-indicator');
+        const label = btn.querySelector('.tab-label');
+
+        if (t === tab) {
+          screen.classList.remove('hidden');
+          screen.classList.add('flex');
+          // Active tab pill style
+          if (indicator) {
+            indicator.className = "tab-indicator px-4 py-1 rounded-full bg-[#EBF1EE] text-[#2D5A4C] transition-colors flex items-center justify-center";
+          }
+          if (label) {
+            label.className = "tab-label text-[11px] font-semibold text-[#2D5A4C] mt-0.5";
+          }
+        } else {
+          screen.classList.add('hidden');
+          screen.classList.remove('flex');
+          // Inactive tab style
+          if (indicator) {
+            indicator.className = "tab-indicator px-4 py-1 rounded-full text-[#6B7470] transition-colors flex items-center justify-center";
+          }
+          if (label) {
+            label.className = "tab-label text-[11px] font-medium text-[#6B7470] mt-0.5";
+          }
+        }
+      });
+
+      // Scroll device container back to top
+      const scroller = document.getElementById('screen-container');
+      if (scroller) scroller.scrollTop = 0;
+    }
+
+    // Toggle Night dose state
+    function toggleNightDose() {
+      nightDoseTaken = !nightDoseTaken;
+      const badge = document.getElementById('night-status-badge');
+      const btn = document.getElementById('toggle-night-btn');
+      const heroRatio = document.getElementById('hero-ratio');
+      const progressCircle = document.getElementById('progress-circle');
+
+      if (nightDoseTaken) {
+        badge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#EBF1EE] text-[#17613D] flex items-center gap-1";
+        badge.innerHTML = `<svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Taken early · 8:15 PM`;
+        btn.textContent = "Undo";
+        btn.className = "px-3 py-1 rounded-full text-xs font-semibold bg-[#FAF7F2] text-[#6B7470] hover:bg-[#EDE8E0] transition active:scale-95";
+        
+        if (currentMode === 'normal') {
+          heroRatio.textContent = "3/3";
+          progressCircle.setAttribute("stroke-dashoffset", "0");
+        }
+        showToast("Marked Atorvastatin taken early");
+      } else {
+        badge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF7F2] text-[#6B7470] border border-dashed border-[#CDC7BC]";
+        badge.textContent = "Scheduled · Upcoming";
+        btn.textContent = "Mark taken early";
+        btn.className = "px-3 py-1 rounded-full text-xs font-semibold bg-[#EBF1EE] text-[#2D5A4C] hover:bg-[#DDE7E2] transition active:scale-95";
+        
+        if (currentMode === 'normal') {
+          heroRatio.textContent = "2/3";
+          progressCircle.setAttribute("stroke-dashoffset", "67.02");
+        }
+      }
+    }
+
+    // Audio Playback simulation
+    function playVoiceAudio(dose) {
+      const player = document.getElementById(`audio-player-${dose}`);
+      if (!player) return;
+      player.classList.toggle('hidden');
+      if (!player.classList.contains('hidden')) {
+        showToast("Playing Ormma Malayalam Voice Call...");
+      }
+    }
+
+    // WhatsApp text copy
+    function copyWhatsAppUpdate() {
+      const text = document.getElementById('whatsapp-preview').innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("Copied update for WhatsApp!");
+        }).catch(() => {
+          showToast("Copied update for WhatsApp!");
+        });
+      } else {
+        showToast("Copied update for WhatsApp!");
+      }
+    }
+
+    // Toast pill helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast-pill');
+      const text = document.getElementById('toast-message');
+      text.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2400);
+    }
+
+    // Checkin Modal
+    function openCheckinModal() {
+      document.getElementById('modal-checkin').classList.remove('hidden');
+    }
+    function closeCheckinModal() {
+      document.getElementById('modal-checkin').classList.add('hidden');
+    }
+    function selectMood(btn, mood) {
+      document.querySelectorAll('.mood-btn').forEach(b => {
+        b.className = "mood-btn p-2 rounded-xl border border-[#E5E2DC] bg-white font-medium text-[#525E5A]";
+      });
+      btn.className = "mood-btn p-2 rounded-xl border border-[#2D5A4C] bg-[#EBF1EE] font-semibold text-[#2D5A4C]";
+      selectedMoodText = mood;
+    }
+    function submitCheckin() {
+      const note = document.getElementById('checkin-note-input').value;
+      const presence = document.getElementById('presence-text');
+      presence.textContent = `Rahul checked in just now · "${selectedMoodText}"`;
+
+      // Prepend to activity list in Family screen
+      const list = document.getElementById('family-activity-list');
+      if (list) {
+        const item = document.createElement('div');
+        item.className = "flex items-start gap-2 text-[#4A5551]";
+        item.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-[#C85A32] mt-1.5 shrink-0"></span>
+          <div>
+            <p><span class="font-semibold text-[#1A2421]">Rahul</span> called Amma: "${note}"</p>
+            <p class="text-[10px] text-[#6B7470]">Just now · Check-in logged</p>
+          </div>
+        `;
+        list.insertBefore(item, list.firstChild);
+      }
+
+      closeCheckinModal();
+      showToast("Check-in posted to Family circle!");
+    }
+
+    // Emergency calling overlay
+    function triggerEmergencyCall(name, number, role) {
+      const modal = document.getElementById('modal-calling');
+      document.getElementById('call-name').textContent = name;
+      document.getElementById('call-number').textContent = number;
+      const timer = document.getElementById('call-status-timer');
+      timer.textContent = "Connecting via Ormma Direct Line...";
+      modal.classList.remove('hidden');
+
+      setTimeout(() => {
+        if (!modal.classList.contains('hidden')) {
+          timer.textContent = "Connected · 0:04s";
+        }
+      }, 1500);
+    }
+
+    function endEmergencyCall() {
+      document.getElementById('modal-calling').classList.add('hidden');
+      showToast("Call ended");
+    }
+
+    function resolveByCall() {
+      endEmergencyCall();
+      setAppMode('normal');
+      showToast("Resolved! Sreeja verified Amma is safe.");
+      switchTab('today');
+    }
+
+    // Medicine screen filters
+    function filterMeds(filter) {
+      const chips = ['all', 'morning', 'afternoon', 'night'];
+      chips.forEach(c => {
+        const btn = document.getElementById(`med-filter-${c}`);
+        if (!btn) return;
+        if (c === filter) {
+          btn.className = "px-3 py-1 rounded-full text-xs font-semibold bg-[#2D5A4C] text-white shrink-0";
+        } else {
+          btn.className = "px-3 py-1 rounded-full text-xs font-medium bg-white border border-[#E5E2DC] text-[#525E5A] shrink-0";
+        }
+      });
+
+      const items = document.querySelectorAll('.med-item');
+      items.forEach(item => {
+        const times = item.getAttribute('data-time') || '';
+        if (filter === 'all' || times.includes(filter)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    }
+
+    function openDoctorModal() {
+      triggerEmergencyCall('Dr. K. G. Nair', '+91 487 242 1100', 'doctor');
+    }
+
+    function openInviteModal() {
+      showToast("Invite link copied to share on WhatsApp!");
+    }
+  </script>
+</body>
+</html>

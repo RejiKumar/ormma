@@ -12,6 +12,14 @@ type FirestoreMock = {
   collection: jest.Mock;
 };
 const fsMock = jest.requireMock("@react-native-firebase/firestore") as FirestoreMock;
+/** Firestore bounds must be Timestamps: a raw number never matches a timestamp field. */
+function expectBound(field: string, op: string, ms: number) {
+  const found = fsMock.where.mock.calls.some(
+    ([f, o, value]) =>
+      f === field && o === op && typeof value?.toMillis === "function" && value.toMillis() === ms,
+  );
+  expect(found).toBe(true);
+}
 
 type AuthMock = { __setUser: (user: { uid: string; phoneNumber: string | null }) => void };
 const authMock = jest.requireMock("@react-native-firebase/auth") as AuthMock;
@@ -70,8 +78,8 @@ describe("useAlerts", () => {
     expect(fsMock.collection).toHaveBeenCalledWith(expect.anything(), "parents", "p1", "alerts");
     expect(fsMock.orderBy).toHaveBeenCalledWith("createdAt", "desc");
     expect(fsMock.limit).toHaveBeenCalledWith(ALERTS_LIMIT);
-    expect(fsMock.where).toHaveBeenCalledWith("createdAt", ">=", window.start);
-    expect(fsMock.where).toHaveBeenCalledWith("createdAt", "<", window.end);
+    expectBound("createdAt", ">=", window.start);
+    expectBound("createdAt", "<", window.end);
 
     await act(async () => {
       listeners[0].next(alertSnap([{ id: "aOld", ms: NOW - 2 * HOUR, message: "Missed dose" }]));
@@ -92,7 +100,7 @@ describe("useAlerts", () => {
     };
     await renderHook(() => useAlerts([revoked], window), { wrapper });
     await waitFor(() => expect(fsMock.onSnapshot).toHaveBeenCalledTimes(1));
-    expect(fsMock.where).toHaveBeenCalledWith("createdAt", "<", NOW - 10 * HOUR);
+    expectBound("createdAt", "<", NOW - 10 * HOUR);
     expect(fsMock.where).not.toHaveBeenCalledWith("createdAt", "<=", expect.anything());
   });
 
@@ -106,8 +114,8 @@ describe("useAlerts", () => {
     };
     const { result } = await renderHook(() => useAlerts([regranted], window), { wrapper });
     await waitFor(() => expect(listeners).toHaveLength(2));
-    expect(fsMock.where).toHaveBeenCalledWith("createdAt", "<", NOW - 20 * HOUR);
-    expect(fsMock.where).toHaveBeenCalledWith("createdAt", ">=", NOW - 4 * HOUR);
+    expectBound("createdAt", "<", NOW - 20 * HOUR);
+    expectBound("createdAt", ">=", NOW - 4 * HOUR);
 
     await act(async () => {
       listeners[0].next(alertSnap([{ id: "before", ms: NOW - 25 * HOUR }]));

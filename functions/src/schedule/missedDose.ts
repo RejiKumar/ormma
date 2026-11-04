@@ -1,4 +1,4 @@
-import { Timestamp, type Firestore } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import type { CallPolicy, ParentDoc } from "../../../shared/types";
 import { notifyAlert, writeAlert } from "../alerts/createAlert";
 import type { PushSender } from "../alerts/fcm";
@@ -40,16 +40,6 @@ export interface PlannedMissedGroup {
   variant: MissedDoseVariant;
   lastAttemptAt: number;
 }
-
-const millis = (value: unknown): number | null => {
-  if (!value) return null;
-  if (value instanceof Timestamp) return value.toMillis();
-  if (typeof value === "object" && typeof (value as { toMillis?: unknown }).toMillis === "function") {
-    return (value as { toMillis(): number }).toMillis();
-  }
-  if (typeof value === "number") return value;
-  return null;
-};
 
 export function parentInfoOf(data: Partial<ParentDoc> | undefined): MissedParentInfo {
   const policy: Partial<CallPolicy> | undefined = data?.callPolicy;

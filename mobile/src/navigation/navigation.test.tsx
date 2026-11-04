@@ -71,7 +71,7 @@ describe("AppTabs", () => {
   it("switches to the Medicines, Alerts and Family tabs", async () => {
     await renderTabs();
     await fireEvent.press(screen.getByRole("button", { name: "Medicines" }));
-    expect(await screen.findByTestId("medicines-empty")).toBeTruthy();
+    expect(await screen.findByTestId("medicines-no-parents")).toBeTruthy();
     await fireEvent.press(screen.getAllByRole("button", { name: "Alerts" })[0]);
     expect(await screen.findByText("No alerts yet")).toBeTruthy();
     await fireEvent.press(screen.getAllByRole("button", { name: "Family" })[0]);

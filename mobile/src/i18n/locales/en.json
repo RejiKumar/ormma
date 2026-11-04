@@ -33,13 +33,18 @@
     "emergencyPrompt": "Please call your local emergency services if you are worried.",
     "callNow": "Call now",
     "markAsTaken": "Mark as taken",
+    "markAsRead": "Mark as read",
     "unread": "New",
-    "none": "No alerts yet"
+    "none": "No alerts yet",
+    "whatTried": "What Ormma tried",
+    "unreadDot": "Unread missed-dose alerts"
   },
   "common": {
     "loading": "Loading",
     "tryAgain": "Try again",
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel",
+    "error": "Something went wrong. Please try again."
   },
   "doseRing": {
     "label": "{{taken}} of {{total}} doses taken",
@@ -90,8 +95,16 @@
       "emptyTitle": "Nothing here yet",
       "emptyDescription": "Parents you add will appear here with today's doses.",
       "noEvents": "No doses scheduled today",
+      "heroOnTrack": "{{name}} is on track today",
+      "heroAllTaken": "{{name}} took everything today",
+      "heroAttention": "{{name}} has not confirmed a dose",
+      "heroProgress": "{{taken}} of {{total}} doses taken",
+      "heroSeeAlerts": "See what Ormma tried",
+      "dosesTitle": "Today's doses",
       "alertsTitle": "Recent alerts",
-      "noAlerts": "No recent alerts"
+      "noAlerts": "No recent alerts",
+      "digestTitle": "Update for the family",
+      "digestShare": "Share update"
     },
     "medicines": {
       "title": "Medicines",
@@ -135,11 +148,26 @@
       "invite": "Invite",
       "consentPending": "Calls start after consent is granted",
       "exportData": "Export data",
+      "exportReadyTitle": "Export ready",
+      "exportShare": "Share file",
+      "exportDone": "Done",
+      "signOut": "Sign out",
+      "signOutConfirm": "You will need your phone number and a new code to sign in again.",
+      "exportReadyMessage": "{{name}} was exported.",
+      "exportMedicines_one": "{{count}} medicine",
+      "exportMedicines_other": "{{count}} medicines",
+      "exportDoseEvents_one": "{{count}} dose event",
+      "exportDoseEvents_other": "{{count}} dose events",
+      "exportHealthLogs_one": "{{count}} health log",
+      "exportHealthLogs_other": "{{count}} health logs",
+      "exportAlerts_one": "{{count}} alert",
+      "exportAlerts_other": "{{count}} alerts",
       "revokeConsent": "Revoke consent",
       "grantConsent": "Grant consent",
       "revokeConfirm": "Revoke consent for this parent? Data visibility for non-owners will change.",
       "deleteParent": "Delete parent",
-      "deleteConfirm": "Permanently delete this parent and all data? This cannot be undone."
+      "deleteConfirm": "Permanently delete this parent and all data? This cannot be undone.",
+      "emergencyContacts": "Emergency contacts"
     },
     "addParent": {
       "title": "Add a parent",
@@ -165,6 +193,8 @@
       "create": "Create invite code",
       "codeLabel": "Invite code",
       "codeInstructions": "Share this code with your family. It works once and expires in 7 days.",
+      "share": "Share invite code",
+      "shareMessage": "Join {{name}}'s care circle on Ormma. Open the app, tap Have an invite code, and enter {{code}}. The code works once and expires in 7 days.",
       "errors": {
         "notOwner": "Only the family owner can create invite codes.",
         "failed": "Could not create the invite code. Please try again."
@@ -184,6 +214,66 @@
         "alreadyMember": "You are already a member of this family.",
         "failed": "Could not join the family. Please try again."
       }
+    },
+    "contacts": {
+      "title": "Emergency contacts",
+      "subtitle": "People the family can call if {{name}} does not answer. Up to 3.",
+      "label": "Name",
+      "phone": "Phone number",
+      "phoneHint": "For example +919876543210",
+      "kind": "Type",
+      "add": "Add a contact",
+      "remove": "Remove this contact",
+      "save": "Save contacts",
+      "readOnly": "Only the family owner can change emergency contacts.",
+      "errors": {
+        "labelRequired": "Enter a name for each contact.",
+        "invalidPhone": "Enter each phone number with its country code, for example +919876543210.",
+        "failed": "Could not save the contacts. Please try again."
+      }
     }
+  },
+  "digest": {
+    "header": "Ormma update for {{name}}, {{date}}",
+    "progress": "{{taken}} of {{total}} doses confirmed.",
+    "next": "Next dose at {{time}}.",
+    "missed_one": "The {{times}} dose was not confirmed. Please check in.",
+    "missed_other": "The {{times}} doses were not confirmed. Please check in."
+  },
+  "presence": {
+    "viewing": "{{name}} is viewing",
+    "seen": "{{name}} was last seen {{when}}",
+    "justYou": "Only you have looked today",
+    "lastCall": "Last call {{time}}",
+    "called": "I called {{name}}",
+    "callLogged": "Call logged",
+    "callFailed": "Could not log the call. Please try again.",
+    "minutes_one": "{{count}} min ago",
+    "minutes_other": "{{count}} min ago",
+    "hours_one": "{{count}} h ago",
+    "hours_other": "{{count}} h ago",
+    "days_one": "{{count}} day ago",
+    "days_other": "{{count}} days ago"
+  },
+  "escalation": {
+    "title": "What Ormma tried",
+    "show": "What Ormma tried",
+    "hide": "Hide",
+    "loading": "Loading the call attempts",
+    "failed": "Could not load the call attempts.",
+    "none": "No calls have been made yet.",
+    "call": "Call {{n}}",
+    "retry": "Retry {{n}}",
+    "answered": "Answered",
+    "no_answer": "No answer",
+    "failed_outcome": "Call failed",
+    "calling": "Calling now",
+    "unplaced_one": "{{count}} attempt was not placed",
+    "unplaced_other": "{{count}} attempts were not placed",
+    "alert": "Family alerted",
+    "contactsTitle": "People who can check in",
+    "contactCall": "Call {{label}}",
+    "kindNeighbour": "Neighbour",
+    "kindClinic": "Clinic"
   }
 }

@@ -5,7 +5,8 @@ import { getDb } from "./db";
 import { AdminPushSender } from "./alerts/fcm";
 import { EXOTEL_SECRETS, WEBHOOK_SECRETS, createCallProvider } from "./exotel/config";
 import { exotelWebhookHandler } from "./exotel/webhook";
-import { createParentHandler } from "./family";
+import { createParentHandler, listMyParentsHandler } from "./family";
+import { getDoseEscalationHandler, logFamilyCallHandler, touchPresenceHandler } from "./companion";
 import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } from "./invites";
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
@@ -26,11 +27,16 @@ setGlobalOptions({ region: "asia-south1" });
 export { SUPPORTED_LANGUAGES } from "./validation";
 
 export const createParent = onCall(createParentHandler);
+// Returns the caller's parent ids so a reinstall or a new phone can rebuild the local list.
+export const listMyParents = onCall(listMyParentsHandler);
 // Wrapped so the handler's test-only codeGen parameter is not part of onCall's signature.
 export const createInvite = onCall((request: CallableRequest<CreateInvitePayload>) =>
   createInviteHandler(request),
 );
 export const redeemInvite = onCall(redeemInviteHandler);
+export const getDoseEscalation = onCall((request) => getDoseEscalationHandler(request));
+export const touchPresence = onCall((request) => touchPresenceHandler(request));
+export const logFamilyCall = onCall((request) => logFamilyCallHandler(request));
 export const revokeConsent = onCall(revokeConsentHandler);
 export const grantConsent = onCall(grantConsentHandler);
 

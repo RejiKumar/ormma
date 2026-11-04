@@ -1,5 +1,5 @@
 import { Timestamp, type Firestore } from "firebase-admin/firestore";
-import { getDownloadURL, getStorage } from "firebase-admin/storage";
+import { getStorage } from "firebase-admin/storage";
 import Anthropic from "@anthropic-ai/sdk";
 import { StructuringError } from "../reply/errors";
 import { parsePrescriptionJson } from "./schema";

@@ -2,7 +2,7 @@
 // One hook subscribes to every parent's doseEvents inside that parent's local today window
 // (parents may sit in different timezones); the visibility helper decides 0-2 provable ranges
 // per parent, and results merge into one map.
-import { collection, getFirestore, onSnapshot, orderBy, query, where } from "@react-native-firebase/firestore";
+import { collection, getFirestore, onSnapshot, orderBy, query, Timestamp, where } from "@react-native-firebase/firestore";
 import { useEffect, useState } from "react";
 import type { DoseStatus } from "../../../shared/types";
 import type { DatedParent } from "./useParents";
@@ -82,8 +82,8 @@ export function useTodayEvents(parents: DatedParent[], now: number): UseTodayEve
         const db = getFirestore();
         const eventsQuery = query(
           collection(db, "parents", parent.id, "doseEvents"),
-          where("scheduledFor", ">=", range.gte),
-          where("scheduledFor", "<", range.lt),
+          where("scheduledFor", ">=", Timestamp.fromMillis(range.gte)),
+          where("scheduledFor", "<", Timestamp.fromMillis(range.lt)),
           orderBy("scheduledFor", "asc"),
         );
         const unsubscribe = onSnapshot(

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- test doubles */
 import type { Firestore } from "firebase-admin/firestore";
 import { createUrgentAlert } from "../alerts/createAlert";
 import { structureReply } from "./replyStructuring";
@@ -20,7 +21,6 @@ describe("processReply orchestration", () => {
   });
 
   it("creates the urgent alert before calling the model when a keyword matches", async () => {
-    const urgent = jest.fn();
     structureReplyMock.mockImplementation(async (_input, opts) => {
       if (opts?.onUrgentKeyword) await opts.onUrgentKeyword("help");
       return {

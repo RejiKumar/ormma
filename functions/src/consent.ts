@@ -1,4 +1,4 @@
-import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { type CallableRequest } from "firebase-functions/v2/https";
 import { getDb } from "./db";
 import { Timestamp } from "firebase-admin/firestore";
 

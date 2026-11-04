@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { addParentId, readParentIds } from "./parentIds";
+import { addParentId, readParentIds, removeParentId } from "./parentIds";
 
 describe("parentIds", () => {
   beforeEach(async () => {
@@ -35,5 +35,14 @@ describe("parentIds", () => {
   it("returns [] on corrupt JSON", async () => {
     await AsyncStorage.setItem("ormma.parentIds", "{not json");
     expect(await readParentIds()).toEqual([]);
+  });
+
+  it("forgets an id after the parent is deleted", async () => {
+    await addParentId("p1");
+    await addParentId("p2");
+    await removeParentId("p1");
+    expect(await readParentIds()).toEqual(["p2"]);
+    await removeParentId("missing");
+    expect(await readParentIds()).toEqual(["p2"]);
   });
 });

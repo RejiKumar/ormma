@@ -22,7 +22,7 @@ export const exportParentDataHandler = async (request: CallableRequest<ParentSco
   const db = getDb();
   if (!(await isOwner(db, parentId, uid))) throw new Error("permission-denied");
 
-  const [parent, members, medicines, doseEvents, healthLogs, callSessions, prescriptions, alerts, invites] = await Promise.all([
+  const [parent, members, medicines, doseEvents, healthLogs, callSessions, prescriptions, alerts, familyCalls, invites] = await Promise.all([
     db.doc(`parents/${parentId}`).get(),
     db.collection(`parents/${parentId}/members`).get(),
     db.collection(`parents/${parentId}/medicines`).get(),
@@ -31,6 +31,7 @@ export const exportParentDataHandler = async (request: CallableRequest<ParentSco
     db.collection(`parents/${parentId}/callSessions`).get(),
     db.collection(`parents/${parentId}/prescriptions`).get(),
     db.collection(`parents/${parentId}/alerts`).get(),
+    db.collection(`parents/${parentId}/familyCalls`).get(),
     db.collection("invites").where("parentId", "==", parentId).get(),
   ]);
 
@@ -43,6 +44,7 @@ export const exportParentDataHandler = async (request: CallableRequest<ParentSco
     callSessions: callSessions.docs.map((d) => ({ id: d.id, ...d.data() })),
     prescriptions: prescriptions.docs.map((d) => ({ id: d.id, ...d.data() })),
     alerts: alerts.docs.map((d) => ({ id: d.id, ...d.data() })),
+    familyCalls: familyCalls.docs.map((d) => ({ id: d.id, ...d.data() })),
     invites: invites.docs.map((d) => ({ id: d.id, ...d.data() })),
   };
 
@@ -67,7 +69,7 @@ export const deleteParentHandler = async (request: CallableRequest<ParentScopedP
     // best effort
   }
 
-  const collections = ["members", "medicines", "doseEvents", "healthLogs", "callSessions", "prescriptions", "alerts"];
+  const collections = ["members", "medicines", "doseEvents", "healthLogs", "callSessions", "prescriptions", "alerts", "familyCalls"];
   for (const col of collections) {
     const snap = await db.collection(`parents/${parentId}/${col}`).get();
     const batch = db.batch();

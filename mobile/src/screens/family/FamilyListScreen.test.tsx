@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { AuthProvider } from "../../auth/AuthProvider";
@@ -158,5 +159,17 @@ describe("FamilyListScreen", () => {
     });
     await fireEvent.press(await screen.findByTestId("invite-p1"));
     expect(await screen.findByTestId("invite-create")).toBeTruthy();
+  });
+
+  it("signs out after confirming the alert", async () => {
+    captureListeners();
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    await renderFamily();
+    await fireEvent.press(await screen.findByTestId("family-sign-out"));
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
+    buttons.find((b) => b.text === "Sign out")?.onPress?.();
+    const authApi = jest.requireMock("@react-native-firebase/auth") as { signOut: jest.Mock };
+    expect(authApi.signOut).toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 });

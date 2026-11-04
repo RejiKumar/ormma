@@ -48,3 +48,9 @@ Thumbs.db
 # Expo prebuild output (generated)
 mobile/android/
 mobile/ios/
+
+# Android release signing and local build artifacts
+keystore.properties
+*.apk
+*.aab
+mobile/screen-current.png

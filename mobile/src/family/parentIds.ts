@@ -23,3 +23,13 @@ export async function addParentId(parentId: string): Promise<void> {
   if (ids.includes(parentId)) return;
   await AsyncStorage.setItem(KEY, JSON.stringify([...ids, parentId]));
 }
+
+/** Forget a parent id (after the owner deletes the parent or leaves it). */
+export async function removeParentId(parentId: string): Promise<void> {
+  const ids = await readParentIds();
+  if (!ids.includes(parentId)) return;
+  await AsyncStorage.setItem(
+    KEY,
+    JSON.stringify(ids.filter((id) => id !== parentId)),
+  );
+}

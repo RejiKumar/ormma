@@ -1,6 +1,8 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useMemo, useState } from "react";
+import type { ComponentRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ScrollView } from "react-native";
 import { doc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
@@ -44,6 +46,17 @@ export function EditMedicineScreen({ navigation, route }: Props) {
   const [confirmingDeactivate, setConfirmingDeactivate] = useState(false);
 
   const [active, setActive] = useState(medicine.active);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+
+  // The confirmation banner sits below the toggle; reveal it so its action is never past the fold.
+  useEffect(() => {
+    if (!confirmingDeactivate) return;
+    const timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+    return () => clearTimeout(timer);
+  }, [confirmingDeactivate]);
+
+  // Errors render below the last field; reveal them so a failed save is never silent.
+  const revealError = () => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
 
   const medicineRef = useMemo(
     () => doc(getFirestore(), "parents", parentId, "medicines", medicine.id),
@@ -54,7 +67,10 @@ export function EditMedicineScreen({ navigation, route }: Props) {
     const invalid = validateMedicineDraft(draft);
     setErrorKey(invalid);
     setSaveFailed(false);
-    if (invalid) return;
+    if (invalid) {
+      revealError();
+      return;
+    }
     setSaving(true);
     try {
       await updateDoc(medicineRef, medicineUpdatePayload(draft));
@@ -64,6 +80,7 @@ export function EditMedicineScreen({ navigation, route }: Props) {
       const code = (err as { code?: string } | null)?.code ?? "unknown";
       console.warn(`updateMedicine failed code=${code}`);
       setSaveFailed(true);
+      revealError();
     } finally {
       setSaving(false);
     }
@@ -81,6 +98,7 @@ export function EditMedicineScreen({ navigation, route }: Props) {
       const code = (err as { code?: string } | null)?.code ?? "unknown";
       console.warn(`updateMedicine active failed code=${code}`);
       setSaveFailed(true);
+      revealError();
     } finally {
       setSaving(false);
     }
@@ -88,6 +106,8 @@ export function EditMedicineScreen({ navigation, route }: Props) {
 
   return (
     <Screen
+      belowHeader
+      scrollRef={scrollRef}
       primaryAction={
         canEdit ? (
           <Button

@@ -1,7 +1,8 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useState } from "react";
+import type { ComponentRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { Button } from "../../components/Button";
 import { FormError } from "../../components/FormError";
 import { Icon } from "../../components/Icon";
@@ -25,10 +26,10 @@ const LANGUAGE_KEY = {
   hi: "languages.hi",
 } as const;
 
-/** "en" → "en-IN", the shared Language tag the callable validates. */
+/** "en" â†’ "en-IN", the shared Language tag the callable validates. */
 const toLanguageTag = (code: AppLanguage): Language => `${code}-IN`;
 
-/** Add a parent: name, E.164 phone, language in its own script → createParent. */
+/** Add a parent: name, E.164 phone, language in its own script â†’ createParent. */
 export function AddParentScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -37,16 +38,22 @@ export function AddParentScreen({ navigation }: Props) {
   const [language, setLanguage] = useState<AppLanguage>(() => pickLanguage(i18n.language));
   const [error, setError] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+
+  // The error renders below the last field; reveal it so a failed save is never silent.
+  const revealError = () => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
 
   const save = async () => {
     const trimmedName = name.trim();
     const trimmedPhone = phone.trim();
     if (trimmedName.length === 0) {
       setError(t("screens.addParent.errors.nameRequired"));
+      revealError();
       return;
     }
     if (!isValidE164(trimmedPhone)) {
       setError(t("auth.errors.invalidPhone"));
+      revealError();
       return;
     }
     setError(undefined);
@@ -64,6 +71,7 @@ export function AddParentScreen({ navigation }: Props) {
       const code = (err as { code?: string } | null)?.code ?? "unknown";
       console.warn(`createParent failed code=${code}`);
       setError(t("screens.addParent.errors.failed"));
+      revealError();
     } finally {
       setSaving(false);
     }
@@ -71,6 +79,8 @@ export function AddParentScreen({ navigation }: Props) {
 
   return (
     <Screen
+      belowHeader
+      scrollRef={scrollRef}
       primaryAction={
         <Button
           label={t("screens.addParent.save")}
@@ -124,7 +134,7 @@ export function AddParentScreen({ navigation }: Props) {
                   paddingHorizontal: theme.spacing.lg,
                 }}
               >
-                {selected ? <Icon name="check" color={theme.colors.primary} size={20} /> : null}
+                <View style={{ width: 20 }}>{selected ? <Icon name="check" color={theme.colors.primary} size={20} /> : null}</View>
                 <Text variant="body">{t(LANGUAGE_KEY[code])}</Text>
               </Pressable>
             );

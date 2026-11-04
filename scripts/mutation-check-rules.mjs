@@ -15,6 +15,41 @@ const stRules = fs.readFileSync(path.join(root, "storage.rules"), "utf8");
 // [label, file, find, replace, jest -t pattern of the test that must fail]
 const M = [
   [
+    "emergency contacts accept any kind",
+    "fs",
+    "&& c.kind in ['neighbour', 'clinic']",
+    "&& c.kind is string",
+    "emergencyContacts on the parent",
+  ],
+  [
+    "emergency contacts accept a non-E.164 phone",
+    "fs",
+    "&& isE164(c.phone);",
+    "&& true;",
+    "emergencyContacts on the parent",
+  ],
+  [
+    "emergency contacts allow a fourth entry",
+    "fs",
+    "list.size() <= 3",
+    "list.size() <= 4",
+    "emergencyContacts on the parent",
+  ],
+  [
+    "client writes familyCalls",
+    "fs",
+    "allow read: if canReadDated(parentId, resource.data.at);\n        allow write: if false;",
+    "allow read: if canReadDated(parentId, resource.data.at);\n        allow write: if signedIn();",
+    "familyCalls",
+  ],
+  [
+    "non-member reads familyCalls",
+    "fs",
+    "allow read: if canReadDated(parentId, resource.data.at);\n        allow write: if false;",
+    "allow read: if signedIn();\n        allow write: if false;",
+    "familyCalls",
+  ],
+  [
     "unauthenticated read of parents",
     "fs",
     "allow read: if isMember(parentId);\n      // Parents are created",
@@ -45,8 +80,8 @@ const M = [
   [
     "owner writes consent",
     "fs",
-    ".hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy'])",
-    ".hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'consent'])",
+    ".hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts'])",
+    ".hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts', 'consent'])",
     "Rules test 5:",
   ],
   [

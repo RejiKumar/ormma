@@ -26,13 +26,22 @@ export interface DoseRingProps {
   size?: number;
   strokeWidth?: number;
   testID?: string;
+  /** Draw in white on a primary-coloured surface (the Today hero). */
+  onPrimary?: boolean;
 }
 
 /**
  * Progress ring of today's doses: taken out of total. The arc fills with a spring (immediately under
  * Reduce Motion). It shows the count as text and as an accessible progress value.
  */
-export function DoseRing({ taken, total, size = 120, strokeWidth = 12, testID }: DoseRingProps) {
+export function DoseRing({
+  taken,
+  total,
+  size = 120,
+  strokeWidth = 12,
+  testID,
+  onPrimary = false,
+}: DoseRingProps) {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { springTo } = useMotion();
@@ -43,8 +52,10 @@ export function DoseRing({ taken, total, size = 120, strokeWidth = 12, testID }:
   useEffect(() => {
     progress.value = springTo(fraction, "soft");
   }, [fraction, progress, springTo]);
+  // Keep the worklet self-contained: calling an imported helper from the UI thread turns it into a
+  // "remote function", which fails to unpack on the new architecture (crash in the gallery ring).
   const animatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: ringOffset(progress.value, circumference),
+    strokeDashoffset: circumference * (1 - progress.value),
   }));
   const label = total > 0 ? t("doseRing.label", { taken, total }) : t("doseRing.none");
 
@@ -67,7 +78,7 @@ export function DoseRing({ taken, total, size = 120, strokeWidth = 12, testID }:
             cx={size / 2}
             cy={size / 2}
             r={r}
-            stroke={theme.colors.surfaceAlt}
+            stroke={onPrimary ? "rgba(255,255,255,0.22)" : theme.colors.surfaceAlt}
             strokeWidth={strokeWidth}
             fill="none"
           />
@@ -76,7 +87,7 @@ export function DoseRing({ taken, total, size = 120, strokeWidth = 12, testID }:
             cx={size / 2}
             cy={size / 2}
             r={r}
-            stroke={theme.colors.primary}
+            stroke={onPrimary ? theme.colors.inkOnPrimary : theme.colors.primary}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -90,7 +101,10 @@ export function DoseRing({ taken, total, size = 120, strokeWidth = 12, testID }:
         style={{ position: "absolute", alignItems: "center" }}
         importantForAccessibility="no-hide-descendants"
       >
-        <Text variant={size >= 100 ? "headline" : "label"}>{`${taken}/${total}`}</Text>
+        <Text
+          variant={size >= 100 ? "headline" : "label"}
+          tone={onPrimary ? "onPrimary" : undefined}
+        >{`${taken}/${total}`}</Text>
       </View>
     </View>
   );

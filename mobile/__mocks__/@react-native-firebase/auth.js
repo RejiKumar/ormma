@@ -28,6 +28,7 @@ module.exports = {
   onAuthStateChanged: jest.fn(onAuthStateChanged),
   onIdTokenChanged: jest.fn(onAuthStateChanged),
   signInWithPhoneNumber,
+  signOut: jest.fn(() => Promise.resolve()),
   // Test helpers (not part of the real package).
   __setUser(user) {
     currentUser = user;

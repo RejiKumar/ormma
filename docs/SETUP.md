@@ -27,9 +27,45 @@ npm --prefix mobile install
 | `npm run test:fns`  | Callable, webhook and prompt tests against the Firestore emulator (45 tests) |
 | `npm run test:rules`| Security-rules tests against Firestore + Storage emulators            |
 | `npm run seed`      | Seeds the running emulators with demo parents, medicines and events    |
+| `npm run android:prepare` | Creates the short `D:\nm` junction used by the Android build     |
+| `npm run android:apk` | Builds the debug APK in place and copies it to `ormma-debug-arm64.apk` |
 
 Emulators use project id `demo-ormma` and keep data in `emulator-data/` (git-ignored).
 Ctrl+C in the emulator terminal exports data on exit.
+
+## Android builds on Windows (long paths)
+
+This repo sits under `D:\RARK\AI Native\Projects\...`, deep enough that CMake's mirrored
+object paths (`.cxx\<variant>\<hash>\<abi>\CMakeFiles\<target>.dir\D_/RARK/...`) pass the
+260-character Windows limit. Ninja then fails with:
+
+```
+ninja: error: mkdir(...D_/RARK/...): No such file or directory
+```
+
+The project stays where it is; the fix only shortens the paths the C++ toolchain sees. It is
+committed as an Expo config plugin (`mobile/plugins/withWindowsNativePaths.js`, registered in
+`mobile/app.json`), so `npx expo prebuild --platform android` reproduces it after the
+git-ignored `mobile/android` folder is regenerated:
+
+| Short path | Purpose |
+| --- | --- |
+| `D:\nm` | Junction to `mobile/node_modules`; Gradle points the native module projects here, so their CMake builds and codegen directories are short |
+| `D:\a` | CMake staging directory for `:app` (`buildStagingDirectory`); AGP appends the variant, hash and ABI |
+
+The junction is machine setup rather than source code, so the build helper creates it:
+
+```
+npm run android:prepare   # create/repair D:\nm only
+npm run android:apk       # debug APK, arm64-v8a, copied to ./ormma-debug-arm64.apk
+```
+
+The helper runs `:app:assembleDebug` from `mobile/android` (nothing is copied) and drops the APK
+at the repo root. Extra arguments are passed to Gradle, e.g.
+`npm run android:apk -- :app:assembleRelease -PreactNativeArchitectures=arm64-v8a`.
+
+Keep both names short. If a native build needs a clean slate, delete `D:\a` and the `.cxx`
+directories under `mobile/node_modules/*/android/`, then run the helper again.
 
 ## Local dev against the emulators
 
@@ -38,15 +74,60 @@ For a development build point the app at the emulators with `EXPO_PUBLIC_FIREBAS
 it), or the machine's LAN IP for a physical device. Production builds ignore it, and the wiring never
 runs under Jest; see `mobile/src/firebase/emulators.ts`.
 
+### Running on a physical Android device
+
+Two things differ from the emulator: the phone needs the emulator ports forwarded to the PC, and
+React Native Firebase must stop rewriting the host to `10.0.2.2` (an emulator-only address).
+
+`mobile/firebase.json` sets `react-native.android_bypass_emulator_url_remap`, so `localhost` is used
+as given; it is read by the React Native Firebase Gradle plugin at build time, so a dev client built
+before that file existed has to be rebuilt once.
+
+```powershell
+# once per connection (repeat after the phone reconnects)
+adb reverse tcp:9099 tcp:9099
+adb reverse tcp:8080 tcp:8080
+adb reverse tcp:5001 tcp:5001
+adb reverse tcp:9199 tcp:9199
+adb reverse tcp:8081 tcp:8081
+
+# Metro (host stays localhost, the reverse tunnel makes it reachable)
+cd mobile
+$env:EXPO_PUBLIC_FIREBASE_EMULATOR_HOST = "localhost"
+npx expo start --dev-client --port 8081
+
+# install the APK built by `npm run android:apk`, then open it on the dev server
+npx expo run:android --binary "..\ormma-debug-arm64.apk" --device <serial> --port 8081
+```
+
+If the dev client opens its launcher instead of the project, launch it with the full deep link
+(`exp+ormma://`, not `ormma://`, plus the explicit component):
+
+```powershell
+adb shell am start -W -a android.intent.action.VIEW `
+  -d "exp+ormma://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081" `
+  -n com.ormma.app/.MainActivity
+```
+
 With the emulators running, `npm run seed` reads `users/*` and creates two parents per user (the user
 is the owner member), medicines, today's dose events in every status and recent alerts. With no users
-it seeds `demo-user` (phone `+919876500000`, any code `123456` in the auth emulator). Re-running
+it seeds `demo-user` (phone `+919876500000`). Re-running
 overwrites the same seeded documents; the script verifies the data over the emulator REST API before
 exiting.
 
-## Before the first EAS build or Firebase app registration
+The Auth emulator does not send SMS and it does not accept a fixed code: each "Send code" issues a
+real one-time code that only the emulator knows. Read it with `npm run otp`, which lists the codes
+issued for the project (the newest is the valid one) from
+`/emulator/v1/projects/demo-ormma/verificationCodes` on port 9099.
 
-The iOS bundle identifier and Android package in `mobile/app.json` are the placeholder `com.example.ormma`. Replace them with the real ids before the first EAS build or before registering the apps in Firebase.
+```powershell
+npm run otp
+# otp: +919876500000 -> 604364
+```
+
+## Release to the Play Store
+
+The Android package is `com.ormma.app` (set in `mobile/app.json`). The full production checklist, secrets, Exotel, signing and Play Console steps are in [`docs/RELEASE.md`](RELEASE.md).
 
 ## Firebase console prerequisites (manual, Stage 2)
 
@@ -55,7 +136,7 @@ These steps live in the Firebase console and cannot be verified by tests; they a
 1. **Enable Phone auth**: Firebase console → Authentication → Sign-in method → Phone → enable. Without it every OTP request fails.
 2. **Register the apps**: add an Android app (package name from `mobile/app.json`) and an iOS app (bundle id from `mobile/app.json`) to the Firebase project so the config files exist.
 3. **Android fingerprints**: register the Android app's SHA-1 **and** SHA-256 (`./gradlew signingReport`, or the Play-upload key's fingerprints later). Without them phone auth fails only on device, while all mocked tests stay green.
-4. **Place the platform files**: put `google-services.json` at `mobile/android/app/google-services.json` (after `expo prebuild`) and `GoogleService-Info.plist` at `mobile/ios/GoogleService-Info.plist`. Both are gitignored; `.dist.example` placeholders show the expected shape.
+4. **Place the platform files**: put `google-services.json` at `mobile/android/app/google-services.json` (after `expo prebuild`) and `GoogleService-Info.plist` at `mobile/ios/GoogleService-Info.plist`. Both are gitignored; `.dist.example` placeholders show the expected shape. The `current_key` API key must be a real-looking key (`^A[\w-]{38}$`, e.g. `AIza…`); a placeholder like `"fake"` is rejected by `FirebaseInstallations`, which the Android Functions SDK touches before every callable, so calls fail with `code=unknown` and `Please set a valid API key`. For the local emulators any format-valid key works (`AIzaSyOrmmaLocalEmulatorDummyKey0000000`).
 5. **Billing**: reCAPTCHA-free Android phone auth needs the Blaze plan on the project before shipping; app-check is out of scope for v1.
 
 Then rebuild the dev client (`npx expo run:android` / `run:ios`) — config-plugin changes only land after a prebuild.

@@ -71,6 +71,13 @@ export interface Consent {
   sharedWith: "all_members";
 }
 
+/** A person the family can call when a dose is missed (escalation view). At most 3 per parent. */
+export interface EmergencyContact {
+  label: string;
+  kind: "neighbour" | "clinic";
+  phone: E164Phone;
+}
+
 export interface ParentDoc {
   name: string;
   phone: E164Phone;
@@ -80,6 +87,8 @@ export interface ParentDoc {
   createdBy: Uid;
   active: boolean;
   callPolicy: CallPolicy;
+  /** Optional; owners edit it. A missing field is the same as an empty list. */
+  emergencyContacts?: EmergencyContact[];
   consent: Consent;
   createdAt: Timestamp;
 }
@@ -91,6 +100,14 @@ export interface MemberDoc {
   addedAt: Timestamp;
   /** Copied by the function at create/invite acceptance; users/{uid} stays self-only. */
   displayName: string;
+  /** Last time the member opened Today. Written only by the presence function. */
+  lastSeenAt?: Timestamp;
+}
+
+// ---------- parents/{parentId}/familyCalls/{uid_yyyyMMddHHmm} (server-write only) ----------
+export interface FamilyCallDoc {
+  byUid: Uid;
+  at: Timestamp;
 }
 
 // ---------- parents/{parentId}/medicines/{medicineId} ----------

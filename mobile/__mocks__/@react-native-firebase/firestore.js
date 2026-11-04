@@ -52,6 +52,12 @@ const api = {
   onSnapshot: jest.fn(() => jest.fn()),
   Timestamp: {
     now: () => ({ seconds: 0, nanoseconds: 0, toDate: () => new Date(0), toMillis: () => 0 }),
+    fromMillis: (ms) => ({
+      seconds: Math.floor(ms / 1000),
+      nanoseconds: (ms % 1000) * 1_000_000,
+      toDate: () => new Date(ms),
+      toMillis: () => ms,
+    }),
   },
   // Test helpers (not part of the real package).
   /** Reset every jest.fn() above and re-apply its default implementation. */

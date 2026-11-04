@@ -101,20 +101,48 @@ async function seedParent(uid, parent) {
 
   await setDoc(`parents/${parentId}`, {
     name: str(parent.name),
-    phoneNumber: str(parent.phoneNumber),
+    phone: str(parent.phoneNumber),
     language: str("ml-IN"),
     timezone: str("Asia/Kolkata"),
+    createdBy: str(uid),
+    active: bool(true),
+    callPolicy: map({
+      retryCount: int(2),
+      retryGapMinutes: int(10),
+      missedAfterMinutes: int(60),
+      quietHours: map({ start: str("22:00"), end: str("06:00") }),
+    }),
     consent: map({
       status: str("granted"),
       grantedAt: timestamp(consentedAt),
       revokedAt: nullValue(),
       regrantedAt: nullValue(),
+      method: str("family_attested"),
+      policyVersion: str("v1"),
+      sharedWith: str("all_members"),
     }),
+    // Escalation view: people the family can call when a dose is missed.
+    emergencyContacts: array([
+      map({ label: str("Sreeja"), kind: str("neighbour"), phone: str("+919876500011") }),
+      map({ label: str("Dr. Nair"), kind: str("clinic"), phone: str("+919876500012") }),
+    ]),
     createdAt: timestamp(consentedAt),
   });
   await setDoc(`parents/${parentId}/members/${uid}`, {
     role: str("owner"),
+    displayName: str("Rahul"),
     joinedAt: timestamp(consentedAt),
+  });
+  // A second family member seen a few hours ago, so the presence bar has someone to name.
+  await setDoc(`parents/${parentId}/members/seed-meera`, {
+    role: str("editor"),
+    displayName: str("Meera"),
+    joinedAt: timestamp(consentedAt),
+    lastSeenAt: timestamp(now - 3 * 60 * 60_000),
+  });
+  await setDoc(`parents/${parentId}/familyCalls/seed-meera_yesterday`, {
+    byUid: str("seed-meera"),
+    at: timestamp(now - 20 * 60 * 60_000),
   });
 
   for (const medicine of parent.medicines) {
@@ -145,8 +173,22 @@ async function seedParent(uid, parent) {
       status: str(status),
       source: str("scheduler"),
       attemptCount: int(status === "pending" ? 0 : 1),
+      attempts: int(status === "missed" ? 3 : status === "pending" ? 0 : 1),
       createdAt: timestamp(today),
       updatedAt: timestamp(now),
+    });
+  }
+
+  // Three unanswered attempts for the missed event (call 1, retry 1, retry 2).
+  const missedAt = istToday(STATUS_HOURS[STATUS_HOURS.length - 1 - (4 % STATUS_HOURS.length)]);
+  for (const [index, offsetMin] of [0, 10, 20].entries()) {
+    await setDoc(`parents/${parentId}/callSessions/seed-CA${index + 1}`, {
+      callSid: str(`seed-CA${index + 1}`),
+      doseEventIds: array([str("seed-e4")]),
+      status: str("no_answer"),
+      dtmfInput: nullValue(),
+      startedAt: timestamp(missedAt + offsetMin * 60_000),
+      endedAt: timestamp(missedAt + offsetMin * 60_000 + 30_000),
     });
   }
 
@@ -212,7 +254,9 @@ async function main() {
     const seeded = await seedForUser(uid);
     await verify(uid, seeded);
   }
-  console.log("seed: done. Sign in with the demo phone +919876500000 and the code 123456 (auth emulator).");
+  console.log(
+    "seed: done. Sign in with the demo phone +919876500000, then run `npm run otp` for the code the auth emulator issued.",
+  );
   console.log("seed: Android emulator needs EXPO_PUBLIC_FIREBASE_EMULATOR_HOST=10.0.2.2 (see docs/SETUP.md).");
 }
 

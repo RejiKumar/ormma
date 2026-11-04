@@ -4,8 +4,9 @@
   "description": "Ormma monorepo root: shared tooling and scripts only. mobile/ and functions/ are independent projects.",
   "scripts": {
     "prereqs": "node scripts/check-prereqs.mjs",
-    "emulators": "npm run prereqs && npm --prefix functions run build && firebase emulators:start --project demo-ormma --import=emulator-data --export-on-exit=emulator-data",
+    "emulators": "npm run prereqs && npm --prefix functions run build && node scripts/start-emulators.mjs",
     "seed": "node scripts/seed-emulator.mjs",
+    "otp": "node scripts/emulator-otp.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -16,7 +17,9 @@
     "test:rules": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"npm --prefix functions run test:rules:run\"",
     "test:rules:mutations": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"node scripts/mutation-check-rules.mjs\"",
     "deploy:staging": "firebase deploy --only functions,firestore:rules,storage:rules --project staging",
-    "deploy:prod": "firebase deploy --only functions,firestore:rules,storage:rules --project prod"
+    "deploy:prod": "firebase deploy --only functions,firestore:rules,storage:rules --project prod",
+    "android:apk": "node scripts/android-build.mjs",
+    "android:prepare": "node scripts/android-build.mjs --prepare"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,6 +12,7 @@ function drawIcon(size) {
   grad.addColorStop(1, '#2E5BBA');
   ctx.fillStyle = grad;
   ctx.beginPath();
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   ctx.roundRect ? ctx.roundRect(0, 0, size, size, size * 0.22) : (() => {
     const r = size * 0.22;
     ctx.moveTo(r, 0);

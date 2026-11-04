@@ -5,6 +5,9 @@
 import { getAuth } from "@react-native-firebase/auth";
 import { getFirestore } from "@react-native-firebase/firestore";
 import { getFunctions } from "@react-native-firebase/functions";
+import { getApp } from "@react-native-firebase/app";
+
+import { FUNCTIONS_REGION } from "./region";
 
 export interface EmulatorFlags {
   /** __DEV__ in the app; false in production builds. */
@@ -62,17 +65,29 @@ export function currentEmulatorFlags(): EmulatorFlags {
 }
 
 /** Points Auth, Firestore and Functions at the emulators when running a dev client. */
-export function connectEmulators(): void {
-  const flags = currentEmulatorFlags();
-  connectAuthEmulator(getAuth() as unknown as AuthEmulatorTarget, EMULATOR_PORTS.auth, flags);
-  connectModuleEmulator(
+export function connectEmulators(flags: EmulatorFlags = currentEmulatorFlags()): void {
+  const auth = connectAuthEmulator(
+    getAuth() as unknown as AuthEmulatorTarget,
+    EMULATOR_PORTS.auth,
+    flags,
+  );
+  const firestore = connectModuleEmulator(
     getFirestore() as unknown as EmulatorTarget,
     EMULATOR_PORTS.firestore,
     flags,
   );
-  connectModuleEmulator(
-    getFunctions() as unknown as EmulatorTarget,
+  // Callables run in the `asia-south1` instance (see firebase/region.ts); connecting the default
+  // instance would leave every call pointed at production.
+  const functions = connectModuleEmulator(
+    getFunctions(getApp(), FUNCTIONS_REGION) as unknown as EmulatorTarget,
     EMULATOR_PORTS.functions,
     flags,
   );
+  // A module that silently fails to connect is the usual cause of an "unknown" callable error, so
+  // say which ones are wired (visible in Metro and `adb logcat`).
+  if (flags.dev && !flags.isJest) {
+    console.log(
+      `[emulators] ${flags.host ?? "localhost"} auth=${auth} firestore=${firestore} functions=${functions}`,
+    );
+  }
 }
