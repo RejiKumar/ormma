@@ -17,7 +17,7 @@ The Today screen SHALL show one card per scheduled time for each parent, in time
 - **THEN** their cards are named Morning, Afternoon and Night
 
 ### Requirement: Status badge wording
-Each card SHALL show one badge. A card whose events are all `taken` SHALL read "Taken on time" followed by the time taken when it was taken within 30 minutes before or after the scheduled time, otherwise "Taken" followed by the time taken. A card with any `missed`, `no_answer` or `not_taken` event SHALL read "Not confirmed". A card with `calling` SHALL read "Calling now", with `unclear` SHALL read "Unclear", and otherwise "Scheduled". Times SHALL use the parent's timezone.
+Each card SHALL show one badge. A card whose events are all `taken` SHALL read "Taken on time" followed by the time taken when it was taken within 30 minutes before or after the scheduled time, otherwise "Taken" followed by the time taken. A card with any `missed`, `no_answer` or `not_taken` event SHALL read "Not confirmed". A card with `calling` SHALL read "Calling now", with `unclear` SHALL read "Unclear", and otherwise "Scheduled for" followed by the scheduled time. Times SHALL use the parent's timezone.
 
 #### Scenario: On time
 - **WHEN** a dose scheduled at 08:30 was resolved as taken at 08:34
@@ -30,6 +30,10 @@ Each card SHALL show one badge. A card whose events are all `taken` SHALL read "
 #### Scenario: Missed
 - **WHEN** a dose is `missed`
 - **THEN** the badge reads "Not confirmed"
+
+#### Scenario: Scheduled
+- **WHEN** a dose scheduled at 21:00 has not happened yet
+- **THEN** the badge reads "Scheduled for 9:00 PM"
 
 ### Requirement: Confirmation note block
 A card whose events carry a `confirmationNote` SHALL show that note in its own block under the medicines. The note SHALL be shown exactly as stored, without edits or additions.
