@@ -16,7 +16,6 @@ Palette (light start values, kept in `tokens.ts` and the design-system spec): ba
 | `mobile/src/i18n/`                       | i18next setup, typed catalogue keys, `locales/en.json` (and empty ml, ta, hi)                               |
 | `mobile/src/components/`                 | The components below                                                                                        |
 | `mobile/src/navigation/`                 | Bottom tabs and the route list (`getTabRoutes`)                                                             |
-| `mobile/src/screens/gallery/`            | Dev-only component gallery                                                                                  |
 
 ## Components
 
@@ -41,7 +40,7 @@ Palette (light start values, kept in `tokens.ts` and the design-system spec): ba
 ## Rules for screens
 
 1. Build every screen on `Screen`. It adds the disclaimer. A screen has at most one `primary` Button, passed as `primaryAction` so it sits at the bottom.
-2. No hard-coded user-visible strings. Use `t("key")` and add the key to `src/i18n/locales/en.json`. Lint fails on literal JSX text and on literal `title`, `label`, `placeholder`, `accessibilityLabel`, `accessibilityHint`, `alt`, `description`, `text`, `message`, `subtitle`, `heading` props in `screens`, `components`, `navigation` and `design` (the gallery and tests are exempt).
+2. No hard-coded user-visible strings. Use `t("key")` and add the key to `src/i18n/locales/en.json`. Lint fails on literal JSX text and on literal `title`, `label`, `placeholder`, `accessibilityLabel`, `accessibilityHint`, `alt`, `description`, `text`, `message`, `subtitle`, `heading` props in `screens`, `components`, `navigation` and `design` (tests are exempt).
 3. Use tokens, never literal colours, sizes or durations: `const { theme } = useTheme()`.
 4. Never colour or label a health reading as good, bad, normal, safe or dangerous. Show readings with `ReadingValue`. Coral is only for the missed status and the urgent banner. `designRules.test.ts` enforces this over the source and the English catalogue.
 5. Every status shows an icon and a text label, not colour alone (`StatusChip`).
@@ -59,4 +58,4 @@ Inter for English; Noto Sans Malayalam, Tamil and Devanagari for ml, ta and hi. 
 
 ## Commands
 
-From `mobile/`: `npm test` (all component, theme, contrast, glyph and i18n tests), `npm run typecheck`. From the repo root: `npm run lint`. The gallery tab appears in development builds only.
+From `mobile/`: `npm test` (all component, theme, contrast, glyph and i18n tests), `npm run typecheck`. From the repo root: `npm run lint`.

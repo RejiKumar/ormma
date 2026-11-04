@@ -1,6 +1,5 @@
 import { screen } from "@testing-library/react-native";
 import { renderApp } from "../test-utils";
-import { GalleryScreen } from "./gallery/GalleryScreen";
 import { MedicinesScreen } from "./TabPlaceholders";
 
 const DISCLAIMER = "This app does not provide medical advice.";
@@ -25,39 +24,3 @@ describe.each([["Medicines", MedicinesScreen, "No medicines yet"]] as const)(
     });
   },
 );
-
-describe("GalleryScreen", () => {
-  it("shows every component and exactly one primary action (the screen's CTA)", async () => {
-    await renderApp(<GalleryScreen />);
-    for (const section of [
-      "Theme",
-      "Language and script",
-      "Type scale",
-      "Status chips",
-      "Dose rings",
-      "Buttons",
-      "Cards and parents",
-      "Avatars",
-      "List items",
-      "Banners",
-      "Health readings (neutral style)",
-      "Empty state",
-      "Skeletons",
-      "Confirmation",
-      "Icons",
-    ]) {
-      expect(screen.getByText(section)).toBeTruthy();
-    }
-    expect(screen.getAllByText(DISCLAIMER).length).toBe(1);
-    expect(screen.getByTestId("screen-primary-action")).toBeTruthy();
-  });
-
-  it("shows all seven status chips and both sample scripts", async () => {
-    await renderApp(<GalleryScreen />);
-    for (const s of ["taken", "pending", "missed", "unclear", "calling", "not_taken", "no_answer"]) {
-      expect(screen.getAllByTestId(`status-chip-${s}`).length).toBeGreaterThan(0);
-    }
-    expect(screen.getByText("ഇന്ന് മരുന്ന് കഴിച്ചോ?")).toBeTruthy();
-    expect(screen.getByText("क्या आपने आज दवा ली?")).toBeTruthy();
-  });
-});

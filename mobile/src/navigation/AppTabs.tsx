@@ -37,7 +37,7 @@ export function tabBarStyles(theme: Theme, bottomInset = 0) {
   };
 }
 
-/** Bottom tab navigation: Today, Medicines, Family (and the gallery in development builds). */
+/** Bottom tab navigation: Today, Medicines, Escalation and Family. */
 export function AppTabs() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -64,13 +64,13 @@ export function AppTabs() {
         tabBarLabelPosition: "below-icon",
       }}
     >
-      {getTabRoutes(__DEV__).map((route) => (
+      {getTabRoutes().map((route) => (
         <Tab.Screen
           key={route.name}
           name={route.name}
           component={route.component}
           options={{
-            tabBarAccessibilityLabel: route.labelKey ? t(route.labelKey) : route.name,
+            tabBarAccessibilityLabel: t(route.labelKey),
             tabBarIcon: ({ color, focused }) => (
               <View style={{ alignItems: "center", justifyContent: "center" }}>
                 {focused ? (
@@ -94,7 +94,7 @@ export function AppTabs() {
             ),
             tabBarLabel: ({ color }) => (
               <Text variant="micro" style={{ color }} numberOfLines={1} maxFontSizeMultiplier={1.25}>
-                {route.labelKey ? t(route.labelKey) : route.name}
+                {t(route.labelKey)}
               </Text>
             ),
           }}

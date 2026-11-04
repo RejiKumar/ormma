@@ -108,15 +108,11 @@ Every screen SHALL be built on a Screen layout that provides safe areas, scrolli
 - **THEN** the disclaimer "This app does not provide medical advice." is visible on it
 
 ### Requirement: Core components
-The design system SHALL provide Button, Card, StatusChip, DoseRing, ParentCard, Avatar, ListItem, Banner, DisclaimerFooter, EmptyState and Skeleton components, built from the tokens, plus a component gallery screen that exists only in development builds.
+The design system SHALL provide Button, Card, StatusChip, DoseRing, ParentCard, Avatar, ListItem, Banner, DisclaimerFooter, EmptyState and Skeleton components, built from the tokens.
 
 #### Scenario: Component set
 - **WHEN** the design system is imported
 - **THEN** all eleven components are available
-
-#### Scenario: Gallery in production
-- **WHEN** the app runs outside development (`__DEV__` is false)
-- **THEN** the component gallery screen is not registered
 
 ### Requirement: Status display
 Every dose status (taken, pending, missed, unclear, calling now, not taken, and no answer) SHALL be shown with an icon, a text label and its status colour, never by colour alone.

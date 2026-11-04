@@ -117,7 +117,7 @@ export default tseslint.config(
       "mobile/src/navigation/**/*.tsx",
       "mobile/src/design/**/*.tsx",
     ],
-    ignores: ["**/*.test.tsx", "**/gallery/**"],
+    ignores: ["**/*.test.tsx"],
     rules: {
       "no-restricted-syntax": ["error", ...SHARED_CONSUMER_SELECTORS, ...NO_HARDCODED_STRINGS],
     },

@@ -18,27 +18,16 @@ const renderTabs = (opts?: Parameters<typeof renderApp>[1]) =>
 
 describe("tab routes", () => {
   it("has Today, Medicines, Alerts and Family in production", () => {
-    expect(getTabRoutes(false).map((r) => r.name)).toEqual([
+    expect(getTabRoutes().map((r) => r.name)).toEqual([
       "Today",
       "Medicines",
       "Alerts",
       "Family",
     ]);
-  });
-
-  it("adds the component gallery only in development", () => {
-    expect(getTabRoutes(true).map((r) => r.name)).toEqual([
-      "Today",
-      "Medicines",
-      "Alerts",
-      "Family",
-      "Gallery",
-    ]);
-    expect(getTabRoutes(false).some((r) => r.name === "Gallery")).toBe(false);
   });
 
   it("labels the production tabs from the translation catalogue", () => {
-    for (const route of getTabRoutes(false)) expect(route.labelKey).not.toBeNull();
+    for (const route of getTabRoutes()) expect(route.labelKey).not.toBeNull();
   });
 });
 
@@ -78,24 +67,6 @@ describe("AppTabs", () => {
     expect(await screen.findByText("No alerts yet")).toBeTruthy();
     await fireEvent.press(screen.getAllByRole("button", { name: "Family" })[0]);
     expect(await screen.findByTestId("family-empty")).toBeTruthy();
-  });
-
-  it("registers the gallery tab in development builds", async () => {
-    await renderTabs();
-    expect(screen.getAllByText("Gallery").length).toBeGreaterThan(0);
-  });
-
-  it("does not register the gallery tab when __DEV__ is false", async () => {
-    const g = globalThis as unknown as { __DEV__: boolean };
-    const original = g.__DEV__;
-    g.__DEV__ = false;
-    try {
-      await renderTabs();
-      expect(screen.queryByText("Gallery")).toBeNull();
-      expect(screen.getAllByText("Medicines").length).toBeGreaterThan(0);
-    } finally {
-      g.__DEV__ = original;
-    }
   });
 
   it("renders in dark mode", async () => {
