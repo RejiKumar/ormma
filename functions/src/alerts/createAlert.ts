@@ -61,6 +61,7 @@ export async function notifyAlert(
       },
     },
     sender,
+    { alertType: alert.type },
   );
 }
 

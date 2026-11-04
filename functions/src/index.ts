@@ -7,6 +7,13 @@ import { EXOTEL_SECRETS, WEBHOOK_SECRETS, createCallProvider } from "./exotel/co
 import { exotelWebhookHandler } from "./exotel/webhook";
 import { createParentHandler, listMyParentsHandler } from "./family";
 import { getDoseEscalationHandler, logFamilyCallHandler, touchPresenceHandler } from "./companion";
+import {
+  getCallHistoryHandler,
+  markDosesSeenHandler,
+  setMemberProfileHandler,
+  setNotifyPrefsHandler,
+} from "./parity";
+import { eveningDigestHandler } from "./schedule/eveningDigest";
 import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } from "./invites";
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
@@ -37,6 +44,10 @@ export const redeemInvite = onCall(redeemInviteHandler);
 export const getDoseEscalation = onCall((request) => getDoseEscalationHandler(request));
 export const touchPresence = onCall((request) => touchPresenceHandler(request));
 export const logFamilyCall = onCall((request) => logFamilyCallHandler(request));
+export const markDosesSeen = onCall((request) => markDosesSeenHandler(request));
+export const setMemberProfile = onCall((request) => setMemberProfileHandler(request));
+export const setNotifyPrefs = onCall((request) => setNotifyPrefsHandler(request));
+export const getCallHistory = onCall((request) => getCallHistoryHandler(request));
 export const revokeConsent = onCall(revokeConsentHandler);
 export const grantConsent = onCall(grantConsentHandler);
 
@@ -63,6 +74,14 @@ export const missedDoseChecker = onSchedule(
   { schedule: "* * * * *", timeZone: "Asia/Kolkata" },
   async () => {
     await missedDoseCheckerHandler({ sender: new AdminPushSender() });
+  },
+);
+
+// Every 15 minutes. Sends the evening summary once per parent per local day, in the 20:00 hour.
+export const sendEveningDigest = onSchedule(
+  { schedule: "*/15 * * * *", timeZone: "Asia/Kolkata" },
+  async () => {
+    await eveningDigestHandler({ db: getDb(), sender: new AdminPushSender() });
   },
 );
 

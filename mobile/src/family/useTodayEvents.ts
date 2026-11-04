@@ -15,6 +15,12 @@ export interface TodayDoseEvent {
   /** Epoch ms of scheduledFor. */
   scheduledFor: number;
   status: DoseStatus;
+  /** Epoch ms when the dose was resolved as taken, or null. */
+  resolvedAt: number | null;
+  /** One short factual sentence from reply structuring, shown as stored; null when none. */
+  confirmationNote: string | null;
+  /** Read receipts: member uid to epoch ms of the first time that member saw the event. */
+  seenBy: Record<string, number>;
 }
 
 export interface UseTodayEventsResult {
@@ -28,6 +34,17 @@ function str(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
+function toSeenBy(value: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (value && typeof value === "object") {
+    for (const [uid, at] of Object.entries(value as Record<string, unknown>)) {
+      const ms = timestampMs(at);
+      if (ms !== null) out[uid] = ms;
+    }
+  }
+  return out;
+}
+
 function toEvent(id: string, data: Record<string, unknown> | undefined): TodayDoseEvent | null {
   const scheduledFor = timestampMs(data?.scheduledFor);
   if (scheduledFor === null) return null;
@@ -36,6 +53,9 @@ function toEvent(id: string, data: Record<string, unknown> | undefined): TodayDo
     medicineId: str(data?.medicineId),
     scheduledFor,
     status: typeof data?.status === "string" ? (data.status as DoseStatus) : "pending",
+    resolvedAt: timestampMs(data?.resolvedAt),
+    confirmationNote: typeof data?.confirmationNote === "string" && data.confirmationNote ? data.confirmationNote : null,
+    seenBy: toSeenBy(data?.seenBy),
   };
 }
 

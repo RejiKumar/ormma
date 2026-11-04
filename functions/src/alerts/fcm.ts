@@ -1,6 +1,7 @@
 import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
-import type { UserDoc } from "../../../shared/types";
+import type { AlertType, NotifyPrefs, UserDoc } from "../../../shared/types";
+import { effectiveNotify, shouldPushAlert } from "./preferences";
 
 // FCM boundary for family alerts. Tokens live in users/{uid}.fcmTokens; invalid tokens are removed
 // from every user that holds them. Logs carry ids and counts only.
@@ -72,11 +73,20 @@ export interface MemberTokens {
 }
 
 /** Reads the parent's member documents and each member's user document. */
-export async function resolveMemberTokens(db: Firestore, parentId: string): Promise<MemberTokens> {
+export async function resolveMemberTokens(
+  db: Firestore,
+  parentId: string,
+  /** Keeps only the members whose preferences allow this push; omitted means everyone. */
+  include?: (notify: NotifyPrefs) => boolean,
+): Promise<MemberTokens> {
   const membersSnap = await db.collection(`parents/${parentId}/members`).get();
   const owners = new Map<string, string[]>();
 
   for (const member of membersSnap.docs) {
+    if (include) {
+      const raw = typeof member.data === "function" ? (member.data() as { notify?: unknown } | undefined) : undefined;
+      if (!include(effectiveNotify(raw?.notify))) continue;
+    }
     const userSnap = await db.doc(`users/${member.id}`).get();
     if (!userSnap.exists) continue;
     const data = userSnap.data() as UserDoc | undefined;
@@ -128,8 +138,17 @@ export async function deliverAlertPush(
   parentId: string,
   message: PushMessage,
   sender: PushSender,
+  /** When given, members' notification preferences and quiet hours are applied for this alert type. */
+  options?: { alertType: AlertType; nowMs?: number },
 ): Promise<DeliverPushResult> {
-  const { tokens, owners } = await resolveMemberTokens(db, parentId);
+  let include: ((notify: NotifyPrefs) => boolean) | undefined;
+  if (options && options.alertType !== "urgent") {
+    const parentSnap = await db.doc(`parents/${parentId}`).get();
+    const timezone = (parentSnap.data() as { timezone?: string } | undefined)?.timezone ?? "Asia/Kolkata";
+    const ms = options.nowMs ?? Date.now();
+    include = (notify) => shouldPushAlert(notify, options.alertType, timezone, ms);
+  }
+  const { tokens, owners } = await resolveMemberTokens(db, parentId, include);
   if (tokens.length === 0) {
     console.info("alerts: no push tokens", { parentId });
     return { tokens: 0, sent: 0, failed: 0, removedTokens: 0 };

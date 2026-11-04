@@ -104,8 +104,23 @@
       "dosesTitle": "Today's doses",
       "alertsTitle": "Recent alerts",
       "noAlerts": "No recent alerts",
-      "digestTitle": "Update for the family",
-      "digestShare": "Share update"
+      "digestTitle": "WhatsApp digest",
+      "digestShare": "Share update",
+      "heroNext": "Next: {{medicines}} at {{time}}",
+      "heroNextNoMedicine": "Next dose at {{time}}",
+      "dosesCount": "{{count}} scheduled",
+      "badgeTakenOnTime": "Taken on time · {{time}}",
+      "badgeTaken": "Taken · {{time}}",
+      "badgeNotConfirmed": "Not confirmed",
+      "badgeCalling": "Calling now",
+      "badgeUnclear": "Unclear",
+      "badgeScheduled": "Scheduled",
+      "seenBy": "Seen by {{names}}",
+      "markTaken": "Mark as taken",
+      "digestSubtitle": "Share with the family",
+      "digestCopy": "Copy update for WhatsApp",
+      "digestCopied": "Copied. Paste it in WhatsApp.",
+      "digestCopyFailed": "Could not copy. Use Share instead."
     },
     "medicines": {
       "title": "Medicines",
@@ -138,7 +153,19 @@
         "invalidTime": "Use 24-hour times like 08:00 or 20:30.",
         "invalidDate": "Use the date format YYYY-MM-DD.",
         "failed": "Could not save the medicine. Please try again."
-      }
+      },
+      "heading": "{{name}}'s medicines",
+      "activeCount": "{{count}} active",
+      "active": "Active",
+      "forPurpose": "For {{purpose}}",
+      "prescribedBy": "Prescribed by {{name}}",
+      "refillDue": "refill due {{date}}",
+      "frequencyLabel": "How often",
+      "frequencyHint": "For example Twice daily, after food",
+      "pillLabel": "How it looks",
+      "pillHint": "For example Small round white tablet",
+      "purposeLabel": "What it is for",
+      "purposeHint": "For example Sugar"
     },
     "family": {
       "title": "Family",
@@ -168,7 +195,35 @@
       "revokeConfirm": "Revoke consent for this parent? Data visibility for non-owners will change.",
       "deleteParent": "Delete parent",
       "deleteConfirm": "Permanently delete this parent and all data? This cannot be undone.",
-      "emergencyContacts": "Emergency contacts"
+      "emergencyContacts": "Emergency contacts",
+      "circleTitle": "Caregiver circle",
+      "memberCount_one": "{{count}} member",
+      "memberCount_other": "{{count}} members",
+      "primary": "Primary",
+      "badgeViewing": "Viewing",
+      "badgeSeenTime": "Seen {{time}}",
+      "badgeSeenYesterday": "Seen yesterday",
+      "badgeSeenDate": "Seen {{date}}",
+      "yourDetails": "Your details",
+      "relationshipLabel": "Your relationship, for example Son",
+      "cityLabel": "Your city",
+      "saveDetails": "Save",
+      "notificationsTitle": "Notifications",
+      "notifyMissed": "Missed-dose alerts",
+      "notifyMissedDesc": "Push, as soon as it happens",
+      "notifySummary": "Evening summary",
+      "notifySummaryDesc": "One digest at 8 PM",
+      "notifyQuiet": "Quiet hours",
+      "notifyQuietDesc": "Pause non-urgent alerts 10 PM to 6 AM",
+      "historyTitle": "Call history",
+      "historyEmpty": "No calls yet",
+      "historyOrmma": "Ormma, {{time}}",
+      "historyAnswered": "Answered · {{duration}}",
+      "historyUnanswered": "Unanswered",
+      "historyFailed": "Call did not connect",
+      "historyFamily": "{{name}} called {{parent}}",
+      "historyFamilyWhen": "{{when}}",
+      "parentDetails": "Parent details"
     },
     "addParent": {
       "title": "Add a parent",
@@ -231,15 +286,34 @@
         "labelRequired": "Enter a name for each contact.",
         "invalidPhone": "Enter each phone number with its country code, for example +919876543210.",
         "failed": "Could not save the contacts. Please try again."
+      },
+      "noteLabel": "Short note (optional)",
+      "noteHint": "For example 2 min walk from {{name}}"
+    },
+    "parentDetails": {
+      "title": "Parent details",
+      "subtitle": "Shown to the family. Only owners can change them.",
+      "cityLabel": "City",
+      "prescriberLabel": "Prescribed by",
+      "prescriberHint": "For example Dr. Nair",
+      "refillLabel": "Refill due",
+      "refillHint": "YYYY-MM-DD",
+      "save": "Save details",
+      "readOnly": "Only the family owner can change these details.",
+      "errors": {
+        "invalidDate": "Use the date format YYYY-MM-DD.",
+        "failed": "Could not save the details. Please try again."
       }
     }
   },
   "digest": {
-    "header": "Ormma update for {{name}}, {{date}}",
-    "progress": "{{taken}} of {{total}} doses confirmed.",
-    "next": "Next dose at {{time}}.",
-    "missed_one": "The {{times}} dose was not confirmed. Please check in.",
-    "missed_other": "The {{times}} doses were not confirmed. Please check in."
+    "header": "Ormma update, {{date}}",
+    "onTrack": "{{name}} is on track: {{taken}} of {{total}} doses confirmed.",
+    "notConfirmed_one": "{{name}} has not confirmed {{count}} dose: {{times}}. Please check in.",
+    "notConfirmed_other": "{{name}} has not confirmed {{count}} doses: {{times}}. Please check in.",
+    "takenAt": "{{period}} dose taken at {{time}}.",
+    "next": "Next: {{medicines}} at {{time}}.",
+    "nextNoMedicine": "Next dose at {{time}}."
   },
   "presence": {
     "viewing": "{{name}} is viewing",
@@ -275,6 +349,24 @@
     "contactsTitle": "People who can check in",
     "contactCall": "Call {{label}}",
     "kindNeighbour": "Neighbour",
-    "kindClinic": "Clinic"
+    "kindClinic": "Clinic",
+    "protocolTitle": "Check-in protocol",
+    "calmTitle": "Nothing to escalate today",
+    "calmBody": "{{name}} replied to every call. These are the steps Ormma follows if a call is not answered.",
+    "missedTitle": "{{name}} has not confirmed the {{time}} dose",
+    "missedBody": "These are the calls Ormma made.",
+    "stepCall": "Call 1",
+    "stepRetry": "Retry {{n}}",
+    "stepAlert": "Caregiver alert",
+    "descCall": "Ormma rings {{name}} and speaks in {{language}}.",
+    "descRetry": "A second gentle call {{minutes}} minutes later.",
+    "descRetryLast": "Last attempt before the family is told.",
+    "descAlert": "If every call goes unanswered, the family is alerted and these contacts are offered."
+  },
+  "period": {
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "night": "Night"
   }
 }

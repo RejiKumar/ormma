@@ -62,6 +62,7 @@ Files: `numbered.test.ts` (Rules test 1 to 16 of the spec, by number), `paths.te
 | parents client update fields (emergencyContacts)  | familyCompanion: "emergencyContacts on the parent" (valid, four entries, unknown kind, extra key, bad phone, bad label, editor/viewer/outsider denied, members read) |
 | familyCalls path rule                            | familyCompanion: "familyCalls" (member read and list, non-member denied, no client write, revoked-consent window) |
 | members lastSeenAt is server-written             | familyCompanion: "members.lastSeenAt" (no client write; members read it) |
+| parent display fields, contact note, medicine display fields, server-only member and seenBy fields | prototypeParity: all four describe blocks |
 | Rules coverage beyond the numbered tests        | this document and `paths.test.ts`, `storage.test.ts`                                                                              |
 
 ## Rules that cannot be enforced in rules alone

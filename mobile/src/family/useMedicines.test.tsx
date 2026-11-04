@@ -64,6 +64,9 @@ describe("useMedicines", () => {
               confirmedByHuman: true,
               prescriptionId: null,
               createdBy: "u1",
+        frequencyText: "",
+        pillDescription: "",
+        purpose: "",
             },
           },
           {
@@ -79,6 +82,9 @@ describe("useMedicines", () => {
               confirmedByHuman: false,
               prescriptionId: "rx9",
               createdBy: "u2",
+        frequencyText: "",
+        pillDescription: "",
+        purpose: "",
             },
           },
         ]),
@@ -98,6 +104,9 @@ describe("useMedicines", () => {
         confirmedByHuman: true,
         prescriptionId: null,
         createdBy: "u1",
+        frequencyText: "",
+        pillDescription: "",
+        purpose: "",
       },
       {
         id: "m2",
@@ -111,6 +120,9 @@ describe("useMedicines", () => {
         confirmedByHuman: false,
         prescriptionId: "rx9",
         createdBy: "u2",
+        frequencyText: "",
+        pillDescription: "",
+        purpose: "",
       },
     ]);
   });

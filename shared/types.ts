@@ -76,6 +76,8 @@ export interface EmergencyContact {
   label: string;
   kind: "neighbour" | "clinic";
   phone: E164Phone;
+  /** Up to 60 characters, shown under the label (for example "2 min walk from Amma"). */
+  note?: string;
 }
 
 export interface ParentDoc {
@@ -89,6 +91,13 @@ export interface ParentDoc {
   callPolicy: CallPolicy;
   /** Optional; owners edit it. A missing field is the same as an empty list. */
   emergencyContacts?: EmergencyContact[];
+  /** Family-entered display details, shown as entered (city up to 40, prescriber up to 60). */
+  city?: string;
+  prescriber?: string;
+  /** YYYY-MM-DD or null. */
+  refillDue?: string | null;
+  /** Server-written: last local day the evening digest was sent (YYYY-MM-DD). */
+  lastDigestDate?: string;
   consent: Consent;
   createdAt: Timestamp;
 }
@@ -102,6 +111,17 @@ export interface MemberDoc {
   displayName: string;
   /** Last time the member opened Today. Written only by the presence function. */
   lastSeenAt?: Timestamp;
+  /** Written only by the profile and preference functions. */
+  relationship?: string;
+  city?: string;
+  notify?: NotifyPrefs;
+}
+
+/** Push preferences of one member. A missing value reads as missed true, summary true, quiet false. */
+export interface NotifyPrefs {
+  missed: boolean;
+  summary: boolean;
+  quiet: boolean;
 }
 
 // ---------- parents/{parentId}/familyCalls/{uid_yyyyMMddHHmm} (server-write only) ----------
@@ -128,6 +148,10 @@ export interface MedicineDoc {
   prescriptionId: string | null;
   createdBy: Uid;
   createdAt: Timestamp;
+  /** Family-entered display text, shown as entered and never interpreted. */
+  frequencyText?: string;
+  pillDescription?: string;
+  purpose?: string;
 }
 
 // ---------- parents/{parentId}/doseEvents/{eventId} ----------
@@ -155,6 +179,8 @@ export interface DoseEventDoc {
   reminderAt: Timestamp | null;
   /** True when the most recent provider call attempt failed before the provider accepted the call. Server-written. */
   lastDispatchFailure: boolean;
+  /** Server-written read receipts: member uid to the time that member first saw the event. */
+  seenBy?: Record<Uid, Timestamp>;
 }
 
 // ---------- parents/{parentId}/healthLogs/{logId} ----------

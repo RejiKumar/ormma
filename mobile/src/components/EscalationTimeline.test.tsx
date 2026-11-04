@@ -24,6 +24,10 @@ const parent: FamilyParent = {
     { label: "Sreeja", kind: "neighbour", phone: "+919876500001" },
     { label: "Dr. Nair", kind: "clinic", phone: "+919876500002" },
   ],
+  city: "",
+  prescriber: "",
+  refillDue: null,
+  callPolicy: { retryCount: 2, retryGapMinutes: 10, missedAfterMinutes: 60 },
   role: "viewer",
 };
 

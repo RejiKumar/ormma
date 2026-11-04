@@ -116,6 +116,42 @@ export function touchPresence(payload: ParentScopedPayload): Promise<{ updated: 
   return invoke("touchPresence", payload);
 }
 
+/** Records the first time the signed-in member saw each event (read receipts). */
+export function markDosesSeen(payload: { parentId: string; eventIds: string[] }): Promise<{ marked: number }> {
+  return invoke("markDosesSeen", payload);
+}
+
+/** Updates the signed-in member's own relationship and city; an empty string clears a field. */
+export function setMemberProfile(payload: {
+  parentId: string;
+  relationship?: string;
+  city?: string;
+}): Promise<{ ok: true }> {
+  return invoke("setMemberProfile", payload);
+}
+
+/** Saves the signed-in member's own notification preferences. */
+export function setNotifyPrefs(payload: {
+  parentId: string;
+  missed: boolean;
+  summary: boolean;
+  quiet: boolean;
+}): Promise<{ ok: true }> {
+  return invoke("setNotifyPrefs", payload);
+}
+
+export interface CallHistoryEntry {
+  kind: "ormma" | "family";
+  atMs: number;
+  outcome?: "answered" | "no_answer" | "failed" | "calling";
+  durationSec?: number;
+  byUid?: string;
+}
+
+export function getCallHistory(payload: ParentScopedPayload): Promise<{ entries: CallHistoryEntry[] }> {
+  return invoke("getCallHistory", payload);
+}
+
 /** Logs "I called <parent>" for the signed-in member (one entry per minute). */
 export function logFamilyCall(payload: ParentScopedPayload): Promise<{ id: string }> {
   return invoke("logFamilyCall", payload);

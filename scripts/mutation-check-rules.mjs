@@ -15,6 +15,41 @@ const stRules = fs.readFileSync(path.join(root, "storage.rules"), "utf8");
 // [label, file, find, replace, jest -t pattern of the test that must fail]
 const M = [
   [
+    "parent city has no length cap",
+    "fs",
+    "optText(data, 'city', 40)",
+    "optText(data, 'city', 4000)",
+    "parent display fields",
+  ],
+  [
+    "refillDue accepts any string",
+    "fs",
+    "data.refillDue.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')",
+    "data.refillDue is string",
+    "parent display fields",
+  ],
+  [
+    "contact note has no length cap",
+    "fs",
+    "optText(c, 'note', 60)",
+    "optText(c, 'note', 6000)",
+    "emergency contact note",
+  ],
+  [
+    "medicine purpose has no length cap",
+    "fs",
+    "optText(data, 'purpose', 40)",
+    "optText(data, 'purpose', 4000)",
+    "medicine display fields",
+  ],
+  [
+    "medicine allows unknown field",
+    "fs",
+    "'frequencyText', 'pillDescription', 'purpose'])",
+    "'frequencyText', 'pillDescription', 'purpose', 'notes'])",
+    "medicine display fields",
+  ],
+  [
     "emergency contacts accept any kind",
     "fs",
     "&& c.kind in ['neighbour', 'clinic']",
@@ -80,8 +115,8 @@ const M = [
   [
     "owner writes consent",
     "fs",
-    ".hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts'])",
-    ".hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts', 'consent'])",
+    "'callPolicy', 'emergencyContacts',\n                        'city', 'prescriber', 'refillDue'])",
+    "'callPolicy', 'emergencyContacts', 'consent',\n                        'city', 'prescriber', 'refillDue'])",
     "Rules test 5:",
   ],
   [

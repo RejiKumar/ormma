@@ -68,7 +68,7 @@ describe("emergencyContacts on the parent", () => {
 
   it("an unknown kind, an extra key, a bad phone or a bad label is denied", async () => {
     await assertFails(updateDoc(parentRef(OWNER), { emergencyContacts: [contact({ kind: "friend" })] }));
-    await assertFails(updateDoc(parentRef(OWNER), { emergencyContacts: [contact({ note: "x" })] }));
+    await assertFails(updateDoc(parentRef(OWNER), { emergencyContacts: [contact({ other: "x" })] }));
     await assertFails(updateDoc(parentRef(OWNER), { emergencyContacts: [contact({ phone: "9876500001" })] }));
     await assertFails(updateDoc(parentRef(OWNER), { emergencyContacts: [contact({ label: "" })] }));
     await assertFails(updateDoc(parentRef(OWNER), { emergencyContacts: [contact({ label: "x".repeat(41) })] }));

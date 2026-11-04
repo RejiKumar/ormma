@@ -16,6 +16,10 @@ export interface Medicine {
   confirmedByHuman: boolean;
   prescriptionId: string | null;
   createdBy: string;
+  /** Family-entered display text, shown as entered. Empty when not set. */
+  frequencyText: string;
+  pillDescription: string;
+  purpose: string;
 }
 
 export interface UseMedicinesResult {
@@ -47,6 +51,9 @@ function toMedicine(id: string, data: Record<string, unknown> | undefined): Medi
     confirmedByHuman: data?.confirmedByHuman === true,
     prescriptionId: strOrNull(data?.prescriptionId),
     createdBy: str(data?.createdBy),
+    frequencyText: str(data?.frequencyText),
+    pillDescription: str(data?.pillDescription),
+    purpose: str(data?.purpose),
   };
 }
 

@@ -89,10 +89,16 @@ service cloud.firestore {
     }
 
     // Up to 3 contacts for the escalation view: label, kind and an E.164 phone, nothing else.
+    // Optional free-text field with a length cap; absent is fine.
+    function optText(data, key, max) {
+      return !(key in data) || (data[key] is string && data[key].size() <= max);
+    }
+
     function validContact(c) {
       return c is map
-        && c.keys().hasOnly(['label', 'kind', 'phone'])
+        && c.keys().hasOnly(['label', 'kind', 'phone', 'note'])
         && c.keys().hasAll(['label', 'kind', 'phone'])
+        && optText(c, 'note', 60)
         && c.label is string && c.label.size() >= 1 && c.label.size() <= 40
         && c.kind in ['neighbour', 'clinic']
         && isE164(c.phone);
@@ -112,7 +118,11 @@ service cloud.firestore {
         && data.timezone is string
         && data.active is bool
         && validCallPolicy(data.callPolicy)
-        && (!('emergencyContacts' in data) || validContacts(data.emergencyContacts));
+        && (!('emergencyContacts' in data) || validContacts(data.emergencyContacts))
+        && optText(data, 'city', 40)
+        && optText(data, 'prescriber', 60)
+        && (!('refillDue' in data) || data.refillDue == null
+            || (data.refillDue is string && data.refillDue.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')));
     }
 
     match /parents/{parentId} {
@@ -122,7 +132,8 @@ service cloud.firestore {
       // Owner only. The whitelist excludes consent (and createdBy, createdAt).
       allow update: if isOwner(parentId)
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts'])
+             .hasOnly(['name', 'phone', 'language', 'timezone', 'active', 'callPolicy', 'emergencyContacts',
+                        'city', 'prescriber', 'refillDue'])
         && validParentUpdate(request.resource.data);
       // Deleting a parent is the owner's callable with recursive delete.
       allow delete: if false;
@@ -136,7 +147,8 @@ service cloud.firestore {
       // ---------- medicines ----------
       function validMedicine(data) {
         return data.keys().hasOnly(['name', 'doseText', 'times', 'startDate', 'endDate', 'active', 'source',
-                                    'confirmedByHuman', 'prescriptionId', 'createdBy', 'createdAt'])
+                                    'confirmedByHuman', 'prescriptionId', 'createdBy', 'createdAt',
+                                    'frequencyText', 'pillDescription', 'purpose'])
           && data.keys().hasAll(['name', 'doseText', 'times', 'startDate', 'endDate', 'active', 'source',
                                  'confirmedByHuman', 'prescriptionId', 'createdBy', 'createdAt'])
           && data.name is string && data.name.size() > 0
@@ -149,7 +161,10 @@ service cloud.firestore {
           && data.confirmedByHuman is bool
           && (data.prescriptionId == null || data.prescriptionId is string)
           && data.createdBy is string
-          && data.createdAt is timestamp;
+          && data.createdAt is timestamp
+          && optText(data, 'frequencyText', 80)
+          && optText(data, 'pillDescription', 80)
+          && optText(data, 'purpose', 40);
       }
 
       match /medicines/{medicineId} {

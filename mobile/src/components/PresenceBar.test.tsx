@@ -24,6 +24,10 @@ const parent: FamilyParent = {
   timezone: "Asia/Kolkata",
   consent: { status: "granted", revokedAt: null, regrantedAt: null },
   emergencyContacts: [],
+  city: "",
+  prescriber: "",
+  refillDue: null,
+  callPolicy: { retryCount: 2, retryGapMinutes: 10, missedAfterMinutes: 60 },
   role: "editor",
 };
 

@@ -19,6 +19,10 @@ const base: FamilyParent = {
   timezone: "Asia/Kolkata",
   consent: { status: "granted", revokedAt: null, regrantedAt: null },
   emergencyContacts: [{ label: "Sreeja", kind: "neighbour", phone: "+919876500001" }],
+  city: "",
+  prescriber: "",
+  refillDue: null,
+  callPolicy: { retryCount: 2, retryGapMinutes: 10, missedAfterMinutes: 60 },
   role: "owner",
 };
 

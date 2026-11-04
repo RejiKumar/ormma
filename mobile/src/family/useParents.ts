@@ -29,6 +29,13 @@ export interface FamilyParent {
   consent: FamilyParentConsent | null;
   /** Up to 3 people the family can call when a dose is missed; empty when none are set. */
   emergencyContacts: EmergencyContact[];
+  /** Family-entered details shown as entered; empty when not set. */
+  city: string;
+  prescriber: string;
+  /** YYYY-MM-DD or null. */
+  refillDue: string | null;
+  /** How Ormma places and retries calls, with the spec defaults when the parent has none. */
+  callPolicy: { retryCount: number; retryGapMinutes: number; missedAfterMinutes: number };
   /** The signed-in member's role for this parent; null when the membership doc is unreadable. */
   role: Role | null;
 }
@@ -49,6 +56,10 @@ interface ParentSnapshot {
   timezone: string;
   consent: FamilyParentConsent | null;
   emergencyContacts: EmergencyContact[];
+  city: string;
+  prescriber: string;
+  refillDue: string | null;
+  callPolicy: FamilyParent["callPolicy"];
 }
 
 /** A parent as the dated-query hooks need it: identity, timezone, consent map and this member's role. */
@@ -79,6 +90,20 @@ function toSnapshot(id: string, data: Record<string, unknown> | undefined): Pare
     timezone: typeof data?.timezone === "string" && data.timezone ? data.timezone : "Asia/Kolkata",
     consent,
     emergencyContacts: toContacts(data?.emergencyContacts),
+    city: typeof data?.city === "string" ? data.city : "",
+    prescriber: typeof data?.prescriber === "string" ? data.prescriber : "",
+    refillDue: typeof data?.refillDue === "string" ? data.refillDue : null,
+    callPolicy: toCallPolicy(data?.callPolicy),
+  };
+}
+
+function toCallPolicy(value: unknown): FamilyParent["callPolicy"] {
+  const v = (value ?? {}) as Record<string, unknown>;
+  const num = (x: unknown, fallback: number) => (typeof x === "number" && x >= 0 ? x : fallback);
+  return {
+    retryCount: num(v.retryCount, 2),
+    retryGapMinutes: num(v.retryGapMinutes, 10),
+    missedAfterMinutes: num(v.missedAfterMinutes, 60),
   };
 }
 
@@ -87,7 +112,8 @@ function toContacts(value: unknown): EmergencyContact[] {
   return value.flatMap((entry): EmergencyContact[] => {
     const c = entry as Partial<EmergencyContact> | null;
     if (!c || typeof c.label !== "string" || typeof c.phone !== "string") return [];
-    return [{ label: c.label, phone: c.phone, kind: c.kind === "clinic" ? "clinic" : "neighbour" }];
+    const kind = c.kind === "clinic" ? "clinic" : "neighbour";
+    return [{ label: c.label, phone: c.phone, kind, ...(typeof c.note === "string" && c.note ? { note: c.note } : {}) }];
   });
 }
 

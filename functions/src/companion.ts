@@ -31,20 +31,20 @@ interface ParentScoped {
   parentId?: unknown;
 }
 
-function requireAuth(request: CallableRequest<unknown>): string {
+export function requireAuth(request: CallableRequest<unknown>): string {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Sign in required.");
   return uid;
 }
 
-function requireId(value: unknown, field: string): string {
+export function requireId(value: unknown, field: string): string {
   if (typeof value !== "string" || value.length === 0 || value.includes("/")) {
     throw new HttpsError("invalid-argument", `${field} is required.`);
   }
   return value;
 }
 
-async function memberRole(
+export async function memberRole(
   db: ReturnType<typeof getDb>,
   parentId: string,
   uid: string,
