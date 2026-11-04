@@ -39,3 +39,4 @@ All under `openspec/specs/<capability>/spec.md`:
 - medical-safety, trend-flagging (old spec 04)
 - consent, data-protection (old spec 05)
 - ai-contracts, reply-structuring, prescription-reading, weekly-summary (old spec 06)
+- check-in-protocol-view, dose-receipts, evening-digest, family-circle, medicine-details (added by prototype-full-parity)
