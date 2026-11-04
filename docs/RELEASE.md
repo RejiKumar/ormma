@@ -183,6 +183,7 @@ Smoke-test the exact release build before uploading: install the `.aab` through 
 | Voice or audio | Not stored | Processed by Google Speech services | App functionality | Call audio is processed in memory and not recorded |
 | Device or app ids (FCM token) | Yes | No | Push notifications | |
 | Approximate activity (member last seen) | Yes | No | App functionality | One timestamp per member, no location |
+| Other user content (read receipts, notification preferences, relationship and city) | Yes | No | App functionality | Who viewed a dose update and when; three notification toggles; a member's own relationship and city; no precise location |
 | Third-party contacts (emergency contacts) | Yes | No | App functionality | Entered by the family owner |
 
 Encryption in transit: yes. Users can request deletion: yes (Family tab → Delete parent, and Export data).

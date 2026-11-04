@@ -7,6 +7,7 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const hasIosFirebase = existsSync(join(__dirname, "GoogleService-Info.plist"));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { googleServicesFile: _ignored, ...ios } = (config.ios ?? {}) as typeof config.ios & {
     googleServicesFile?: string;
   };

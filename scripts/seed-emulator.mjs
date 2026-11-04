@@ -76,8 +76,24 @@ const PARENTS = [
     name: "Amma",
     phoneNumber: "+919876500001",
     medicines: [
-      { id: "seed-metformin", name: "Metformin", doseText: "1 tablet", times: ["08:00", "20:00"] },
-      { id: "seed-amlodipine", name: "Amlodipine", doseText: "5 mg", times: ["09:00"] },
+      {
+        id: "seed-metformin",
+        name: "Metformin",
+        doseText: "500mg",
+        times: ["08:00", "20:00"],
+        frequencyText: "Twice daily · morning and afternoon, after food",
+        pillDescription: "Small round white tablet in silver strip",
+        purpose: "Sugar",
+      },
+      {
+        id: "seed-amlodipine",
+        name: "Amlodipine",
+        doseText: "5mg",
+        times: ["09:00"],
+        frequencyText: "Once daily · morning",
+        pillDescription: "Small yellow tablet in green strip",
+        purpose: "Blood pressure",
+      },
     ],
   },
   {
@@ -85,7 +101,15 @@ const PARENTS = [
     name: "Appa",
     phoneNumber: "+919876500002",
     medicines: [
-      { id: "seed-atorvastatin", name: "Atorvastatin", doseText: "1 tablet", times: ["21:00"] },
+      {
+        id: "seed-atorvastatin",
+        name: "Atorvastatin",
+        doseText: "10mg",
+        times: ["21:00"],
+        frequencyText: "Once daily · night, after dinner",
+        pillDescription: "Oval pink tablet, blister pack",
+        purpose: "Cholesterol",
+      },
     ],
   },
 ];
@@ -123,20 +147,28 @@ async function seedParent(uid, parent) {
     }),
     // Escalation view: people the family can call when a dose is missed.
     emergencyContacts: array([
-      map({ label: str("Sreeja"), kind: str("neighbour"), phone: str("+919876500011") }),
-      map({ label: str("Dr. Nair"), kind: str("clinic"), phone: str("+919876500012") }),
+      map({ label: str("Sreeja"), kind: str("neighbour"), phone: str("+919876500011"), note: str("2 min walk from home") }),
+      map({ label: str("Dr. Nair"), kind: str("clinic"), phone: str("+919876500012"), note: str("Open until 1 PM") }),
     ]),
+    city: str("Thrissur"),
+    prescriber: str("Dr. Nair"),
+    refillDue: str("2026-11-12"),
     createdAt: timestamp(consentedAt),
   });
   await setDoc(`parents/${parentId}/members/${uid}`, {
     role: str("owner"),
     displayName: str("Rahul"),
+    relationship: str("Son"),
+    city: str("Bengaluru"),
+    notify: map({ missed: bool(true), summary: bool(true), quiet: bool(false) }),
     joinedAt: timestamp(consentedAt),
   });
   // A second family member seen a few hours ago, so the presence bar has someone to name.
   await setDoc(`parents/${parentId}/members/seed-meera`, {
     role: str("editor"),
     displayName: str("Meera"),
+    relationship: str("Daughter"),
+    city: str("Dubai"),
     joinedAt: timestamp(consentedAt),
     lastSeenAt: timestamp(now - 3 * 60 * 60_000),
   });
@@ -159,6 +191,9 @@ async function seedParent(uid, parent) {
       prescriptionId: nullValue(),
       createdBy: str(uid),
       createdAt: timestamp(now),
+      frequencyText: str(medicine.frequencyText),
+      pillDescription: str(medicine.pillDescription),
+      purpose: str(medicine.purpose),
     });
   }
 
@@ -176,6 +211,17 @@ async function seedParent(uid, parent) {
       attempts: int(status === "missed" ? 3 : status === "pending" ? 0 : 1),
       createdAt: timestamp(today),
       updatedAt: timestamp(now),
+      // Taken doses carry the time taken, the confirmation note and read receipts, as in the prototype.
+      ...(status === "taken"
+        ? {
+            resolvedAt: timestamp(scheduledFor + 4 * 60_000),
+            confirmationNote: str("Confirmed taking the medicine after morning tea."),
+            seenBy: map({
+              [uid]: timestamp(scheduledFor + 12 * 60_000),
+              "seed-meera": timestamp(scheduledFor + 40 * 60_000),
+            }),
+          }
+        : {}),
     });
   }
 

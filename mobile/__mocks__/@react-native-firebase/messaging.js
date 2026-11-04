@@ -1,3 +1,4 @@
+/* global jest */
 const tokens = new Set();
 let permissionStatus = "authorized";
 let tokenValue = "test-fcm-token";
