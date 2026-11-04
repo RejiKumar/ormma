@@ -79,6 +79,14 @@ const alertSnap = (rows: Array<{ id: string; type: string; message: string; ms: 
   })),
 });
 
+// Medicine names are read through their own hook; keep it out of the snapshot listener order used here.
+jest.mock("../../family/useMedicines", () => ({
+  useMedicines: () => ({
+    medicines: [{ id: "m1", name: "Metformin", doseText: "500mg" }],
+    loading: false,
+  }),
+}));
+
 const renderDashboard = async () =>
   renderApp(
     <NavigationContainer>
@@ -127,6 +135,7 @@ describe("TodayDashboardScreen", () => {
     expect(await screen.findByTestId("today-section-p1")).toBeTruthy();
     expect(screen.getByText("Amma")).toBeTruthy();
     expect(screen.getByText("18:00")).toBeTruthy();
+    expect(screen.getByText("Metformin 500mg")).toBeTruthy();
     expect(screen.getByText("Pending")).toBeTruthy();
     expect(screen.getByText("No recent alerts")).toBeTruthy();
     // The hero summary and the shareable family update appear for a parent with consent granted.

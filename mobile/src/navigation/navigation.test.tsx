@@ -62,7 +62,7 @@ describe("AppTabs", () => {
     await renderTabs();
     expect(screen.getByTestId("today-no-parents")).toBeTruthy();
     expect(screen.getByText("Nothing here yet")).toBeTruthy();
-    for (const label of ["Today", "Medicines", "Alerts", "Family"]) {
+    for (const label of ["Today", "Medicines", "Escalation", "Family"]) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
     expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
@@ -72,7 +72,7 @@ describe("AppTabs", () => {
     await renderTabs();
     await fireEvent.press(screen.getByRole("button", { name: "Medicines" }));
     expect(await screen.findByTestId("medicines-no-parents")).toBeTruthy();
-    await fireEvent.press(screen.getAllByRole("button", { name: "Alerts" })[0]);
+    await fireEvent.press(screen.getAllByRole("button", { name: "Escalation" })[0]);
     expect(await screen.findByText("No alerts yet")).toBeTruthy();
     await fireEvent.press(screen.getAllByRole("button", { name: "Family" })[0]);
     expect(await screen.findByTestId("family-empty")).toBeTruthy();

@@ -3,7 +3,9 @@ import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AlertDot } from "../components/AlertDot";
+import { AppHeader } from "../components/AppHeader";
 import { Icon } from "../components/Icon";
+import { useParents } from "../family/useParents";
 import { useUnreadUrgentAlertCount } from "../family/useUnreadAlerts";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
@@ -37,10 +39,19 @@ export function AppTabs() {
   const insets = useSafeAreaInsets();
   const styles = tabBarStyles(theme, insets.bottom);
   const unreadUrgent = useUnreadUrgentAlertCount();
+  const { parents } = useParents();
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false,
+        // The prototype app bar: brand mark and the parent pill with a live status dot.
+        headerShown: true,
+        header: () => (
+          <AppHeader
+            parentName={parents[0]?.name ?? null}
+            extraParents={Math.max(0, parents.length - 1)}
+            alert={unreadUrgent > 0}
+          />
+        ),
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.inkMuted,
         tabBarStyle: styles.bar,

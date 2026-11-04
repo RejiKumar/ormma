@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "Ormma"
+    "name": "Ormma",
+    "brand": "ormma"
   },
   "disclaimer": {
     "medical": "This app does not provide medical advice."
@@ -25,11 +26,11 @@
   "tabs": {
     "today": "Today",
     "medicines": "Medicines",
-    "alerts": "Alerts",
+    "alerts": "Escalation",
     "family": "Family"
   },
   "alerts": {
-    "title": "Alerts",
+    "title": "Escalation",
     "emergencyPrompt": "Please call your local emergency services if you are worried.",
     "callNow": "Call now",
     "markAsTaken": "Mark as taken",

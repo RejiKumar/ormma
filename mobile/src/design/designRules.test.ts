@@ -29,7 +29,7 @@ describe("coral is only for missed doses and urgent alerts", () => {
       .filter((f) => /colors\.urgent|\.urgent\./.test(fs.readFileSync(f, "utf8")))
       .map(rel)
       .sort();
-    expect(urgentUsers).toEqual(["components/AlertDot.tsx", "components/Banner.tsx", "design/tokens.ts"]);
+    expect(urgentUsers).toEqual(["components/AlertDot.tsx", "components/AppHeader.tsx", "components/Banner.tsx", "design/tokens.ts"]);
   });
 
   it("no component names the missed colours directly: they come only through StatusChip's status lookup", () => {

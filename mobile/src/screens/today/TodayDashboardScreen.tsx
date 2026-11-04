@@ -14,6 +14,7 @@ import { STATUS_ICON, StatusChip } from "../../components/StatusChip";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useAlerts } from "../../family/useAlerts";
+import { useMedicines } from "../../family/useMedicines";
 import type { DatedParent, FamilyParent } from "../../family/useParents";
 import { useParents } from "../../family/useParents";
 import { useTodayEvents, type TodayDoseEvent } from "../../family/useTodayEvents";
@@ -104,10 +105,13 @@ function DoseRow({
   parent,
   event,
   last,
+  medicine,
 }: {
   parent: FamilyParent;
   event: TodayDoseEvent;
   last: boolean;
+  /** "Metformin 500mg" for the dose, when the medicine is known. */
+  medicine?: string;
 }) {
   const { theme } = useTheme();
   const status = theme.colors.status[event.status];
@@ -134,6 +138,7 @@ function DoseRow({
         <ListItem
           testID={`today-event-${parent.id}-${event.id}`}
           title={formatLocalClock(parent.timezone, event.scheduledFor)}
+          subtitle={medicine}
           chevron={false}
           trailing={<StatusChip status={event.status} testID={`today-chip-${event.id}`} />}
         />
@@ -155,6 +160,11 @@ function ParentTodaySection({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const digest = buildDigest(t, parent, events, Date.now());
+  const { medicines } = useMedicines(parent.id);
+  const medicineLabel = (medicineId: string): string | undefined => {
+    const m = medicines.find((x) => x.id === medicineId);
+    return m ? [m.name, m.doseText].filter((part) => part.length > 0).join(" ") : undefined;
+  };
   return (
     <View testID={`today-section-${parent.id}`} style={{ gap: theme.spacing.md }}>
       <Text variant="title" lang={parent.language}>
@@ -173,7 +183,13 @@ function ParentTodaySection({
           </Text>
           <View>
             {events.map((event, index) => (
-              <DoseRow key={event.id} parent={parent} event={event} last={index === events.length - 1} />
+              <DoseRow
+                key={event.id}
+                parent={parent}
+                event={event}
+                last={index === events.length - 1}
+                medicine={medicineLabel(event.medicineId)}
+              />
             ))}
           </View>
           {digest && parent.consent?.status === "granted" ? (
@@ -212,7 +228,6 @@ export function TodayDashboardScreen() {
 
   return (
     <Screen insideTabs>
-      <Text variant="headline">{t("tabs.today")}</Text>
       {parentsLoading ? (
         <Text tone="muted">{t("common.loading")}</Text>
       ) : parents.length === 0 ? (

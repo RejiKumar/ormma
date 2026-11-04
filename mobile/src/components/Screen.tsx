@@ -105,7 +105,8 @@ export function Screen({
       style={{
         flex: 1,
         backgroundColor: theme.colors.background,
-        paddingTop: belowHeader ? 0 : insets.top,
+        // Tab screens sit under the app bar, which already covers the top safe area.
+        paddingTop: belowHeader || insideTabs ? 0 : insets.top,
         paddingLeft: insets.left,
         paddingRight: insets.right,
         paddingBottom: keyboardPadding,
