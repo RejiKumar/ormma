@@ -7,10 +7,10 @@ import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
-import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
+import { shortDate } from "../../family/cards";
 import { useMedicines } from "../../family/useMedicines";
 import { useParents } from "../../family/useParents";
 import type { MedicineStackParamList } from "../../navigation/MedicineStack";
@@ -46,6 +46,11 @@ export function MedicinesListScreen({ navigation }: Props) {
   const selected = parents.find((parent) => parent.id === selectedId) ?? null;
   const { medicines, loading } = useMedicines(selected?.id ?? null);
   const canEdit = selected?.role === "owner" || selected?.role === "editor";
+  const footerParts = [
+    selected && selected.prescriber.length > 0 ? t("screens.medicines.prescribedBy", { name: selected.prescriber }) : "",
+    selected && selected.refillDue ? t("screens.medicines.refillDue", { date: shortDate(selected.refillDue) }) : "",
+  ].filter((part) => part.length > 0);
+  const prescribedFooter = footerParts.join(" · ");
 
   return (
     <Screen
@@ -121,11 +126,27 @@ export function MedicinesListScreen({ navigation }: Props) {
               description={t("screens.medicines.emptyDescription")}
             />
           ) : (
-            medicines.map((medicine) => (
-              <Card key={medicine.id} style={{ paddingVertical: theme.spacing.xs }}>
-                <ListItem
+            <>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+                <Text variant="title" lang={selected?.language}>
+                  {t("screens.medicines.heading", { name: selected?.name ?? "" })}
+                </Text>
+                <Text variant="caption" tone="muted" testID="medicines-active-count">
+                  {t("screens.medicines.activeCount", { count: medicines.filter((m) => m.active).length })}
+                </Text>
+              </View>
+              {medicines.map((medicine) => (
+                <Card
+                  key={medicine.id}
                   testID={`medicine-${medicine.id}`}
-                  leading={
+                  onPress={
+                    canEdit && selected
+                      ? () => navigation.navigate("EditMedicine", { parentId: selected.id, medicine })
+                      : undefined
+                  }
+                  style={{ gap: theme.spacing.sm }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.md }}>
                     <View
                       style={{
                         width: 44,
@@ -138,31 +159,82 @@ export function MedicinesListScreen({ navigation }: Props) {
                     >
                       <Icon name="pill" color={theme.colors.primary} size={22} />
                     </View>
-                  }
-                  title={medicine.name}
-                  subtitle={[medicine.doseText, medicine.times.join(", ")]
-                    .filter((part) => part.length > 0)
-                    .join(" · ")}
-                  chevron={canEdit}
-                  onPress={
-                    canEdit && selected
-                      ? () =>
-                          navigation.navigate("EditMedicine", {
-                            parentId: selected.id,
-                            medicine,
-                          })
-                      : undefined
-                  }
-                  trailing={
-                    medicine.active ? undefined : (
-                      <Text variant="label" tone="muted">
-                        {t("screens.medicines.inactive")}
+                    <Text variant="title" style={{ flex: 1 }}>
+                      {[medicine.name, medicine.doseText].filter((part) => part.length > 0).join(" ")}
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: medicine.active ? theme.colors.status.taken.bg : theme.colors.status.pending.bg,
+                        borderRadius: theme.radius.pill,
+                        paddingHorizontal: theme.spacing.sm + 2,
+                        paddingVertical: 4,
+                      }}
+                    >
+                      <Text
+                        variant="caption"
+                        style={{
+                          color: medicine.active ? theme.colors.status.taken.fg : theme.colors.status.pending.fg,
+                          fontWeight: "600",
+                        }}
+                      >
+                        {medicine.active ? t("screens.medicines.active") : t("screens.medicines.inactive")}
                       </Text>
-                    )
-                  }
-                />
-              </Card>
-            ))
+                    </View>
+                  </View>
+                  <Text variant="body">
+                    {medicine.frequencyText.length > 0 ? medicine.frequencyText : medicine.times.join(", ")}
+                  </Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
+                    {medicine.pillDescription.length > 0 ? (
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                          backgroundColor: theme.colors.background,
+                          borderWidth: 1,
+                          borderColor: theme.colors.border,
+                          borderRadius: theme.radius.pill,
+                          paddingHorizontal: theme.spacing.sm + 2,
+                          paddingVertical: 4,
+                        }}
+                      >
+                        <View style={{ width: 9, height: 9, borderRadius: 5, borderWidth: 1.5, borderColor: theme.colors.inkMuted }} />
+                        <Text variant="caption" tone="muted">
+                          {medicine.pillDescription}
+                        </Text>
+                      </View>
+                    ) : null}
+                    {medicine.purpose.length > 0 ? (
+                      <View
+                        style={{
+                          backgroundColor: theme.colors.background,
+                          borderWidth: 1,
+                          borderColor: theme.colors.border,
+                          borderRadius: theme.radius.pill,
+                          paddingHorizontal: theme.spacing.sm + 2,
+                          paddingVertical: 4,
+                        }}
+                      >
+                        <Text variant="caption" tone="muted">
+                          {t("screens.medicines.forPurpose", { purpose: medicine.purpose })}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                </Card>
+              ))}
+              {prescribedFooter ? (
+                <View
+                  testID="medicines-footer"
+                  style={{ backgroundColor: theme.colors.primaryTint, borderRadius: theme.radius.lg, padding: theme.spacing.md }}
+                >
+                  <Text variant="caption" tone="primary">
+                    {prescribedFooter}
+                  </Text>
+                </View>
+              ) : null}
+            </>
           )}
         </>
       )}

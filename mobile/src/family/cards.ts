@@ -150,7 +150,7 @@ export function groupCards(events: TodayDoseEvent[], medicines: Record<string, M
         medicines: info.map((m) => m.label).filter((l) => l.length > 0).join(" + "),
         pills: [...new Set(info.map((m) => m.pill).filter((p) => p.length > 0))],
         kind,
-        takenAt: kind === "taken" || kind === "taken_on_time" ? Math.max(...resolved) : null,
+        takenAt: (kind === "taken" || kind === "taken_on_time") && resolved.length > 0 ? Math.max(...resolved) : null,
         notes: [...new Set(list.map((e) => e.confirmationNote).filter((n): n is string => n !== null))],
         seen: [...earliest.entries()].map(([uid, at]) => ({ uid, at })).sort((a, b) => a.at - b.at),
         pending: kind === "scheduled",

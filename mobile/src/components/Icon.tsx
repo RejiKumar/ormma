@@ -12,6 +12,7 @@ interface IconDef {
 }
 
 const ring = (r = 9): El => ({ t: "circle", cx: 12, cy: 12, r });
+const ring3 = (): El => ({ t: "circle", cx: 12, cy: 12, r: 3 });
 const dot = (cx: number, cy: number): El => ({ t: "circle", cx, cy, r: 0.4, filled: true });
 
 /** A small fixed set of 24 x 24 stroke icons. Stroke colour and size come from the caller. */
@@ -53,6 +54,12 @@ export const ICONS = {
       { t: "path", d: "m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" },
       { t: "path", d: "m8.5 8.5 7 7" },
     ],
+  },
+  copy: {
+    els: [{ t: "rect", x: 9, y: 9, w: 11, h: 11, rx: 3 }, { t: "path", d: "M5 15V6a2 2 0 0 1 2-2h9" }],
+  },
+  eye: {
+    els: [{ t: "path", d: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" }, ring3()],
   },
   bell: {
     els: [

@@ -120,7 +120,8 @@
       "digestSubtitle": "Share with the family",
       "digestCopy": "Copy update for WhatsApp",
       "digestCopied": "Copied. Paste it in WhatsApp.",
-      "digestCopyFailed": "Could not copy. Use Share instead."
+      "digestCopyFailed": "Could not copy. Use Share instead.",
+      "badgeTakenNoTime": "Taken"
     },
     "medicines": {
       "title": "Medicines",
@@ -152,7 +153,8 @@
         "noTimes": "Add at least one dose time.",
         "invalidTime": "Use 24-hour times like 08:00 or 20:30.",
         "invalidDate": "Use the date format YYYY-MM-DD.",
-        "failed": "Could not save the medicine. Please try again."
+        "failed": "Could not save the medicine. Please try again.",
+        "textTooLong": "One of the optional notes is too long."
       },
       "heading": "{{name}}'s medicines",
       "activeCount": "{{count}} active",

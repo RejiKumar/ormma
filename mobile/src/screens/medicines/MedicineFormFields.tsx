@@ -4,7 +4,7 @@ import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
-import type { MedicineDraft } from "./medicineInput";
+import { MAX_FREQUENCY, MAX_PILL, MAX_PURPOSE, type MedicineDraft } from "./medicineInput";
 
 export interface MedicineFormFieldsProps {
   draft: MedicineDraft;
@@ -56,6 +56,33 @@ export function MedicineFormFields({
         value={draft.doseText}
         onChangeText={(doseText) => onChange({ ...draft, doseText })}
         hint={t("screens.medicines.doseHint")}
+        editable={editable}
+      />
+      <TextField
+        testID={`${testIDPrefix}-frequency`}
+        label={t("screens.medicines.frequencyLabel")}
+        value={draft.frequencyText}
+        onChangeText={(frequencyText) => onChange({ ...draft, frequencyText })}
+        hint={t("screens.medicines.frequencyHint")}
+        maxLength={MAX_FREQUENCY}
+        editable={editable}
+      />
+      <TextField
+        testID={`${testIDPrefix}-pill`}
+        label={t("screens.medicines.pillLabel")}
+        value={draft.pillDescription}
+        onChangeText={(pillDescription) => onChange({ ...draft, pillDescription })}
+        hint={t("screens.medicines.pillHint")}
+        maxLength={MAX_PILL}
+        editable={editable}
+      />
+      <TextField
+        testID={`${testIDPrefix}-purpose`}
+        label={t("screens.medicines.purposeLabel")}
+        value={draft.purpose}
+        onChangeText={(purpose) => onChange({ ...draft, purpose })}
+        hint={t("screens.medicines.purposeHint")}
+        maxLength={MAX_PURPOSE}
         editable={editable}
       />
       <View style={{ gap: theme.spacing.sm }}>

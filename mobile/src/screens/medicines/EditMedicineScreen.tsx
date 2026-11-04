@@ -39,6 +39,9 @@ export function EditMedicineScreen({ navigation, route }: Props) {
     doseText: medicine.doseText,
     times: medicine.times.length > 0 ? medicine.times : [""],
     startDate: medicine.startDate,
+    frequencyText: medicine.frequencyText,
+    pillDescription: medicine.pillDescription,
+    purpose: medicine.purpose,
   });
   const [errorKey, setErrorKey] = useState<MedicineDraftError | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);

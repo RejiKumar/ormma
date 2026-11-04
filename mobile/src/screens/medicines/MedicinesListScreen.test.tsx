@@ -117,11 +117,70 @@ describe("MedicinesListScreen", () => {
       ),
     );
 
-    expect(await screen.findByText("Metformin")).toBeTruthy();
-    expect(screen.getByText("1 tablet · 08:00, 20:00")).toBeTruthy();
-    expect(screen.getByText("Amlodipine")).toBeTruthy();
+    expect(await screen.findByText(/^Metformin/)).toBeTruthy();
+    expect(screen.getByText("08:00, 20:00")).toBeTruthy();
+    expect(screen.getByText(/^Amlodipine/)).toBeTruthy();
     expect(screen.getByText("Inactive")).toBeTruthy();
     expect(screen.getByTestId("medicine-add")).toBeTruthy();
+  });
+
+  it("shows the prototype layout: heading with active count, frequency, pill, purpose and the prescriber footer", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+    stubGetDoc({ p1: "viewer" });
+    const { listeners } = captureListeners();
+
+    await renderStack();
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+    await waitFor(() =>
+      listeners[0].next({
+        docs: [
+          {
+            id: "p1",
+            data: () => ({
+              name: "Amma",
+              language: "ml-IN",
+              consent: { status: "granted" },
+              prescriber: "Dr. Nair",
+              refillDue: "2026-11-02",
+            }),
+          },
+        ],
+      }),
+    );
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(1));
+    await waitFor(() =>
+      listeners[1].next({
+        docs: [
+          {
+            id: "m1",
+            data: () => ({
+              name: "Metformin",
+              doseText: "500mg",
+              times: ["08:00"],
+              startDate: "2026-10-01",
+              endDate: null,
+              active: true,
+              source: "manual",
+              confirmedByHuman: true,
+              prescriptionId: null,
+              createdBy: "u1",
+              frequencyText: "Twice daily · morning and afternoon, after food",
+              pillDescription: "Small round white tablet in silver strip",
+              purpose: "Sugar",
+            }),
+          },
+        ],
+      }),
+    );
+
+    expect(await screen.findByText("Amma's medicines")).toBeTruthy();
+    expect(screen.getByTestId("medicines-active-count")).toHaveTextContent("1 active");
+    expect(screen.getByText("Metformin 500mg")).toBeTruthy();
+    expect(screen.getByText("Active")).toBeTruthy();
+    expect(screen.getByText("Twice daily · morning and afternoon, after food")).toBeTruthy();
+    expect(screen.getByText("Small round white tablet in silver strip")).toBeTruthy();
+    expect(screen.getByText("For Sugar")).toBeTruthy();
+    expect(screen.getByTestId("medicines-footer")).toHaveTextContent("Prescribed by Dr. Nair · refill due 2 Nov");
   });
 
   it("hides the add button and row taps from a viewer", async () => {
@@ -139,7 +198,7 @@ describe("MedicinesListScreen", () => {
       ),
     );
 
-    expect(await screen.findByText("Metformin")).toBeTruthy();
+    expect(await screen.findByText(/^Metformin/)).toBeTruthy();
     expect(screen.queryByTestId("medicine-add")).toBeNull();
     await fireEvent.press(screen.getByTestId("medicine-m1"));
     expect(screen.queryByText("Edit medicine")).toBeNull();
@@ -165,7 +224,7 @@ describe("MedicinesListScreen", () => {
         medicineSnap([{ id: "m1", name: "Metformin", dose: "1 tablet", times: ["08:00"], active: true }]),
       ),
     );
-    expect(await screen.findByText("Metformin")).toBeTruthy();
+    expect(await screen.findByText(/^Metformin/)).toBeTruthy();
 
     await fireEvent.press(screen.getByTestId("medicine-parent-p2"));
     await waitFor(() => expect(listeners.length).toBeGreaterThanOrEqual(3));
@@ -175,8 +234,8 @@ describe("MedicinesListScreen", () => {
         medicineSnap([{ id: "m2", name: "Amlodipine", dose: "5 mg", times: ["09:00"], active: true }]),
       ),
     );
-    expect(await screen.findByText("Amlodipine")).toBeTruthy();
-    expect(screen.queryByText("Metformin")).toBeNull();
+    expect(await screen.findByText(/^Amlodipine/)).toBeTruthy();
+    expect(screen.queryByText(/^Metformin/)).toBeNull();
 
     await fireEvent.press(screen.getByTestId("medicine-m2"));
     expect(await screen.findByText("Edit medicine")).toBeTruthy();

@@ -102,6 +102,9 @@ describe("EditMedicineScreen", () => {
       doseText: "1 tablet",
       times: ["08:00", "20:00"],
       startDate: "2026-10-01",
+      frequencyText: "",
+      pillDescription: "",
+      purpose: "",
     });
     expect(navigation.goBack).toHaveBeenCalled();
   });

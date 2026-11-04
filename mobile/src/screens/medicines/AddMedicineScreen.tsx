@@ -40,6 +40,9 @@ export function AddMedicineScreen({ navigation, route }: Props) {
     doseText: "",
     times: [""],
     startDate: "",
+    frequencyText: "",
+    pillDescription: "",
+    purpose: "",
   });
   const [errorKey, setErrorKey] = useState<MedicineDraftError | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);

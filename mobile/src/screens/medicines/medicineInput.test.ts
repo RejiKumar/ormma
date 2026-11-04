@@ -14,6 +14,9 @@ const validDraft: MedicineDraft = {
   doseText: " 1 tablet ",
   times: ["08:00", " 20:30 ", ""],
   startDate: "2026-10-22",
+  frequencyText: " Twice daily, after food ",
+  pillDescription: "Small round white tablet",
+  purpose: "Sugar",
 };
 
 describe("medicineInput", () => {
@@ -51,16 +54,28 @@ describe("medicineInput", () => {
       prescriptionId: null,
       createdBy: "u1",
       createdAt: "NOW",
+      frequencyText: "Twice daily, after food",
+      pillDescription: "Small round white tablet",
+      purpose: "Sugar",
     });
   });
 
-  it("limits edits to the four form fields", () => {
+  it("limits edits to the form fields", () => {
     expect(medicineUpdatePayload(validDraft)).toEqual({
       name: "Metformin",
       doseText: "1 tablet",
       times: ["08:00", "20:30"],
       startDate: "2026-10-22",
+      frequencyText: "Twice daily, after food",
+      pillDescription: "Small round white tablet",
+      purpose: "Sugar",
     });
+  });
+
+  it("rejects display text that is too long", () => {
+    expect(validateMedicineDraft({ ...validDraft, purpose: "x".repeat(41) })).toBe("textTooLong");
+    expect(validateMedicineDraft({ ...validDraft, frequencyText: "x".repeat(81) })).toBe("textTooLong");
+    expect(validateMedicineDraft({ ...validDraft, pillDescription: "x".repeat(81) })).toBe("textTooLong");
   });
 
   it("generates a fresh id each time", () => {

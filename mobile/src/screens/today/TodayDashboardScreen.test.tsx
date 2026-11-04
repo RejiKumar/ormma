@@ -82,7 +82,14 @@ const alertSnap = (rows: Array<{ id: string; type: string; message: string; ms: 
 // Medicine names are read through their own hook; keep it out of the snapshot listener order used here.
 jest.mock("../../family/useMedicines", () => ({
   useMedicines: () => ({
-    medicines: [{ id: "m1", name: "Metformin", doseText: "500mg" }],
+    medicines: [{ id: "m1", name: "Metformin", doseText: "500mg", pillDescription: "Small round white tablet" }],
+    loading: false,
+  }),
+}));
+
+jest.mock("../../family/useMembers", () => ({
+  useMembers: () => ({
+    members: [{ uid: "u1", name: "Meera" }, { uid: "r1", name: "Rahul" }],
     loading: false,
   }),
 }));
@@ -134,9 +141,11 @@ describe("TodayDashboardScreen", () => {
 
     expect(await screen.findByTestId("today-section-p1")).toBeTruthy();
     expect(screen.getByText("Amma")).toBeTruthy();
-    expect(screen.getByText("18:00")).toBeTruthy();
+    expect(screen.getByText("6:00 PM")).toBeTruthy();
+    expect(screen.getByText("Evening")).toBeTruthy();
+    expect(screen.getByText("Small round white tablet")).toBeTruthy();
     expect(screen.getByText("Metformin 500mg")).toBeTruthy();
-    expect(screen.getByText("Pending")).toBeTruthy();
+    expect(screen.getByText("Scheduled")).toBeTruthy();
     expect(screen.getByText("No recent alerts")).toBeTruthy();
     // The hero summary and the shareable family update appear for a parent with consent granted.
     expect(screen.getByTestId("today-hero-p1")).toBeTruthy();
@@ -147,7 +156,7 @@ describe("TodayDashboardScreen", () => {
       events.next(eventSnap([{ id: "a1", ms: T0 + 8 * HOUR, status: "taken" }]));
     });
     expect(await screen.findByText("Taken")).toBeTruthy();
-    expect(screen.queryByText("Pending")).toBeNull();
+    expect(screen.queryByText("Scheduled")).toBeNull();
   });
 
   it("offers no family update while consent is not granted", async () => {

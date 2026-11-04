@@ -1,16 +1,15 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, View } from "react-native";
-import { Card } from "../../components/Card";
 import { DoseRing } from "../../components/DoseRing";
 import { EmptyState } from "../../components/EmptyState";
 import { DigestCard } from "../../components/DigestCard";
 import { Icon } from "../../components/Icon";
 import { PresenceBar } from "../../components/PresenceBar";
+import { DoseCardView } from "../../components/DoseCardView";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
-import { STATUS_ICON, StatusChip } from "../../components/StatusChip";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useAlerts } from "../../family/useAlerts";
@@ -18,8 +17,12 @@ import { useMedicines } from "../../family/useMedicines";
 import type { DatedParent, FamilyParent } from "../../family/useParents";
 import { useParents } from "../../family/useParents";
 import { useTodayEvents, type TodayDoseEvent } from "../../family/useTodayEvents";
-import { buildDigest, dayLabel } from "../../family/digest";
-import { formatLocalClock } from "../../family/visibility";
+import { doc, getFirestore, Timestamp, updateDoc } from "@react-native-firebase/firestore";
+import { useAuth } from "../../auth/AuthProvider";
+import { clock12, groupCards, nextCard, type DoseCard, type MedicineInfo } from "../../family/cards";
+import { markDosesSeen } from "../../family/callables";
+import { buildDigest } from "../../family/digest";
+import { useMembers } from "../../family/useMembers";
 import type { AlertType } from "../../../../shared/types";
 
 const ALERTS_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
@@ -34,21 +37,35 @@ const ALERT_TYPE_KEY = {
   urgent: "alertTypes.urgent",
 } as const satisfies Record<AlertType, string>;
 
-const ATTENTION: ReadonlySet<string> = new Set(["missed", "no_answer", "not_taken"]);
+function heroDate(timezone: string, ms: number): string {
+  try {
+    return new Intl.DateTimeFormat("en-IN", { timeZone: timezone, weekday: "short", day: "numeric", month: "long" }).format(
+      new Date(ms),
+    );
+  } catch {
+    return new Date(ms).toDateString();
+  }
+}
 
 /** Reassurance card: date, progress ring and one sentence on how the day is going. */
-function HeroCard({ parent, events }: { parent: FamilyParent; events: TodayDoseEvent[] }) {
+function HeroCard({ parent, cards }: { parent: FamilyParent; cards: DoseCard[] }) {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const navigation = useNavigation();
-  const total = events.length;
-  const taken = events.filter((event) => event.status === "taken").length;
-  const attention = events.some((event) => ATTENTION.has(event.status));
+  const total = cards.length;
+  const taken = cards.filter((card) => card.kind === "taken" || card.kind === "taken_on_time").length;
+  const attention = cards.some((card) => card.kind === "not_confirmed");
+  const next = nextCard(cards, Date.now());
   const title = attention
     ? t("screens.today.heroAttention", { name: parent.name })
     : taken === total
       ? t("screens.today.heroAllTaken", { name: parent.name })
       : t("screens.today.heroOnTrack", { name: parent.name });
+  const subtitle = next
+    ? next.medicines.length > 0
+      ? t("screens.today.heroNext", { medicines: next.medicines, time: clock12(parent.timezone, next.scheduledFor) })
+      : t("screens.today.heroNextNoMedicine", { time: clock12(parent.timezone, next.scheduledFor) })
+    : t("screens.today.heroProgress", { taken, total });
   return (
     <View
       testID={`today-hero-${parent.id}`}
@@ -62,7 +79,7 @@ function HeroCard({ parent, events }: { parent: FamilyParent; events: TodayDoseE
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.sm }}>
         <Icon name="home" color={theme.colors.inkOnPrimary} size={18} />
         <Text variant="caption" tone="onPrimary">
-          {dayLabel(parent.timezone, Date.now())}
+          {heroDate(parent.timezone, Date.now())}
         </Text>
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.lg }}>
@@ -71,8 +88,8 @@ function HeroCard({ parent, events }: { parent: FamilyParent; events: TodayDoseE
           <Text variant="title" tone="onPrimary" lang={parent.language}>
             {title}
           </Text>
-          <Text variant="caption" tone="onPrimary">
-            {t("screens.today.heroProgress", { taken, total })}
+          <Text variant="caption" tone="onPrimary" testID={`today-hero-sub-${parent.id}`}>
+            {subtitle}
           </Text>
         </View>
       </View>
@@ -100,54 +117,7 @@ function HeroCard({ parent, events }: { parent: FamilyParent; events: TodayDoseE
   );
 }
 
-/** One dose on the timeline: a status node on a rail beside a card with the clock time and chip. */
-function DoseRow({
-  parent,
-  event,
-  last,
-  medicine,
-}: {
-  parent: FamilyParent;
-  event: TodayDoseEvent;
-  last: boolean;
-  /** "Metformin 500mg" for the dose, when the medicine is known. */
-  medicine?: string;
-}) {
-  const { theme } = useTheme();
-  const status = theme.colors.status[event.status];
-  return (
-    <View style={{ flexDirection: "row", gap: theme.spacing.md }}>
-      <View style={{ alignItems: "center", width: 32 }}>
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: status.bg,
-          }}
-        >
-          <Icon name={STATUS_ICON[event.status]} color={status.icon} size={18} />
-        </View>
-        {last ? null : (
-          <View style={{ flex: 1, width: 2, marginVertical: 4, backgroundColor: theme.colors.border }} />
-        )}
-      </View>
-      <Card style={{ flex: 1, paddingVertical: theme.spacing.xs, marginBottom: last ? 0 : theme.spacing.md }}>
-        <ListItem
-          testID={`today-event-${parent.id}-${event.id}`}
-          title={formatLocalClock(parent.timezone, event.scheduledFor)}
-          subtitle={medicine}
-          chevron={false}
-          trailing={<StatusChip status={event.status} testID={`today-chip-${event.id}`} />}
-        />
-      </Card>
-    </View>
-  );
-}
-
-/** One parent's today: hero summary, then the dose timeline in the parent's timezone. */
+/** One parent's today: presence, hero summary, the dose timeline, then the family update. */
 function ParentTodaySection({
   parent,
   events,
@@ -159,12 +129,57 @@ function ParentTodaySection({
 }) {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const digest = buildDigest(t, parent, events, Date.now());
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
   const { medicines } = useMedicines(parent.id);
-  const medicineLabel = (medicineId: string): string | undefined => {
-    const m = medicines.find((x) => x.id === medicineId);
-    return m ? [m.name, m.doseText].filter((part) => part.length > 0).join(" ") : undefined;
+  const { members } = useMembers(parent.id);
+
+  const info = useMemo(() => {
+    const out: Record<string, MedicineInfo> = {};
+    for (const m of medicines) {
+      out[m.id] = { label: [m.name, m.doseText].filter((part) => part.length > 0).join(" "), pill: m.pillDescription };
+    }
+    return out;
+  }, [medicines]);
+  const cards = useMemo(() => groupCards(events, info), [events, info]);
+  const names = useMemo(() => Object.fromEntries(members.map((m) => [m.uid, m.name])), [members]);
+  const digest = buildDigest(t, parent, cards, Date.now());
+  const canMarkTaken = parent.role === "owner" || parent.role === "editor";
+
+  // Read receipts: tell the server which events this member has now seen (once per event).
+  const reported = useRef(new Set<string>());
+  useEffect(() => {
+    if (!uid || parent.consent?.status !== "granted") return;
+    const ids = events
+      .filter((e) => e.seenBy[uid] === undefined && !reported.current.has(e.id))
+      .map((e) => e.id)
+      .slice(0, 30);
+    if (ids.length === 0) return;
+    ids.forEach((id) => reported.current.add(id));
+    void markDosesSeen({ parentId: parent.id, eventIds: ids }).catch(() => undefined);
+  }, [events, uid, parent.id, parent.consent?.status]);
+
+  const markTaken = async (card: DoseCard) => {
+    if (!uid) return;
+    try {
+      await Promise.all(
+        card.events
+          .filter((e) => e.status === "pending")
+          .map((e) =>
+            updateDoc(doc(getFirestore(), "parents", parent.id, "doseEvents", e.id), {
+              status: "taken",
+              resolvedAt: Timestamp.now(),
+              resolvedBy: "family",
+              resolvedByUid: uid,
+            }),
+          ),
+      );
+    } catch (err) {
+      // Ids and statuses only in logs (hard rule 6).
+      console.warn(`markDoseTaken failed code=${(err as { code?: string } | null)?.code ?? "unknown"}`);
+    }
   };
+
   return (
     <View testID={`today-section-${parent.id}`} style={{ gap: theme.spacing.md }}>
       <Text variant="title" lang={parent.language}>
@@ -172,29 +187,34 @@ function ParentTodaySection({
       </Text>
       {loading ? (
         <Text tone="muted">{t("common.loading")}</Text>
-      ) : events.length === 0 ? (
+      ) : cards.length === 0 ? (
         <EmptyState testID={`today-empty-${parent.id}`} icon="pill" title={t("screens.today.noEvents")} />
       ) : (
         <>
+          <HeroCard parent={parent} cards={cards} />
           <PresenceBar parent={parent} />
-          <HeroCard parent={parent} events={events} />
-          <Text variant="label" tone="muted">
-            {t("screens.today.dosesTitle")}
-          </Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+            <Text variant="title">{t("screens.today.dosesTitle")}</Text>
+            <Text variant="caption" tone="muted">
+              {t("screens.today.dosesCount", { count: cards.length })}
+            </Text>
+          </View>
           <View>
-            {events.map((event, index) => (
-              <DoseRow
-                key={event.id}
-                parent={parent}
-                event={event}
-                last={index === events.length - 1}
-                medicine={medicineLabel(event.medicineId)}
+            {cards.map((card, index) => (
+              <DoseCardView
+                key={card.key}
+                testID={`today-card-${parent.id}-${index}`}
+                card={card}
+                timezone={parent.timezone}
+                last={index === cards.length - 1}
+                names={names}
+                viewerUid={uid}
+                canMarkTaken={canMarkTaken}
+                onMarkTaken={() => void markTaken(card)}
               />
             ))}
           </View>
-          {digest && parent.consent?.status === "granted" ? (
-            <DigestCard parentId={parent.id} text={digest} />
-          ) : null}
+          {digest && parent.consent?.status === "granted" ? <DigestCard parentId={parent.id} text={digest} /> : null}
         </>
       )}
     </View>
