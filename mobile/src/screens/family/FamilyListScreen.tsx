@@ -7,6 +7,7 @@ import { getAuth, signOut } from "@react-native-firebase/auth";
 import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { ParentCircle } from "../../components/ParentCircle";
 import { EmptyState } from "../../components/EmptyState";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
@@ -14,7 +15,12 @@ import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
-import { deleteParent, exportParentData, grantConsent, revokeConsent } from "../../family/callables";
+import {
+  deleteParent,
+  exportParentData,
+  grantConsent,
+  revokeConsent,
+} from "../../family/callables";
 import { removeParentId } from "../../family/parentIds";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "FamilyList">;
@@ -146,73 +152,85 @@ export function FamilyListScreen({ navigation }: Props) {
   };
 
   const rows = parents.map((parent) => (
-    <Card key={parent.id} style={{ gap: theme.spacing.sm }}>
-      <ListItem
-        testID={`parent-${parent.id}`}
-        title={parent.name}
-        subtitle={t(LANGUAGE_KEY[parent.language] ?? "languages.en")}
-        lang={parent.language}
-        accessibilityLabel={`${parent.name}, ${t(LANGUAGE_KEY[parent.language] ?? "languages.en")}`}
-        trailing={
-          parent.role === "owner" ? (
+    <View key={parent.id} style={{ gap: theme.spacing.lg }}>
+      <ParentCircle parent={parent} />
+      <Card style={{ gap: theme.spacing.sm }}>
+        <ListItem
+          testID={`parent-${parent.id}`}
+          title={parent.name}
+          subtitle={t(LANGUAGE_KEY[parent.language] ?? "languages.en")}
+          lang={parent.language}
+          accessibilityLabel={`${parent.name}, ${t(LANGUAGE_KEY[parent.language] ?? "languages.en")}`}
+          trailing={
+            parent.role === "owner" ? (
+              <Button
+                variant="quiet"
+                label={t("screens.family.invite")}
+                testID={`invite-${parent.id}`}
+                onPress={() =>
+                  navigation.navigate("Invite", { parentId: parent.id, parentName: parent.name })
+                }
+              />
+            ) : undefined
+          }
+        />
+        {parent.role === "owner" ? (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.xs }}>
             <Button
               variant="quiet"
-              label={t("screens.family.invite")}
-              testID={`invite-${parent.id}`}
+              label={t("screens.family.parentDetails")}
+              testID={`details-${parent.id}`}
+              onPress={() => navigation.navigate("ParentDetails", { parentId: parent.id })}
+            />
+            <Button
+              variant="quiet"
+              label={t("screens.family.emergencyContacts")}
+              testID={`contacts-${parent.id}`}
               onPress={() =>
-                navigation.navigate("Invite", { parentId: parent.id, parentName: parent.name })
+                navigation.navigate("EmergencyContacts", {
+                  parentId: parent.id,
+                  parentName: parent.name,
+                })
               }
             />
-          ) : undefined
-        }
-      />
-      {parent.role === "owner" ? (
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.xs }}>
-          <Button
-            variant="quiet"
-            label={t("screens.family.emergencyContacts")}
-            testID={`contacts-${parent.id}`}
-            onPress={() =>
-              navigation.navigate("EmergencyContacts", { parentId: parent.id, parentName: parent.name })
-            }
-          />
-          <Button
-            variant="quiet"
-            label={t("screens.family.exportData")}
-            testID={`export-${parent.id}`}
-            disabled={busyId === parent.id}
-            onPress={() => onExport(parent.id, parent.name)}
-          />
-          {parent.consent?.status === "granted" ? (
             <Button
               variant="quiet"
-              label={t("screens.family.revokeConsent")}
-              testID={`revoke-${parent.id}`}
+              label={t("screens.family.exportData")}
+              testID={`export-${parent.id}`}
               disabled={busyId === parent.id}
-              onPress={() => onRevoke(parent.id)}
+              onPress={() => onExport(parent.id, parent.name)}
             />
-          ) : (
+            {parent.consent?.status === "granted" ? (
+              <Button
+                variant="quiet"
+                label={t("screens.family.revokeConsent")}
+                testID={`revoke-${parent.id}`}
+                disabled={busyId === parent.id}
+                onPress={() => onRevoke(parent.id)}
+              />
+            ) : (
+              <Button
+                variant="quiet"
+                label={t("screens.family.grantConsent")}
+                testID={`grant-${parent.id}`}
+                disabled={busyId === parent.id}
+                onPress={() => onGrant(parent.id)}
+              />
+            )}
             <Button
               variant="quiet"
-              label={t("screens.family.grantConsent")}
-              testID={`grant-${parent.id}`}
+              label={t("screens.family.deleteParent")}
+              testID={`delete-${parent.id}`}
               disabled={busyId === parent.id}
-              onPress={() => onGrant(parent.id)}
+              onPress={() => onDelete(parent.id)}
             />
-          )}
-          <Button
-            variant="quiet"
-            label={t("screens.family.deleteParent")}
-            testID={`delete-${parent.id}`}
-            disabled={busyId === parent.id}
-            onPress={() => onDelete(parent.id)}
-          />
-        </View>
-      ) : null}
-      {parent.consent?.status !== "granted" ? (
-        <Banner testID={`consent-${parent.id}`} message={t("screens.family.consentPending")} />
-      ) : null}
-    </Card>
+          </View>
+        ) : null}
+        {parent.consent?.status !== "granted" ? (
+          <Banner testID={`consent-${parent.id}`} message={t("screens.family.consentPending")} />
+        ) : null}
+      </Card>
+    </View>
   ));
 
   return (
@@ -227,7 +245,6 @@ export function FamilyListScreen({ navigation }: Props) {
         />
       }
     >
-      <Text variant="headline">{t("screens.family.title")}</Text>
       {loading ? (
         <Text tone="muted">{t("common.loading")}</Text>
       ) : parents.length === 0 ? (

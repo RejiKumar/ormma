@@ -47,7 +47,7 @@ export function AppTabs() {
         headerShown: true,
         header: () => (
           <AppHeader
-            parentName={parents[0]?.name ?? null}
+            parentName={parents[0] ? [parents[0].name, parents[0].city].filter((part) => part.length > 0).join(" · ") : null}
             extraParents={Math.max(0, parents.length - 1)}
             alert={unreadUrgent > 0}
           />

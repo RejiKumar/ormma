@@ -1,0 +1,44 @@
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import * as Clipboard from "expo-clipboard";
+import { Share } from "react-native";
+import { renderApp } from "../test-utils";
+import { DigestCard } from "./DigestCard";
+
+jest.mock("expo-clipboard", () => ({ setStringAsync: jest.fn() }));
+const setString = Clipboard.setStringAsync as jest.Mock;
+
+const TEXT = "Ormma update, Mon 19 Oct\nAmma is on track: 2 of 3 doses confirmed.";
+
+describe("DigestCard", () => {
+  beforeEach(() => setString.mockReset());
+
+  it("shows the prototype heading and the preview text", async () => {
+    await renderApp(<DigestCard parentId="p1" text={TEXT} />);
+    expect(screen.getByText("WhatsApp digest")).toBeTruthy();
+    expect(screen.getByText("Share with the family")).toBeTruthy();
+    expect(screen.getByTestId("digest-text-p1")).toHaveTextContent(/Amma is on track: 2 of 3 doses confirmed./);
+  });
+
+  it("copies the exact text to the clipboard and confirms it", async () => {
+    setString.mockResolvedValue(true);
+    await renderApp(<DigestCard parentId="p1" text={TEXT} />);
+    await fireEvent.press(screen.getByTestId("digest-copy-p1"));
+    await waitFor(() => expect(screen.getByTestId("digest-message-p1")).toHaveTextContent("Copied. Paste it in WhatsApp."));
+    expect(setString).toHaveBeenCalledWith(TEXT);
+  });
+
+  it("says copying failed and points to Share when the clipboard is unavailable", async () => {
+    setString.mockRejectedValue(new Error("no clipboard"));
+    await renderApp(<DigestCard parentId="p1" text={TEXT} />);
+    await fireEvent.press(screen.getByTestId("digest-copy-p1"));
+    await waitFor(() => expect(screen.getByTestId("digest-message-p1")).toHaveTextContent(/Use Share instead/));
+  });
+
+  it("hands the text to the share sheet", async () => {
+    const share = jest.spyOn(Share, "share").mockResolvedValue({ action: "sharedAction", activityType: undefined });
+    await renderApp(<DigestCard parentId="p1" text={TEXT} />);
+    await fireEvent.press(screen.getByTestId("digest-share-p1"));
+    expect(share).toHaveBeenCalledWith({ message: TEXT });
+    share.mockRestore();
+  });
+});

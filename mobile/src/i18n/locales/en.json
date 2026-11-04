@@ -225,7 +225,13 @@
       "historyFailed": "Call did not connect",
       "historyFamily": "{{name}} called {{parent}}",
       "historyFamilyWhen": "{{when}}",
-      "parentDetails": "Parent details"
+      "parentDetails": "Parent details",
+      "historyYesterday": "Yesterday, {{time}}",
+      "historyDate": "{{date}}, {{time}}",
+      "historyCalling": "Calling now",
+      "detailsSaved": "Saved",
+      "detailsFailed": "Could not save. Please try again.",
+      "prefsFailed": "Could not save the setting. Please try again."
     },
     "addParent": {
       "title": "Add a parent",

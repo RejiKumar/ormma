@@ -68,7 +68,6 @@ export function MedicinesListScreen({ navigation }: Props) {
         ) : null
       }
     >
-      <Text variant="headline">{t("screens.medicines.title")}</Text>
       {parentsLoading ? (
         <Text tone="muted">{t("common.loading")}</Text>
       ) : parents.length === 0 ? (

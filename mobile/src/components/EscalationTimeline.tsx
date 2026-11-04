@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Linking, View } from "react-native";
+import { View } from "react-native";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import type { StatusKey } from "../design/tokens";
@@ -7,7 +7,7 @@ import type { EscalationAttempt } from "../family/callables";
 import type { FamilyParent } from "../family/useParents";
 import { useEscalation } from "../family/useEscalation";
 import { formatLocalClock } from "../family/visibility";
-import { Button } from "./Button";
+import { ContactsBlock } from "./ContactsBlock";
 import { Icon, type IconName } from "./Icon";
 
 // Outcome to the existing status palette and icon, so colour is never the only signal.
@@ -135,33 +135,7 @@ export function EscalationTimeline({
           {t("escalation.unplaced", { count: data.unplaced })}
         </Text>
       ) : null}
-      {parent.emergencyContacts.length > 0 ? (
-        <View style={{ gap: theme.spacing.sm }}>
-          <Text variant="label" tone="muted">
-            {t("escalation.contactsTitle")}
-          </Text>
-          {parent.emergencyContacts.map((contact, index) => (
-            <View
-              key={`${contact.phone}-${index}`}
-              style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.md }}
-            >
-              <View style={{ flex: 1 }}>
-                <Text variant="bodyStrong">{contact.label}</Text>
-                <Text variant="caption" tone="muted">
-                  {t(contact.kind === "clinic" ? "escalation.kindClinic" : "escalation.kindNeighbour")}
-                </Text>
-              </View>
-              <Button
-                variant="secondary"
-                icon="phone"
-                label={t("escalation.contactCall", { label: contact.label })}
-                testID={`escalation-contact-${index}`}
-                onPress={() => void Linking.openURL(`tel:${contact.phone}`).catch(() => undefined)}
-              />
-            </View>
-          ))}
-        </View>
-      ) : null}
+      <ContactsBlock contacts={parent.emergencyContacts} />
     </View>
   );
 }

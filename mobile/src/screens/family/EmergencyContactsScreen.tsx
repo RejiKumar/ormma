@@ -22,11 +22,13 @@ type Props = NativeStackScreenProps<FamilyStackParamList, "EmergencyContacts">;
 
 const MAX_CONTACTS = 3;
 const MAX_LABEL = 40;
+const MAX_NOTE = 60;
 
 interface Row {
   label: string;
   kind: EmergencyContact["kind"];
   phone: string;
+  note: string;
 }
 
 /** Owner-only editor for up to 3 people the family can call when a dose is missed. */
@@ -46,7 +48,7 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
   // Start from what is stored, once the parent has loaded.
   useEffect(() => {
     if (!parent || loaded) return;
-    setRows(parent.emergencyContacts.map((c) => ({ label: c.label, kind: c.kind, phone: c.phone })));
+    setRows(parent.emergencyContacts.map((c) => ({ label: c.label, kind: c.kind, phone: c.phone, note: c.note ?? "" })));
     setLoaded(true);
   }, [parent, loaded]);
 
@@ -56,7 +58,10 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
 
   const save = async () => {
     if (!parent) return;
-    const cleaned = rows.map((row) => ({ ...row, label: row.label.trim(), phone: row.phone.trim() }));
+    const cleaned = rows.map((row) => {
+      const note = row.note.trim();
+      return { label: row.label.trim(), kind: row.kind, phone: row.phone.trim(), ...(note.length > 0 ? { note } : {}) };
+    });
     if (cleaned.some((row) => row.label.length === 0 || row.label.length > MAX_LABEL)) {
       setError(t("screens.contacts.errors.labelRequired"));
       revealError();
@@ -124,6 +129,15 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
             hint={t("screens.contacts.phoneHint")}
             editable={isOwner}
           />
+          <TextField
+            testID={`contact-note-${index}`}
+            label={t("screens.contacts.noteLabel")}
+            value={row.note}
+            onChangeText={(note) => update(index, { note })}
+            hint={t("screens.contacts.noteHint", { name: route.params.parentName })}
+            maxLength={MAX_NOTE}
+            editable={isOwner}
+          />
           <View style={{ gap: theme.spacing.xs }}>
             <Text variant="label">{t("screens.contacts.kind")}</Text>
             <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
@@ -178,7 +192,7 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
           label={t("screens.contacts.add")}
           testID="contacts-add"
           onPress={() =>
-            setRows((current) => [...current, { label: "", kind: "neighbour", phone: DEFAULT_COUNTRY_CODE }])
+            setRows((current) => [...current, { label: "", kind: "neighbour", phone: DEFAULT_COUNTRY_CODE, note: "" }])
           }
         />
       ) : null}

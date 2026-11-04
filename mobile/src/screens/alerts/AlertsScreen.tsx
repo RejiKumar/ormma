@@ -13,14 +13,18 @@ import type { AlertType } from "../../../../shared/types";
 import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { ContactsBlock } from "../../components/ContactsBlock";
 import { EscalationTimeline } from "../../components/EscalationTimeline";
+import { ProtocolCard } from "../../components/ProtocolCard";
 import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useAuth } from "../../auth/AuthProvider";
 import { useAlerts, type FamilyAlert } from "../../family/useAlerts";
-import { useParents } from "../../family/useParents";
+import { clock12, groupCards, nextCard } from "../../family/cards";
+import { useParents, type FamilyParent } from "../../family/useParents";
+import { useTodayEvents, type TodayDoseEvent } from "../../family/useTodayEvents";
 
 const ALERTS_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -41,6 +45,59 @@ function timeLabel(ms: number): string {
   }
 }
 
+/** The Escalation tab head for one parent: the calm card or the missed card, then the protocol or the live attempts. */
+function ParentEscalation({ parent, events }: { parent: FamilyParent; events: TodayDoseEvent[] }) {
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const cards = groupCards(events, {});
+  const missed = cards.find((card) => card.kind === "not_confirmed") ?? null;
+  const firstAt = missed?.scheduledFor ?? nextCard(cards, Date.now())?.scheduledFor ?? cards[0]?.scheduledFor ?? null;
+  return (
+    <View testID={`escalation-section-${parent.id}`} style={{ gap: theme.spacing.md }}>
+      {missed ? (
+        <Card testID={`escalation-missed-${parent.id}`} tone="tinted" style={{ gap: theme.spacing.xs }}>
+          <Text variant="title">
+            {t("escalation.missedTitle", { name: parent.name, time: clock12(parent.timezone, missed.scheduledFor) })}
+          </Text>
+          <Text variant="caption" tone="muted">
+            {t("escalation.missedBody")}
+          </Text>
+        </Card>
+      ) : (
+        <Card testID={`escalation-calm-${parent.id}`} style={{ alignItems: "center", gap: theme.spacing.sm }}>
+          <View
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 26,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: theme.colors.primaryTint,
+            }}
+          >
+            <Icon name="check" color={theme.colors.primary} size={26} />
+          </View>
+          <Text variant="title">{t("escalation.calmTitle")}</Text>
+          <Text variant="caption" tone="muted" style={{ textAlign: "center" }}>
+            {t("escalation.calmBody", { name: parent.name })}
+          </Text>
+        </Card>
+      )}
+      <Text variant="title">{t("escalation.protocolTitle")}</Text>
+      {missed && missed.events[0] ? (
+        <Card>
+          <EscalationTimeline parent={parent} doseEventId={missed.events[0].id} />
+        </Card>
+      ) : (
+        <>
+          <ProtocolCard parent={parent} firstAt={firstAt} dimmed />
+          <ContactsBlock contacts={parent.emergencyContacts} disabled />
+        </>
+      )}
+    </View>
+  );
+}
+
 export function AlertsScreen() {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -52,6 +109,7 @@ export function AlertsScreen() {
     start: now - ALERTS_WINDOW_MS,
     end: now + ALERTS_WINDOW_MS,
   });
+  const { byParent } = useTodayEvents(parents, now);
   const db = getFirestore();
   const uid = user?.uid;
   const parentById = new Map(parents.map((parent) => [parent.id, parent]));
@@ -149,7 +207,10 @@ export function AlertsScreen() {
 
   return (
     <Screen insideTabs>
-      <Text variant="headline">{t("alerts.title")}</Text>
+      {parents.map((parent) => (
+        <ParentEscalation key={parent.id} parent={parent} events={byParent[parent.id] ?? []} />
+      ))}
+      {alerts.length > 0 ? <Text variant="title">{t("screens.today.alertsTitle")}</Text> : null}
       {parentsLoading || loading ? (
         <Text tone="muted">{t("common.loading")}</Text>
       ) : alerts.length === 0 ? (

@@ -4,6 +4,7 @@ import { AddParentScreen } from "../screens/family/AddParentScreen";
 import { EmergencyContactsScreen } from "../screens/family/EmergencyContactsScreen";
 import { FamilyListScreen } from "../screens/family/FamilyListScreen";
 import { InviteScreen } from "../screens/family/InviteScreen";
+import { ParentDetailsScreen } from "../screens/family/ParentDetailsScreen";
 import { RedeemScreen } from "../screens/family/RedeemScreen";
 
 export type FamilyStackParamList = {
@@ -12,6 +13,7 @@ export type FamilyStackParamList = {
   Invite: { parentId: string; parentName: string };
   Redeem: undefined;
   EmergencyContacts: { parentId: string; parentName: string };
+  ParentDetails: { parentId: string };
 };
 
 const Stack = createNativeStackNavigator<FamilyStackParamList>();
@@ -40,6 +42,11 @@ export function FamilyStack() {
         name="EmergencyContacts"
         component={EmergencyContactsScreen}
         options={{ title: t("screens.contacts.title") }}
+      />
+      <Stack.Screen
+        name="ParentDetails"
+        component={ParentDetailsScreen}
+        options={{ title: t("screens.parentDetails.title") }}
       />
       <Stack.Screen
         name="Redeem"

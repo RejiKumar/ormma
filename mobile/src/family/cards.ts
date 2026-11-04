@@ -220,3 +220,16 @@ export function durationLabel(seconds: number): string {
   const rest = s % 60;
   return rest === 0 ? `${minutes} min` : `${minutes} min ${rest} s`;
 }
+
+export type DayWhen = { day: "today" } | { day: "yesterday" } | { day: "date"; date: string };
+
+/** Which day an instant falls on, relative to now, in the parent's timezone. */
+export function dayWhen(timeZone: string, ms: number, now: number): DayWhen {
+  const at = wallClock(timeZone, ms);
+  const today = wallClock(timeZone, now);
+  const dayNumber = (w: Wall) => Math.floor(Date.UTC(w.year, w.month - 1, w.day) / 86_400_000);
+  const diff = dayNumber(today) - dayNumber(at);
+  if (diff <= 0) return { day: "today" };
+  if (diff === 1) return { day: "yesterday" };
+  return { day: "date", date: `${at.day} ${MONTHS[at.month - 1]}` };
+}
