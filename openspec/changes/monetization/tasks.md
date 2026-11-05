@@ -51,6 +51,6 @@
 
 ## 7. Verification
 
-- [ ] 7.1 `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:fns`, `npm run test:rules`
-- [ ] 7.2 Run on `flutter_emulator` with the Functions emulator and a seeded entitlement document: free and paid states of the Subscription screen, limit messages, paused-parent and skipped-dose notes; fix problems found
-- [ ] 7.3 Commit to `main`
+- [x] 7.1 `npm run lint`, `npm run typecheck`, `npm test`, `npm run test:fns`, `npm run test:rules`
+- [x] 7.2 Run on `flutter_emulator` with the Functions emulator and a seeded entitlement document: free and paid states of the Subscription screen, limit messages, paused-parent and skipped-dose notes; fix problems found
+- [x] 7.3 Commit to `main`

@@ -20,7 +20,8 @@ export const playBilling: Billing = {
     const items = await IAP.fetchProducts({ skus: [...PRODUCT_IDS], type: "subs" });
     const products: BillingProduct[] = [];
     for (const item of items ?? []) {
-      if (item.type !== "subs" || !isProductId(item.id)) continue;
+      // A product without a price from Google Play cannot be offered.
+      if (item.type !== "subs" || !isProductId(item.id) || !item.displayPrice?.trim()) continue;
       const offer = (item.subscriptionOffers ?? []).find((o) => o.offerTokenAndroid);
       products.push({ productId: item.id, displayPrice: item.displayPrice, offerToken: offer?.offerTokenAndroid ?? null });
     }

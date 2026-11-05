@@ -170,6 +170,12 @@ describe("SubscriptionScreen", () => {
     expect(screen.getByText(/^Missed-dose alerts, urgent alerts/)).toBeTruthy();
   });
 
+  it("does not offer a plan when Google Play returns no price for it", async () => {
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => [{ ...monthly, displayPrice: "" }, yearly]) }));
+    expect(await screen.findByTestId("subscription-yearly")).toBeTruthy();
+    expect(screen.queryByTestId("subscription-monthly")).toBeNull();
+  });
+
   it("buys, has the server verify the purchase, and only then finishes the transaction", async () => {
     callable("verifyPurchase").mockResolvedValue({ data: { status: "active", expiresAtMs: 1 } });
     const billing = fakeBilling();

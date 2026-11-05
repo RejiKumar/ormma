@@ -93,8 +93,9 @@ export function SubscriptionScreen() {
     }
   };
 
-  const monthly = products?.find((p) => p.productId === "ormma_family_monthly");
-  const yearly = products?.find((p) => p.productId === "ormma_family_yearly");
+  const priced = (products ?? []).filter((p) => p.displayPrice.trim().length > 0);
+  const monthly = priced.find((p) => p.productId === "ormma_family_monthly");
+  const yearly = priced.find((p) => p.productId === "ormma_family_yearly");
   const status =
     entitlement && plan === "family"
       ? Date.now() < entitlement.expiresAtMs
