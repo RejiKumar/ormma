@@ -148,7 +148,7 @@ The disclaimer "This app does not provide medical advice." SHALL be visible thro
 - **THEN** it shows the disclaimer text from the catalogue
 
 ### Requirement: Motion
-Animations SHALL use Reanimated springs that settle within 150 to 300 ms: the DoseRing fill, the StatusChip morph between statuses, a checkmark confirmation, and light haptic feedback on confirmation. The only continuous animation SHALL be a gentle pulse for "calling now". Skeleton placeholders SHALL NOT loop.
+Animations SHALL use Reanimated springs that settle within 150 to 300 ms: the DoseRing fill, the StatusChip morph between statuses, a checkmark confirmation, and light haptic feedback on confirmation. The only continuous animation SHALL be a gentle pulse for "calling now". Skeleton placeholders SHALL show a shimmer (a soft highlight sweeping across the block every 1.5 s), which SHALL be replaced by a still block under Reduce Motion.
 
 #### Scenario: Spring durations
 - **WHEN** the motion tokens are read

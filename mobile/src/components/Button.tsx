@@ -61,7 +61,7 @@ export function Button({
         justifyContent: "center",
         gap: theme.spacing.sm,
         backgroundColor:
-          variant === "primary" ? c.primary : variant === "secondary" ? c.surface : "transparent",
+          variant === "primary" ? c.primary : variant === "secondary" ? c.surface : c.primaryTint,
         borderWidth: variant === "secondary" ? 1.5 : 0,
         borderColor: c.primary,
         opacity: disabled ? 0.5 : 1,

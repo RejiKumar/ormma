@@ -5,7 +5,6 @@ import { darkColors, lightColors, type StatusKey } from "../design/tokens";
 import { renderApp } from "../test-utils";
 import { ConfirmCheck } from "./ConfirmCheck";
 import { DoseRing } from "./DoseRing";
-import { Skeleton } from "./Skeleton";
 import { STATUS_ICON, StatusChip } from "./StatusChip";
 
 const STATUSES: StatusKey[] = ["taken", "pending", "missed", "unclear", "calling", "not_taken", "no_answer"];
@@ -109,13 +108,12 @@ describe("the calling pulse is the only repeating animation", () => {
     expect(flat(ring).opacity).toBe(0.55); // static, not animated
   });
 
-  it("no other component repeats: DoseRing, ConfirmCheck and Skeleton never call withRepeat", async () => {
+  it("no other component repeats: DoseRing and ConfirmCheck never call withRepeat (the Skeleton shimmer is the other loop)", async () => {
     const repeat = jest.spyOn(Reanimated, "withRepeat");
     await renderApp(
       <>
         <DoseRing taken={1} total={3} />
         <ConfirmCheck />
-        <Skeleton />
         <StatusChip status="taken" />
         <StatusChip status="missed" />
       </>,

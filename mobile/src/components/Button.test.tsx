@@ -67,11 +67,11 @@ describe("Button", () => {
     expect(style().backgroundColor).toBe(darkColors.primary);
   });
 
-  it("styles secondary with an outline and quiet without a fill", async () => {
+  it("styles secondary with an outline and quiet with a soft tint fill (so it reads as a button, not as text)", async () => {
     await renderApp(<Button label="Go" variant="secondary" onPress={() => undefined} />);
     expect(style().borderWidth).toBeGreaterThan(0);
     expect(style().backgroundColor).toBe(lightColors.surface);
     await renderApp(<Button label="Go" variant="quiet" onPress={() => undefined} />);
-    expect(style().backgroundColor).toBe("transparent");
+    expect(style().backgroundColor).toBe(lightColors.primaryTint);
   });
 });

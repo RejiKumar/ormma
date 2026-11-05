@@ -1,5 +1,5 @@
 import { AccessibilityInfo, StyleSheet } from "react-native";
-import { screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import * as Reanimated from "react-native-reanimated";
 import { lightColors } from "../design/tokens";
 import { renderApp } from "../test-utils";
@@ -18,22 +18,19 @@ describe("Skeleton", () => {
     expect(el.props.accessibilityElementsHidden).toBe(true);
   });
 
-  it("never loops: it fades in once with a spring and uses no repeat or shimmer", async () => {
+  it("sweeps a highlight across the block on a repeating 1.5 s timing", async () => {
     const repeat = jest.spyOn(Reanimated, "withRepeat");
-    const spring = jest.spyOn(Reanimated, "withSpring");
-    await renderApp(<Skeleton />);
-    expect(spring).toHaveBeenCalled();
-    expect(repeat).not.toHaveBeenCalled();
+    await renderApp(<Skeleton testID="s" width={120} height={20} />);
+    expect(repeat).toHaveBeenCalled();
+    fireEvent(screen.getByTestId("s", { includeHiddenElements: true }), "layout", { nativeEvent: { layout: { width: 120, height: 20 } } });
+    await waitFor(() => expect(screen.getByTestId("skeleton-shimmer", { includeHiddenElements: true })).toBeTruthy());
   });
 
-  it("shows immediately without a spring under Reduce Motion", async () => {
+  it("is a still block under Reduce Motion: no repeat, no shimmer layer", async () => {
     jest.spyOn(AccessibilityInfo, "isReduceMotionEnabled").mockResolvedValue(true);
-    const spring = jest.spyOn(Reanimated, "withSpring");
-    await renderApp(<Skeleton />);
-    await waitFor(() =>
-      expect(screen.getByTestId("skeleton", { includeHiddenElements: true })).toBeTruthy(),
-    );
-    spring.mockClear();
-    await waitFor(() => expect(spring).not.toHaveBeenCalled());
+    await renderApp(<Skeleton testID="s" />);
+    const el = screen.getByTestId("s", { includeHiddenElements: true });
+    await waitFor(() => fireEvent(el, "layout", { nativeEvent: { layout: { width: 100, height: 16 } } }));
+    expect(screen.queryByTestId("skeleton-shimmer", { includeHiddenElements: true })).toBeNull();
   });
 });
