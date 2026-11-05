@@ -34,8 +34,16 @@
 - [ ] 5.4 Plan error handling in Add a parent and Invite (fixed message, link to the Subscription screen); dose card note and paused-parent note for `callSkipped`
 - [ ] 5.5 Component tests for every state; wording test over the new strings (no advice, judgement, safety-claim, urgency or AI-model words)
 
+## 5b. Settings
+
+- [ ] 5b.1 `deleteMyAccount` callable and emulator tests: refuses while owning a parent, removes member docs, user doc, entitlement and created invites, deletes the Auth user, leaves other members' data
+- [ ] 5b.2 `SettingsScreen` (Family stack, opened from a Settings row in Family): Account (phone, display name edit, plan and link, sign out moved here, delete account with confirmation), Appearance (Light, Dark, System, remembered), Privacy policy, Terms and conditions
+- [ ] 5b.3 `mobile/src/legal/` privacy and terms sections plus hosted URL config; reader screen; test that every in-app paragraph appears in `docs/PRIVACY-POLICY.md` or `docs/TERMS.md`
+- [ ] 5b.4 Component tests for each section, theme choice persistence, sign out, and delete account refusal and success
+
 ## 6. Docs and release
 
+- [ ] 6.0 New `docs/TERMS.md` draft (service description, no medical advice, subscriptions and refunds through Google Play, acceptable use, liability, changes, governing law placeholder) marked for legal review
 - [ ] 6.1 `docs/PRIVACY-POLICY.md` and the Data safety and payments declarations in `docs/RELEASE.md`
 - [ ] 6.2 `docs/RELEASE.md`: Play Console subscription setup (two products with the chosen prices, base plans, free-tier wording, service account and its permissions, Pub/Sub topic and notification subscription, licence testers, testing track upload)
 - [ ] 6.3 `docs/PRELAUNCH-CHECKLIST.md`: replace the assumed per-call cost with Exotel's rate card and re-check the limits; test a real purchase, a cancellation, a refund and a restore on a physical phone

@@ -28,6 +28,9 @@ Observed today: parents are created only by the `createParent` callable (the cli
 10. **Messages.** Fixed English strings in the catalogue; a test scans them for advice, judgement, safety-claim and urgency words and AI model names.
 11. **Cost guard.** The per-call cost figure in the proposal is an assumption; the pre-launch checklist gets a task to replace it with Exotel's real rate card and to re-check the free limits against it.
 
+12. **Settings.** One `SettingsScreen` in the Family stack, opened from a Settings row at the top of Family. Appearance uses the existing `ThemeProvider.setPreference`. Legal text lives in `mobile/src/legal/` as English section lists with the hosted URLs from config; a test checks every in-app paragraph also appears in `docs/PRIVACY-POLICY.md` or `docs/TERMS.md` so the two cannot drift. The hosted URL constants are placeholders until the pages are published (a release task).
+13. **Account deletion.** `deleteMyAccount` callable: refuses with a clear message while the caller is the owner of any parent (the app lists them and points to Delete parent), otherwise removes the caller's member documents, `users/{uid}`, `subscriptions/{uid}`, pending invites they created, and finally the Auth user. It never touches other members' data. The Play subscription itself is cancelled by the user in Google Play (the screen links there).
+
 ## Risks / Trade-offs
 
 - Plan-skipped doses (decision 7) may be misread; flagged for review before apply.
@@ -35,6 +38,7 @@ Observed today: parents are created only by the `createParent` callable (the cli
 - Real purchases cannot be tested on the emulator; verification logic is tested with a fake Play client, and the end-to-end flow needs a physical phone, a licence tester and a Play testing track build. This is a release-time check, listed in the tasks.
 - Play policy: digital subscriptions must use Play Billing (satisfied); the store listing and Data safety form must declare purchases; Play may require a visible subscription terms and cancellation link on the screen.
 - The service account needs the Play Console "view financial data" and "manage orders and subscriptions" permissions; a wrong role shows up as verification failures, so the release steps spell it out.
+- Terms and conditions are a draft that needs legal review before publishing; the in-app text is only as good as that review.
 - Free-tier abuse (creating new accounts to reset limits): accepted for now; limits are per owner phone number, which already requires SMS verification.
 
 ## Open Questions for review

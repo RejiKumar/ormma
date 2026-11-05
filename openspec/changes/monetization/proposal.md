@@ -24,7 +24,8 @@ Every check-in call costs real money (Exotel telephony, Google speech, Claude), 
 - **App.** A Subscription screen reachable from Family: current plan, price as returned by Google Play, Subscribe (monthly or yearly), Manage in Google Play, Restore purchases, and fixed neutral limit messages. Uses a Play Billing library (assumed `react-native-iap`; its compatibility with Expo SDK 58 and React Native 0.88 must be confirmed at implementation, with `expo-iap` as the fallback), which adds a native module, so the Android dev client is rebuilt.
 - **Grace and downgrade.** After a subscription ends there is a 7-day grace period; after that the free limits apply. Nothing is ever deleted: extra parents, members and medicines stay visible. Only new additions are blocked, and calls are paused for parents above the free limit.
 - **Safety is never gated.** Urgent-keyword alerts, missed-dose alerts to the family, the escalation view and the Call buttons work the same on every plan.
-- **Docs.** Privacy policy, the Play Data safety and payments declarations, and `docs/RELEASE.md` (create the subscription products, service account, Pub/Sub topic, license testers).
+- **Settings (added by the user on 2026-11-05, also outside the BRD).** A Settings screen reachable from Family with four sections: **Account** (phone number, display name, subscription plan with a link to the Subscription screen, sign out, delete account), **Appearance** (Light, Dark, System; the theme preference already exists, only its screen was the removed gallery), **Privacy policy** and **Terms and conditions** (read in the app and open the hosted page). Sign out moves from the Family list into Account. Google Play requires apps that create accounts to offer in-app account deletion, so Account includes "Delete account" backed by a new `deleteMyAccount` function that refuses while the user still owns a parent.
+- **Docs.** Privacy policy, terms (new `docs/TERMS.md`, a draft for legal review), the Play Data safety and payments declarations, and `docs/RELEASE.md` (create the subscription products, service account, Pub/Sub topic, license testers).
 
 **Spec changes** (security rules and call flow are in the review list):
 
@@ -38,13 +39,15 @@ Every check-in call costs real money (Exotel telephony, Google speech, Claude), 
 | Member limit (new) | Unlimited members | 2 free, 6 paid, enforced on invite creation and redemption | family-circle |
 | Safety is not for sale (new) | n/a | No safety feature depends on a plan | medical-safety |
 | Plans and entitlement (new capability) | n/a | Tiers, limits, grace, restore, verification | subscription |
+| Settings (new capability) | No settings screen; theme only in the removed dev gallery | Account, Appearance, Privacy policy, Terms; account deletion | settings |
 
-Out of scope: iOS billing, promo codes, clinic invoicing, web checkout, pharmacy payments, changing prices from inside the app, tax invoices (Google Play is the merchant of record and handles tax).
+Out of scope: iOS billing, editing the phone number, deleting an account that still owns parents (it must delete them first), promo codes, clinic invoicing, web checkout, pharmacy payments, changing prices from inside the app, tax invoices (Google Play is the merchant of record and handles tax).
 
 ## Capabilities
 
 ### New Capabilities
 
+- `settings`: the Settings screen with Account (including deletion), Appearance, Privacy policy and Terms and conditions.
 - `subscription`: plans and limits, entitlement lifecycle (purchase, renewal, cancellation, refund, expiry, grace), restore, and the in-app subscription screen.
 
 ### Modified Capabilities
@@ -59,6 +62,6 @@ Out of scope: iOS billing, promo codes, clinic invoicing, web checkout, pharmacy
 
 ## Impact
 
-- Code: `functions/src` (new `subscription/` module, changes to `family.ts`, `invites.ts`, `schedule/dispatch.ts`, `schedule/missedDose.ts`, `data/exportDelete.ts`, `index.ts`); `firestore.rules`, emulator tests and the mutation check; `shared/types.ts`; `mobile/src` (Subscription screen, `useSubscription`, limit messages in Add parent and Invite, i18n); `mobile/package.json` and a dev client rebuild.
+- Code: `functions/src` (also a new `deleteMyAccount` callable) (new `subscription/` module, changes to `family.ts`, `invites.ts`, `schedule/dispatch.ts`, `schedule/missedDose.ts`, `data/exportDelete.ts`, `index.ts`); `firestore.rules`, emulator tests and the mutation check; `shared/types.ts`; `mobile/src` (Subscription screen, `useSubscription`, limit messages in Add parent and Invite, i18n); `mobile/package.json` and a dev client rebuild.
 - Secrets and infrastructure: a Play service account key in Secret Manager, a Pub/Sub topic for Play notifications, Play Console subscription products.
 - Testing limit: real purchases cannot be made on the emulator. Functions are tested with a fake Play client; real purchases are tested on a physical phone with a licence tester account and an app build installed from a Play testing track.
