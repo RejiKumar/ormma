@@ -50,6 +50,9 @@ export function AppTabs() {
       screenOptions={{
         // The prototype app bar: brand mark and the parent pill with a live status dot.
         headerShown: true,
+        // A tab you left stops re-rendering until you come back, so quick switching stays light.
+        freezeOnBlur: true,
+        sceneStyle: { backgroundColor: theme.colors.background },
         header: () => (
           <AppHeader
             parentName={parents[0] ? [parents[0].name, parents[0].city].filter((part) => part.length > 0).join(" · ") : null}

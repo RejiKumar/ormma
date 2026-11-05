@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useTheme } from "../design/ThemeProvider";
-import { Skeleton } from "./Skeleton";
+import { ShimmerProvider, Skeleton } from "./Skeleton";
+import { SkeletonCard } from "./SkeletonCard";
 
 export type LoadingVariant =
   /** The Today layout: hero card, presence bar and two dose cards. */
@@ -26,7 +27,9 @@ export interface LoadingStateProps {
 export function LoadingState({ variant = "lines", count = 2, testID }: LoadingStateProps) {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const card = (key: number, height = 120) => <Skeleton key={key} height={height} radius={theme.radius.lg} testID={`${testID ?? "loading"}-block-${key}`} />;
+  const card = (key: number, height = 120) => (
+    <SkeletonCard key={key} height={height} testID={`${testID ?? "loading"}-block-${key}`} />
+  );
 
   return (
     <View
@@ -37,22 +40,24 @@ export function LoadingState({ variant = "lines", count = 2, testID }: LoadingSt
       accessibilityLiveRegion="polite"
       style={{ gap: theme.spacing.md }}
     >
-      {variant === "today" ? (
-        <>
-          {card(0, 220)}
-          {card(1, 96)}
-          {card(2)}
-          {card(3)}
-        </>
-      ) : variant === "cards" ? (
-        Array.from({ length: count }, (_, index) => card(index))
-      ) : (
-        <>
-          <Skeleton width="70%" height={16} />
-          <Skeleton width="90%" height={16} />
-          <Skeleton width="55%" height={16} />
-        </>
-      )}
+      <ShimmerProvider>
+        {variant === "today" ? (
+          <>
+            {card(0, 220)}
+            {card(1, 96)}
+            {card(2)}
+            {card(3)}
+          </>
+        ) : variant === "cards" ? (
+          Array.from({ length: count }, (_, index) => card(index))
+        ) : (
+          <>
+            <Skeleton width="70%" height={16} />
+            <Skeleton width="90%" height={16} />
+            <Skeleton width="55%" height={16} />
+          </>
+        )}
+      </ShimmerProvider>
     </View>
   );
 }

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { DimensionValue } from "react-native";
 import { View } from "react-native";
 import Animated, {
   Easing,
+  type SharedValue,
   cancelAnimation,
   useAnimatedStyle,
   useSharedValue,
@@ -24,17 +25,15 @@ export interface SkeletonProps {
 /** One sweep of the highlight across the block, in milliseconds. */
 export const SHIMMER_MS = 1500;
 
-/**
- * Loading placeholder with a soft highlight that sweeps from left to right (a shimmer), like a
- * social feed. The sweep is the only looping motion besides "calling now", and it is replaced by a
- * still block under Reduce Motion. Hidden from screen readers; the screen announces loading.
- */
-export function Skeleton({ width = "100%", height = 16, radius, testID }: SkeletonProps) {
-  const { theme } = useTheme();
-  const { reduceMotion } = useMotion();
-  const [boxWidth, setBoxWidth] = useState(0);
-  const progress = useSharedValue(0);
+const ShimmerContext = createContext<SharedValue<number> | null>(null);
 
+/**
+ * One shared shimmer clock for every Skeleton below it, so a screen full of placeholders runs a
+ * single animation instead of one per block.
+ */
+export function ShimmerProvider({ children }: { children: ReactNode }) {
+  const { reduceMotion } = useMotion();
+  const progress = useSharedValue(0);
   useEffect(() => {
     if (reduceMotion) {
       cancelAnimation(progress);
@@ -44,6 +43,31 @@ export function Skeleton({ width = "100%", height = 16, radius, testID }: Skelet
     progress.value = withRepeat(withTiming(1, { duration: SHIMMER_MS, easing: Easing.inOut(Easing.ease) }), -1, false);
     return () => cancelAnimation(progress);
   }, [progress, reduceMotion]);
+  return <ShimmerContext.Provider value={progress}>{children}</ShimmerContext.Provider>;
+}
+
+/**
+ * Loading placeholder with a soft highlight that sweeps from left to right (a shimmer), like a
+ * social feed. The sweep is the only looping motion besides "calling now", and it is replaced by a
+ * still block under Reduce Motion. Hidden from screen readers; the screen announces loading.
+ */
+export function Skeleton({ width = "100%", height = 16, radius, testID }: SkeletonProps) {
+  const { theme } = useTheme();
+  const { reduceMotion } = useMotion();
+  const [boxWidth, setBoxWidth] = useState(0);
+  const shared = useContext(ShimmerContext);
+  const own = useSharedValue(0);
+  const progress = shared ?? own;
+
+  useEffect(() => {
+    if (shared || reduceMotion) {
+      if (!shared) cancelAnimation(own);
+      return;
+    }
+    own.value = 0;
+    own.value = withRepeat(withTiming(1, { duration: SHIMMER_MS, easing: Easing.inOut(Easing.ease) }), -1, false);
+    return () => cancelAnimation(own);
+  }, [own, shared, reduceMotion]);
 
   // translateX(-100%) -> translateX(100%) of the block's own width.
   const sweep = useAnimatedStyle(() => ({ transform: [{ translateX: (progress.value * 2 - 1) * boxWidth }] }));
