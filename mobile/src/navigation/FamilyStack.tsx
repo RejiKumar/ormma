@@ -6,6 +6,10 @@ import { FamilyListScreen } from "../screens/family/FamilyListScreen";
 import { InviteScreen } from "../screens/family/InviteScreen";
 import { ParentDetailsScreen } from "../screens/family/ParentDetailsScreen";
 import { RedeemScreen } from "../screens/family/RedeemScreen";
+import { LegalScreen } from "../screens/settings/LegalScreen";
+import { SettingsScreen } from "../screens/settings/SettingsScreen";
+import { SubscriptionScreen } from "../screens/settings/SubscriptionScreen";
+import type { LegalDocName } from "../legal/legalConfig";
 
 export type FamilyStackParamList = {
   FamilyList: undefined;
@@ -14,6 +18,9 @@ export type FamilyStackParamList = {
   Redeem: undefined;
   EmergencyContacts: { parentId: string; parentName: string };
   ParentDetails: { parentId: string };
+  Settings: undefined;
+  Subscription: undefined;
+  Legal: { doc: LegalDocName };
 };
 
 const Stack = createNativeStackNavigator<FamilyStackParamList>();
@@ -47,6 +54,15 @@ export function FamilyStack() {
         name="ParentDetails"
         component={ParentDetailsScreen}
         options={{ title: t("screens.parentDetails.title") }}
+      />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: t("settings.title") }} />
+      <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{ title: t("subscription.title") }} />
+      <Stack.Screen
+        name="Legal"
+        component={LegalScreen}
+        options={({ route }) => ({
+          title: route.params.doc === "privacy" ? t("settings.privacyTitle") : t("settings.termsTitle"),
+        })}
       />
       <Stack.Screen
         name="Redeem"

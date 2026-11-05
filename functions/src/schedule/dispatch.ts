@@ -1,4 +1,5 @@
 import { Timestamp, type Firestore } from "firebase-admin/firestore";
+import { flagSkippedEvents, gateKey, planSkippedEvents } from "../subscription/callGate";
 import type {
   CallPolicy,
   CallSessionDoc,
@@ -363,7 +364,25 @@ export async function dispatchDueCallsHandler(
     medicines.set(parentId, loaded.medicines);
   }
 
-  const { calls, skipped } = planCallGroups({ events, parents, medicines, now: nowMs });
+  // Plan gate: events the owner's plan does not cover get no call and are flagged callSkipped "plan".
+  const flaggedBefore = new Set(
+    dueSnap.docs
+      .filter((doc) => doc.data().callSkipped === "plan")
+      .map((doc) => `${doc.ref.parent.parent?.id}/${doc.id}`),
+  );
+  const planSkipped = await planSkippedEvents(db, events, parentDocs, nowMs);
+  if (planSkipped.size > 0) {
+    await flagSkippedEvents(
+      db,
+      events
+        .filter((event) => planSkipped.has(gateKey(event)))
+        .map((event) => ({ ...event, alreadyFlagged: flaggedBefore.has(gateKey(event)) })),
+    );
+    summary.skipped += planSkipped.size;
+  }
+  const callable = events.filter((event) => !planSkipped.has(gateKey(event)));
+
+  const { calls, skipped } = planCallGroups({ events: callable, parents, medicines, now: nowMs });
   summary.skipped += skipped.length;
 
   for (const call of calls) {

@@ -74,6 +74,8 @@ export function planMissedGroups(
   for (const event of events) {
     const parent = parents.get(event.parentId);
     if (!parent) continue;
+    // No call was placed for an event the plan does not cover, so it is never reported missed.
+    if (event.data.callSkipped === "plan") continue;
 
     const state = toDoseEventState(event.data);
     const result = applyTransition(state, {

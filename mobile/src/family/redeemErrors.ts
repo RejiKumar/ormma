@@ -8,12 +8,14 @@ export type RedeemErrorKey =
   | "expired"
   | "used"
   | "alreadyMember"
+  | "full"
   | "failed";
 
 export function redeemErrorKey(error: unknown): RedeemErrorKey {
   const err = error as { code?: string; message?: string } | null;
   const code = (err?.code ?? "").replace(/^functions\//, "");
   const message = err?.message ?? "";
+  if (code === "resource-exhausted") return "full";
   if (code === "invalid-argument") return "invalidFormat";
   if (code === "not-found") return "unknown";
   if (code === "failed-precondition") {

@@ -181,6 +181,8 @@ export interface DoseEventDoc {
   lastDispatchFailure: boolean;
   /** Server-written read receipts: member uid to the time that member first saw the event. */
   seenBy?: Record<Uid, Timestamp>;
+  /** Server-written: "plan" when no call is placed for this event because of the free-tier limit. The event stays pending. */
+  callSkipped?: "plan";
 }
 
 // ---------- parents/{parentId}/healthLogs/{logId} ----------
@@ -248,6 +250,18 @@ export interface AlertDoc {
   relatedEventId: string | null;
   createdAt: Timestamp;
   readBy: Uid[];
+}
+
+// ---------- subscriptions/{uid} (server-only; readable by its owner) ----------
+export type SubscriptionStatus = "active" | "cancelled" | "expired" | "refunded";
+export interface SubscriptionDoc {
+  status: SubscriptionStatus;
+  productId: string;
+  /** End of the paid period. */
+  expiresAt: Timestamp;
+  /** SHA-256 of the Google Play purchase token. The token itself is never stored. */
+  tokenHash: string;
+  updatedAt: Timestamp;
 }
 
 // ---------- invites/{code} (server-only) ----------

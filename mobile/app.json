@@ -44,6 +44,7 @@
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       "expo-status-bar",
+      "expo-iap",
       "./plugins/withWindowsNativePaths",
       "./plugins/withReleaseSigning"
     ]

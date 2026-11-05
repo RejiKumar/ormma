@@ -3,7 +3,6 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Share, View } from "react-native";
-import { getAuth, signOut } from "@react-native-firebase/auth";
 import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
@@ -139,18 +138,6 @@ export function FamilyListScreen({ navigation }: Props) {
     ]);
   };
 
-  const onSignOut = () => {
-    Alert.alert(t("screens.family.signOut"), t("screens.family.signOutConfirm"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("screens.family.signOut"),
-        style: "destructive",
-        // AuthProvider sees the change and the navigator returns to the sign-in screen.
-        onPress: () => void signOut(getAuth()).catch(() => Alert.alert(t("common.error"))),
-      },
-    ]);
-  };
-
   const rows = parents.map((parent) => (
     <View key={parent.id} style={{ gap: theme.spacing.lg }}>
       <ParentCircle parent={parent} />
@@ -276,9 +263,9 @@ export function FamilyListScreen({ navigation }: Props) {
       {loading ? null : (
         <Button
           variant="quiet"
-          label={t("screens.family.signOut")}
-          testID="family-sign-out"
-          onPress={onSignOut}
+          label={t("settings.rowTitle")}
+          testID="family-settings"
+          onPress={() => navigation.navigate("Settings")}
         />
       )}
     </Screen>

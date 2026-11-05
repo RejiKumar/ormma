@@ -19,6 +19,7 @@ const REDEEM_ERROR_MESSAGE = {
   expired: "screens.redeem.errors.expired",
   used: "screens.redeem.errors.used",
   alreadyMember: "screens.redeem.errors.alreadyMember",
+  full: "screens.redeem.errors.full",
   failed: "screens.redeem.errors.failed",
 } as const;
 

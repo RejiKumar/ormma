@@ -64,6 +64,20 @@ const M = [
     "scan-sourced medicine is server-created",
   ],
   [
+    "client can write a subscription entitlement",
+    "fs",
+    "match /subscriptions/{uid} {\n      allow read: if signedIn() && request.auth.uid == uid;\n      allow write: if false;",
+    "match /subscriptions/{uid} {\n      allow read: if signedIn() && request.auth.uid == uid;\n      allow write: if signedIn() && request.auth.uid == uid;",
+    "subscriptions path rule",
+  ],
+  [
+    "any user can read another user's entitlement",
+    "fs",
+    "allow read: if signedIn() && request.auth.uid == uid;\n      allow write: if false;",
+    "allow read: if signedIn();\n      allow write: if false;",
+    "subscriptions path rule",
+  ],
+  [
     "medicine allows unknown field",
     "fs",
     "'frequencyText', 'pillDescription', 'purpose'])",

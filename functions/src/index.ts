@@ -21,6 +21,11 @@ import { missedDoseCheckerHandler } from "./schedule/missedDose";
 import { confirmPrescriptionMedicine, scanPrescription } from "./prescription";
 import { deleteParent, exportParentData } from "./data/exportDelete";
 import { grantConsentHandler, revokeConsentHandler } from "./consent";
+import { deleteMyAccountHandler, setMyDisplayNameHandler } from "./account";
+import { onMessagePublished } from "firebase-functions/v2/pubsub";
+import { PLAY_SECRETS, createPlayClient } from "./subscription/config";
+import { playBillingEventsHandler, type PlayNotification } from "./subscription/events";
+import { verifyPurchaseHandler, type VerifyPurchasePayload } from "./subscription/verify";
 import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
@@ -48,6 +53,21 @@ export const markDosesSeen = onCall((request) => markDosesSeenHandler(request));
 export const setMemberProfile = onCall((request) => setMemberProfileHandler(request));
 export const setNotifyPrefs = onCall((request) => setNotifyPrefsHandler(request));
 export const getCallHistory = onCall((request) => getCallHistoryHandler(request));
+export const deleteMyAccount = onCall((request) => deleteMyAccountHandler(request));
+export const setMyDisplayName = onCall((request) => setMyDisplayNameHandler(request));
+// Checks a Google Play purchase and stores the entitlement (server-side only).
+export const verifyPurchase = onCall(
+  { secrets: PLAY_SECRETS },
+  (request: CallableRequest<VerifyPurchasePayload>) => verifyPurchaseHandler(request, createPlayClient()),
+);
+// Google Play Real-time Developer Notifications arrive on this Pub/Sub topic.
+export const playBillingEvents = onMessagePublished(
+  { topic: "play-billing-events", secrets: PLAY_SECRETS },
+  async (event) => {
+    const notification = event.data.message.json as PlayNotification;
+    await playBillingEventsHandler(notification, createPlayClient());
+  },
+);
 export const revokeConsent = onCall(revokeConsentHandler);
 export const grantConsent = onCall(grantConsentHandler);
 

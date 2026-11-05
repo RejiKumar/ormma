@@ -19,6 +19,8 @@ export interface TodayDoseEvent {
   resolvedAt: number | null;
   /** One short factual sentence from reply structuring, shown as stored; null when none. */
   confirmationNote: string | null;
+  /** "plan" when no check-in call is placed for this dose on the current plan. */
+  callSkipped?: boolean;
   /** Read receipts: member uid to epoch ms of the first time that member saw the event. */
   seenBy: Record<string, number>;
 }
@@ -55,6 +57,7 @@ function toEvent(id: string, data: Record<string, unknown> | undefined): TodayDo
     status: typeof data?.status === "string" ? (data.status as DoseStatus) : "pending",
     resolvedAt: timestampMs(data?.resolvedAt),
     confirmationNote: typeof data?.confirmationNote === "string" && data.confirmationNote ? data.confirmationNote : null,
+    callSkipped: data?.callSkipped === "plan",
     seenBy: toSeenBy(data?.seenBy),
   };
 }

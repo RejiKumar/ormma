@@ -13,6 +13,14 @@
 - [ ] Privacy policy published and linked in Play Console; Data safety and Health apps forms done
 - [ ] Presence and emergency contacts mentioned in the privacy policy
 
+## Subscriptions and settings
+- [ ] Play subscription products `ormma_family_monthly` (₹299) and `ormma_family_yearly` (₹2,999) created and active (docs/RELEASE.md section 8b)
+- [ ] `PLAY_SERVICE_ACCOUNT_JSON` secret set; the service account has Play Console permissions; `playBillingEvents` topic test notification received
+- [ ] On a physical phone from the Internal testing track: buy, cancel, refund and restore all work; the plan row in Settings and the limits follow
+- [ ] Exotel's real per-call price recorded here and the free limits re-checked: ____
+- [ ] Privacy policy and terms (docs/PRIVACY-POLICY.md, docs/TERMS.md) reviewed by a lawyer, published, URLs set in `mobile/src/legal/legalConfig.ts` and Play Console, `node scripts/build-legal.mjs` run
+- [ ] In-app account deletion tested (refuses while owning a parent; works for a member)
+
 ## Pilot measures from the BRD (ormma-family-companion-brd.md)
 - [ ] NFR-2.1 Load time: on a mid-range Android phone with the network throttled to 4G, cold-open the app and time from tapping the icon to the first dose card on Today. Five runs; the median must be at most 1.2 s. Record the phone model and the numbers here.
 - [ ] NFR-2.2 Call timing: after one pilot day, list `callSessions` and compute `startedAt` minus the matching dose event's `scheduledFor`. Every call must start at or after the scheduled time, and the 95th percentile must be at most 60 s. Record the numbers here. (The dispatcher runs every minute; a unit test and an emulator test cover the rule, only the pilot proves the real figure.)

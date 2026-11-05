@@ -82,6 +82,42 @@ describe("users path rule / users document shape", () => {
   });
 });
 
+describe("subscriptions path rule (entitlement is server-written only)", () => {
+  const entitlement = {
+    status: "active",
+    productId: "ormma_family_monthly",
+    expiresAt: at(500),
+    tokenHash: "h",
+    updatedAt: at(0),
+  };
+
+  it("a user reads only their own entitlement", async () => {
+    await put(env, [[`subscriptions/${OWNER}`, entitlement]]);
+    await assertSucceeds(getDoc(doc(asUser(env, OWNER), `subscriptions/${OWNER}`)));
+    await assertFails(getDoc(doc(asUser(env, EDITOR), `subscriptions/${OWNER}`)));
+    await assertFails(getDoc(doc(asUser(env, OUTSIDER), `subscriptions/${OWNER}`)));
+  });
+
+  it("no client can create, update or delete an entitlement, not even the owner of it", async () => {
+    const ref = doc(asUser(env, OWNER), `subscriptions/${OWNER}`);
+    await assertFails(setDoc(ref, entitlement));
+    await put(env, [[`subscriptions/${OWNER}`, entitlement]]);
+    await assertFails(updateDoc(ref, { status: "active", expiresAt: at(99999) }));
+    await assertFails(deleteDoc(ref));
+    await assertFails(setDoc(doc(asUser(env, EDITOR), `subscriptions/${EDITOR}`), entitlement));
+  });
+
+  it("a user document cannot carry subscription data", async () => {
+    const data = { displayName: "A", phone: "+919800000009", fcmTokens: [], createdAt: at(0) };
+    await assertFails(setDoc(doc(asUser(env, EDITOR), `users/${EDITOR}`), { ...data, subscription: entitlement }));
+  });
+
+  it("a client cannot set callSkipped on a dose event", async () => {
+    await put(env, [[p("doseEvents/skip1"), doseEvent()]]);
+    await assertFails(updateDoc(doc(asUser(env, EDITOR), p("doseEvents/skip1")), { callSkipped: "plan" }));
+  });
+});
+
 describe("parents path rule / parents client update fields", () => {
   it("members read the parent; non-members do not", async () => {
     for (const uid of [OWNER, EDITOR, VIEWER]) {

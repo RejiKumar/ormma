@@ -5,6 +5,7 @@ import { Pressable, Share, View } from "react-native";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { FormError } from "../../components/FormError";
+import { planLimitReason } from "../../family/planErrors";
 import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
 import { Text } from "../../design/Text";
@@ -34,6 +35,7 @@ export function InviteScreen({ route }: Props) {
   const [creating, setCreating] = useState(false);
   const [code, setCode] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [planLimit, setPlanLimit] = useState(false);
 
   const create = async () => {
     setError(undefined);
@@ -44,10 +46,14 @@ export function InviteScreen({ route }: Props) {
     } catch (err) {
       const errorCode = (err as { code?: string } | null)?.code ?? "unknown";
       console.warn(`createInvite failed code=${errorCode}`);
+      const limited = planLimitReason(err) === "plan_member_limit";
+      setPlanLimit(limited);
       setError(
-        errorCode.includes("permission-denied")
-          ? t("screens.invite.errors.notOwner")
-          : t("screens.invite.errors.failed"),
+        limited
+          ? t("subscription.limitMember")
+          : errorCode.includes("permission-denied")
+            ? t("screens.invite.errors.notOwner")
+            : t("screens.invite.errors.failed"),
       );
     } finally {
       setCreating(false);
@@ -128,6 +134,14 @@ export function InviteScreen({ route }: Props) {
             </View>
           </View>
           {error ? <FormError message={error} testID="invite-error" /> : null}
+          {planLimit ? (
+            <Button
+              variant="secondary"
+              label={t("subscription.seePlans")}
+              testID="invite-see-plans"
+              onPress={() => navigation.navigate("Subscription")}
+            />
+          ) : null}
         </>
       )}
     </Screen>

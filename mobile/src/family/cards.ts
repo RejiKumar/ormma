@@ -107,6 +107,8 @@ export interface DoseCard {
   /** Members who saw the card, earliest time per member, in time order. */
   seen: Array<{ uid: string; at: number }>;
   pending: boolean;
+  /** True when every event of the card is flagged as not called because of the plan. */
+  skippedByPlan: boolean;
 }
 
 export function cardKind(events: TodayDoseEvent[]): CardKind {
@@ -154,6 +156,7 @@ export function groupCards(events: TodayDoseEvent[], medicines: Record<string, M
         notes: [...new Set(list.map((e) => e.confirmationNote).filter((n): n is string => n !== null))],
         seen: [...earliest.entries()].map(([uid, at]) => ({ uid, at })).sort((a, b) => a.at - b.at),
         pending: kind === "scheduled",
+        skippedByPlan: events.every((e) => e.callSkipped === true),
       };
     });
 }

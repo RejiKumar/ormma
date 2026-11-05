@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase-admin/firestore";
+import { assertCanInvite, assertSlotInTransaction } from "./subscription/limits";
 import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import type { InviteDoc, MemberDoc, Role, UserDoc } from "../../shared/types";
 import { getDb } from "./db";
@@ -61,6 +62,8 @@ export async function createInviteHandler(
   if ((memberSnap.data() as MemberDoc | undefined)?.role !== "owner") {
     throw new HttpsError("permission-denied", "Only the owner can create invites.");
   }
+
+  await assertCanInvite(parentId, (parentSnap.data() as { createdBy: string }).createdBy);
 
   const expiresAt = Timestamp.fromMillis(Date.now() + ttl * 24 * 60 * 60 * 1000);
   const invite: InviteDoc = {
@@ -126,6 +129,8 @@ export async function redeemInviteHandler(
     if (memberSnap.exists) {
       throw new HttpsError("failed-precondition", "You are already a member of this family.");
     }
+    const parentSnap = await tx.get(db.doc(`parents/${invite.parentId}`));
+    await assertSlotInTransaction(tx, invite.parentId, (parentSnap.data() as { createdBy: string }).createdBy);
 
     const userSnap = await tx.get(db.doc(`users/${uid}`));
     const user = userSnap.data() as UserDoc | undefined;

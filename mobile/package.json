@@ -22,6 +22,7 @@
     "expo-dev-client": "~58.0.16",
     "expo-font": "~58.0.10",
     "expo-haptics": "~58.0.7",
+    "expo-iap": "^6.4.3",
     "expo-localization": "~58.0.5",
     "expo-status-bar": "~58.0.4",
     "i18next": "^26.4.7",

@@ -10,6 +10,13 @@ const isOwner = async (db: ReturnType<typeof getDb>, parentId: string, uid: stri
   return role === "owner";
 };
 
+/** The entitlement as exported: status, product and end date only, never the token hash. */
+function withoutTokenHash(data: Record<string, unknown>): Record<string, unknown> {
+  const copy = { ...data };
+  delete copy.tokenHash;
+  return copy;
+}
+
 export interface ParentScopedPayload {
   parentId: string;
 }
@@ -22,6 +29,7 @@ export const exportParentDataHandler = async (request: CallableRequest<ParentSco
   const db = getDb();
   if (!(await isOwner(db, parentId, uid))) throw new Error("permission-denied");
 
+  const subscription = await db.doc(`subscriptions/${uid}`).get();
   const [parent, members, medicines, doseEvents, healthLogs, callSessions, prescriptions, alerts, familyCalls, invites] = await Promise.all([
     db.doc(`parents/${parentId}`).get(),
     db.collection(`parents/${parentId}/members`).get(),
@@ -46,6 +54,8 @@ export const exportParentDataHandler = async (request: CallableRequest<ParentSco
     alerts: alerts.docs.map((d) => ({ id: d.id, ...d.data() })),
     familyCalls: familyCalls.docs.map((d) => ({ id: d.id, ...d.data() })),
     invites: invites.docs.map((d) => ({ id: d.id, ...d.data() })),
+    // The caller's plan: status, product and end date only. The purchase token hash is not exported.
+    subscription: subscription.exists ? withoutTokenHash(subscription.data() as Record<string, unknown>) : null,
   };
 
   console.info("data: export", { parentId });

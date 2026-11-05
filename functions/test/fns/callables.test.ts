@@ -30,6 +30,16 @@ function call<T>(authUid: string | null, data: T, phone?: string): CallableReque
 
 const future = (days: number): Timestamp => Timestamp.fromMillis(Date.now() + days * 86_400_000);
 
+async function seedEntitlement(ownerUid: string, status: "active" | "expired" = "active", expiresInDays = 30): Promise<void> {
+  await db().doc(`subscriptions/${ownerUid}`).set({
+    status,
+    productId: "ormma_family_monthly",
+    expiresAt: future(expiresInDays),
+    tokenHash: `hash_${ownerUid}`,
+    updatedAt: Timestamp.now(),
+  });
+}
+
 async function seedUser(
   userUid: string,
   displayName: string,
@@ -242,6 +252,7 @@ describe("createInvite", () => {
   it("retries with a fresh code when the id already exists", async () => {
     const owner = uid("owner");
     const parentId = uid("parent");
+    await seedEntitlement(owner);
     await seedParent(parentId, owner);
     await seedMember(parentId, owner, "owner");
     await seedInvite("AAAAAAAA", { parentId });
@@ -259,6 +270,7 @@ describe("createInvite", () => {
   it("fails after exhausting collision retries", async () => {
     const owner = uid("owner");
     const parentId = uid("parent");
+    await seedEntitlement(owner);
     await seedParent(parentId, owner);
     await seedMember(parentId, owner, "owner");
     await seedInvite("AAAAAAAA", { parentId });
@@ -334,6 +346,7 @@ describe("redeemInvite", () => {
     const caller = uid("sibling");
     const owner = uid("owner");
     const parentId = uid("parent");
+    await seedParent(parentId, owner);
     await seedUser(caller, "Priya", "+919000000004");
     await seedInvite("BASKET88", { parentId, role: "editor", createdBy: owner });
 
@@ -355,6 +368,7 @@ describe("redeemInvite", () => {
   it("falls back to the auth token phone when the caller has no users doc", async () => {
     const caller = uid("bare");
     const parentId = uid("parent");
+    await seedParent(parentId, uid("owner"));
     await seedInvite("PAPER888", { parentId });
 
     await redeemInviteHandler(call(caller, { code: "PAPER888" }, "+919000000005"));
@@ -368,6 +382,7 @@ describe("redeemInvite", () => {
     const callerA = uid("siblingA");
     const callerB = uid("siblingB");
     const parentId = uid("parent");
+    await seedParent(parentId, uid("owner"));
     await seedInvite("RACED888", { parentId });
 
     const results = await Promise.allSettled([

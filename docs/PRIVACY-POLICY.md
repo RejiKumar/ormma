@@ -1,6 +1,6 @@
 # Ormma privacy policy (draft for legal review)
 
-Last updated: 2026-11-03. This is a draft. Have it reviewed before you publish it at the URL you give
+Last updated: 2026-11-05. This is a draft. Have it reviewed before you publish it at the URL you give
 Google Play, and keep it in step with the Data safety form in `docs/RELEASE.md`.
 
 ## What Ormma is
@@ -24,6 +24,8 @@ or suggest a dose, a time or a medicine.
 - **Emergency contacts:** a name, a type (neighbour or clinic) and a phone number that an owner chooses to
   add, with an optional short note, so family members can call them if a dose is missed.
 - **Family call log:** when a member taps "I called", we record who and when.
+- **Subscription:** if you subscribe, Google Play takes the payment. We keep the plan, the product, the end date
+  and a one-way hash of the purchase token. We never see or keep card or bank details.
 
 ## How we use it
 
@@ -38,14 +40,17 @@ seeing information dated from that point on.
 ## Service providers
 
 Google (Firebase, Speech-to-Text, Text-to-Speech), Exotel (phone calls), Anthropic (to structure a reply
-into a status; calls are made from our servers and no phone number is sent) and Google Play. Data is
+into a status; calls are made from our servers and no phone number is sent) and Google Play (payments). Data is
 stored in Mumbai (asia-south1).
 
 ## Your choices
 
 An owner can export a parent's data and delete a parent and its data from the Family tab. Deleting
 removes the parent, medicines, dose history, alerts, family call log and emergency contacts. For anything
-else, write to the contact address below.
+else, write to the contact address below. In Settings you can change your name, switch between light and
+dark appearance, and delete your account, which removes your profile, your place in every family and your
+plan record. You must delete the parents you own first. A Google Play subscription is cancelled in Google
+Play.
 
 ## Security
 

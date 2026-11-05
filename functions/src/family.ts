@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase-admin/firestore";
+import { assertCanCreateParent } from "./subscription/limits";
 import { HttpsError, type CallableRequest } from "firebase-functions/v2/https";
 import type { Consent, MemberDoc, ParentDoc, UserDoc } from "../../shared/types";
 import { getDb } from "./db";
@@ -43,6 +44,7 @@ export async function createParentHandler(
     throw new HttpsError("invalid-argument", "Unsupported language.");
   }
 
+  await assertCanCreateParent(uid);
   const db = getDb();
   const userSnap = await db.doc(`users/${uid}`).get();
   const user = userSnap.data() as UserDoc | undefined;

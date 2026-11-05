@@ -59,6 +59,7 @@ firebase functions:secrets:set VOICE_AUDIO_BASE_URL
 | `EXOTEL_WEBHOOK_URL` | Public URL of the deployed webhook function (printed by `firebase deploy`, section 4). |
 | `EXOTEL_WEBHOOK_TOKEN` | Any long random string (`openssl rand -hex 32`). Exotel sends it back so the function can trust the call. Put the same token in the Exotel flow's webhook URL. |
 | `GOOGLE_STT_API_KEY`, `GOOGLE_TTS_API_KEY` | Google Cloud → APIs and Services → Credentials → create API keys. **Restrict** each key to its one API. |
+| `PLAY_SERVICE_ACCOUNT_JSON` | The JSON key of the service account created in section 8b (Google Cloud IAM → Service accounts → Keys). Paste the whole file as the secret value. |
 | `VOICE_PROMPT_TOKEN` | Another long random string, used to protect the prompt endpoint. |
 | `VOICE_AUDIO_BASE_URL` | `https://asia-south1-ormma-prod.cloudfunctions.net/voiceAudio` |
 
@@ -185,9 +186,38 @@ Smoke-test the exact release build before uploading: install the `.aab` through 
 | Approximate activity (member last seen) | Yes | No | App functionality | One timestamp per member, no location |
 | Other user content (read receipts, notification preferences, relationship and city) | Yes | No | App functionality | Who viewed a dose update and when; three notification toggles; a member's own relationship and city; no precise location |
 | Third-party contacts (emergency contacts) | Yes | No | App functionality | Entered by the family owner |
+| Purchase history | Yes | No | App functionality | The plan, product and end date, and a one-way hash of the purchase token; payment itself is handled by Google Play |
 
-Encryption in transit: yes. Users can request deletion: yes (Family tab → Delete parent, and Export data).
+Encryption in transit: yes. Users can request deletion: yes (Family tab → Settings → Delete account, Delete parent, and Export data). Play also asks for a web page where a user can request account deletion: use the published privacy policy page and say that deletion is in the app under Settings, or give a support email.
 Re-check these answers against `docs/PRIVACY-POLICY.md` before submitting.
+
+## 8b. Subscriptions (Google Play Billing)
+
+The app sells one subscription, Ormma Family, monthly and yearly. Prices below are the agreed ones; Google Play is the merchant of record and handles tax.
+
+1. **Merchant profile.** Play Console → Setup → Payments profile: complete it so the app can sell subscriptions.
+2. **Create the products.** Play Console → your app → Monetize → Subscriptions → Create subscription:
+   - Product ID `ormma_family_monthly`, name "Ormma Family monthly", one base plan: monthly auto-renewing, price ₹299.
+   - Product ID `ormma_family_yearly`, name "Ormma Family yearly", one base plan: yearly auto-renewing, price ₹2,999.
+   - The ids must match `PRODUCT_IDS` in `mobile/src/billing/billing.ts` and `functions/src/subscription/play.ts` exactly. Activate both base plans.
+3. **Service account for verification.**
+   - Google Cloud console (the project linked to Play) → IAM → Service accounts → create `ormma-play-verifier` (no roles needed in Cloud).
+   - Enable the **Google Play Android Developer API** in that Cloud project.
+   - Play Console → Users and permissions → Invite new users → paste the service account email → app permissions: this app → grant **View financial data** and **Manage orders and subscriptions**.
+   - Create a JSON key for the service account and store it as the secret `PLAY_SERVICE_ACCOUNT_JSON` (section 2). Never commit it.
+4. **Real-time developer notifications.**
+   - Google Cloud → Pub/Sub → create topic `play-billing-events` in the Firebase project.
+   - Grant `google-play-developer-notifications@system.gserviceaccount.com` the role Pub/Sub Publisher on that topic.
+   - Play Console → Monetize → Monetization setup → Real-time developer notifications → topic `projects/ormma-prod/topics/play-billing-events`, notification type: subscriptions only. Use "Send test notification".
+   - Deploy functions so `playBillingEvents` subscribes to that topic (`firebase deploy --only functions`).
+5. **Indexes.** `firebase deploy --only firestore:indexes` creates the new indexes for `parents(createdBy, createdAt)` and `invites(parentId, usedBy, expiresAt)`. Wait until they show as Enabled.
+6. **Test before launch (needs a real phone).**
+   - Play Console → Setup → License testing: add the tester Google accounts.
+   - Upload a build to the Internal testing track and install it from the Play link (purchases do not work from a sideloaded debug build or the emulator).
+   - Buy monthly with a licence tester account (it renews every few minutes in test mode). Check that `subscriptions/{uid}` appears, the Settings plan row shows Ormma Family, and a second parent can be added.
+   - Cancel in Play and confirm the plan stays until the end date; refund a test order and confirm the plan ends at once; reinstall and use Restore purchases.
+7. **Legal pages.** Publish `docs/PRIVACY-POLICY.md` and `docs/TERMS.md` as web pages (after legal review), then put the two URLs into `mobile/src/legal/legalConfig.ts` and into Play Console (Privacy policy URL; and the Terms link in the store listing description). Run `node scripts/build-legal.mjs` after any edit to those documents so the in-app text matches.
+8. **Cost check.** Replace the assumed ₹5 to ₹10 per call with Exotel's rate card in `docs/PRELAUNCH-CHECKLIST.md` and confirm the free limits still make sense.
 
 ## 9. Before you press Production
 

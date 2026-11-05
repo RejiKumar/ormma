@@ -156,3 +156,21 @@ export function getCallHistory(payload: ParentScopedPayload): Promise<{ entries:
 export function logFamilyCall(payload: ParentScopedPayload): Promise<{ id: string }> {
   return invoke("logFamilyCall", payload);
 }
+
+/** Sends a Google Play purchase to the server, which verifies it and stores the entitlement. */
+export function verifyPurchase(payload: {
+  productId: string;
+  purchaseToken: string;
+}): Promise<{ status: string; expiresAtMs: number }> {
+  return invoke("verifyPurchase", payload);
+}
+
+/** Deletes the signed-in member's own data and sign-in account. Refused while they own a parent. */
+export function deleteMyAccount(): Promise<{ deleted: true }> {
+  return invoke("deleteMyAccount", {});
+}
+
+/** Sets the signed-in member's display name everywhere it is shown. */
+export function setMyDisplayName(displayName: string): Promise<{ ok: true }> {
+  return invoke("setMyDisplayName", { displayName });
+}

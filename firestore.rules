@@ -73,6 +73,14 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // ---------- subscriptions/{uid}: entitlement, server-written only ----------
+    // Clients may read their own; only Cloud Functions (verifyPurchase, Play notifications) write it,
+    // so a client can never upgrade itself. users/{uid} stays free of subscription data.
+    match /subscriptions/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     // ---------- parents/{parentId} ----------
     function validCallPolicy(p) {
       return p is map
