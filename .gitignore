@@ -54,3 +54,6 @@ keystore.properties
 *.apk
 *.aab
 mobile/screen-current.png
+
+# production Firebase config (swapped in for release builds)
+google-services.prod.json
