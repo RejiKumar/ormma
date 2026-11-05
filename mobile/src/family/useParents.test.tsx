@@ -212,17 +212,27 @@ describe("useParents", () => {
 
   it("re-subscribes on reload, re-reading the stored ids", async () => {
     await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
-    captureListeners();
+    const listeners = captureListeners();
     fsMock.getDoc.mockResolvedValue({ exists: () => false, data: () => undefined });
 
     const { result } = await renderHook(() => useParents(), { wrapper });
     await waitFor(() => expect(fsMock.onSnapshot).toHaveBeenCalledTimes(1));
+    // A reload during the first load is skipped; once it has finished, the next one runs.
+    await act(async () => {
+      result.current.reload();
+    });
+    expect(fsMock.onSnapshot).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      listeners[0].next({ docs: [] });
+    });
+    await waitFor(() => expect(result.current.loading).toBe(false));
 
     await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1", "p2"]));
     await act(async () => {
       result.current.reload();
     });
     await waitFor(() => expect(fsMock.onSnapshot).toHaveBeenCalledTimes(2));
+    expect(result.current.loading).toBe(false); // a refresh never brings the skeleton back
     const lastChunk = fsMock.where.mock.calls.at(-1)?.[2] as string[];
     expect(lastChunk).toEqual(["p1", "p2"]);
   });

@@ -14,7 +14,7 @@ export function withPriming(name: string, Screen: ComponentType): ComponentType 
   function PrimedTab() {
     const { theme } = useTheme();
     const { loading } = useParents();
-    const priming = useTabPriming(loading);
+    const priming = useTabPriming(name, loading);
     return (
       <View style={{ flex: 1 }}>
         <Screen />

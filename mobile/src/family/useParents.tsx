@@ -149,6 +149,9 @@ function merge(existing: FamilyParent[], incoming: FamilyParent[], order: string
     .filter((parent): parent is FamilyParent => parent !== undefined);
 }
 
+/** Fewest milliseconds between two focus-driven reloads. */
+const RELOAD_MIN_MS = 10_000;
+
 /**
  * The loader itself: reads the device's parent ids, listens to those parents and reads the member's
  * role in each. `enabled` false skips all of it (a screen that reads the shared provider's value).
@@ -161,6 +164,8 @@ function useParentsState(enabled: boolean): UseParentsResult {
   const [version, setVersion] = useState(0);
   const orderRef = useRef<string[]>([]);
   const remoteSynced = useRef(false);
+  // The account whose first load finished: a later reload refreshes quietly, with no skeleton.
+  const loadedFor = useRef<string | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -172,8 +177,12 @@ function useParentsState(enabled: boolean): UseParentsResult {
     }
     let cancelled = false;
     const unsubscribers: Array<() => void> = [];
-    setLoading(true);
+    if (loadedFor.current !== uid) setLoading(true);
     orderRef.current = [];
+    const finishLoading = () => {
+      loadedFor.current = uid;
+      setLoading(false);
+    };
 
     const readRoles = async (snapshots: ParentSnapshot[]): Promise<void> => {
       const db = getFirestore();
@@ -228,7 +237,7 @@ function useParentsState(enabled: boolean): UseParentsResult {
       orderRef.current = ids;
       if (ids.length === 0) {
         setParents([]);
-        setLoading(false);
+        finishLoading();
         return;
       }
       const db = getFirestore();
@@ -244,7 +253,7 @@ function useParentsState(enabled: boolean): UseParentsResult {
             void readRoles(snapshots);
             if (pendingFirstSnapshots > 0) {
               pendingFirstSnapshots -= 1;
-              if (pendingFirstSnapshots === 0 && !cancelled) setLoading(false);
+              if (pendingFirstSnapshots === 0 && !cancelled) finishLoading();
             }
           },
           (error) => {
@@ -258,7 +267,7 @@ function useParentsState(enabled: boolean): UseParentsResult {
             }
             if (pendingFirstSnapshots > 0) {
               pendingFirstSnapshots -= 1;
-              if (pendingFirstSnapshots === 0 && !cancelled) setLoading(false);
+              if (pendingFirstSnapshots === 0 && !cancelled) finishLoading();
             }
           },
         );
@@ -272,7 +281,16 @@ function useParentsState(enabled: boolean): UseParentsResult {
     };
   }, [uid, version, enabled]);
 
-  const reload = useCallback(() => setVersion((v) => v + 1), []);
+  // Screens ask for a reload on every focus. Restarting every listener each time starves the first
+  // load when tabs are switched quickly, so a reload is skipped while the first load is running and
+  // at most one runs per RELOAD_MIN_MS.
+  const lastReload = useRef(0);
+  const reload = useCallback(() => {
+    const now = Date.now();
+    if (loadedFor.current !== uid || now - lastReload.current < RELOAD_MIN_MS) return;
+    lastReload.current = now;
+    setVersion((v) => v + 1);
+  }, [uid]);
 
   return { parents, loading, reload };
 }
