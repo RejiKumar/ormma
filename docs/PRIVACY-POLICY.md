@@ -63,4 +63,4 @@ Ormma is for adults. It is not directed at children.
 
 ## Contact
 
-Add the support email and postal address here before publishing.
+For questions, or to ask about your data, write to rejiranair@gmail.com or to Ormma, AZRA, NRA 115, Nettayikonam, Kazhakootam, Thiruvananthapuram, Kerala 695582, India.

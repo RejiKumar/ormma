@@ -131,7 +131,8 @@ describe("LegalScreen", () => {
     expect(screen.getByTestId("legal-title")).toHaveTextContent("Ormma privacy policy");
     expect(screen.getByText("What we collect")).toBeTruthy();
     expect(screen.getByText(/^Last updated /)).toBeTruthy();
-    expect(screen.queryByTestId("legal-open-online")).toBeNull();
+    // The published page exists, so the screen offers the full text online as well.
+    expect(screen.getByTestId("legal-open-online")).toBeTruthy();
   });
 
   it("shows the terms with the no-medical-advice section", async () => {

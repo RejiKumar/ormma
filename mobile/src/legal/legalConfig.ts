@@ -4,8 +4,8 @@
  * (docs/RELEASE.md) with the same URLs given to Google Play.
  */
 export const LEGAL_URLS = {
-  privacy: "",
-  terms: "",
+  privacy: "https://ormma-prod.web.app/privacy",
+  terms: "https://ormma-prod.web.app/terms",
 } as const;
 
 export type LegalDocName = "privacy" | "terms";
