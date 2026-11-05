@@ -15,6 +15,7 @@ import { shortDate } from "../../family/cards";
 import { useMedicines } from "../../family/useMedicines";
 import { useParents } from "../../family/useParents";
 import type { MedicineStackParamList } from "../../navigation/MedicineStack";
+import { LoadingState } from "../../components/LoadingState";
 
 type Props = NativeStackScreenProps<MedicineStackParamList, "MedicinesList">;
 
@@ -70,7 +71,7 @@ export function MedicinesListScreen({ navigation }: Props) {
       }
     >
       {parentsLoading ? (
-        <Text tone="muted">{t("common.loading")}</Text>
+        <LoadingState variant="cards" testID="medicines-parents-loading" />
       ) : parents.length === 0 ? (
         <EmptyState
           testID="medicines-no-parents"
@@ -117,7 +118,7 @@ export function MedicinesListScreen({ navigation }: Props) {
             </View>
           ) : null}
           {loading ? (
-            <Text tone="muted">{t("common.loading")}</Text>
+            <LoadingState variant="cards" testID="medicines-loading" />
           ) : medicines.length === 0 ? (
             <EmptyState
               testID="medicines-empty"

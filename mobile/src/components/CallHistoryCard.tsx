@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Text } from "../design/Text";
+import { LoadingState } from "./LoadingState";
 import { useTheme } from "../design/ThemeProvider";
 import type { CallHistoryEntry } from "../family/callables";
 import { clock12, dayWhen, durationLabel } from "../family/cards";
@@ -44,7 +45,7 @@ export function CallHistoryCard({
     <View style={{ gap: theme.spacing.sm }} testID={`history-${parentId}`}>
       <Text variant="title">{t("screens.family.historyTitle")}</Text>
       <Card style={{ gap: theme.spacing.md }}>
-        {loading && entries.length === 0 ? <Text tone="muted">{t("common.loading")}</Text> : null}
+        {loading && entries.length === 0 ? <LoadingState variant="lines" testID="history-loading" /> : null}
         {!loading && entries.length === 0 ? <Text tone="muted">{t("screens.family.historyEmpty")}</Text> : null}
         {entries.map((entry, index) => {
           const ormma = entry.kind === "ormma";

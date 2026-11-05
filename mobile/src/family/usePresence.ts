@@ -16,6 +16,10 @@ import { touchPresence } from "./callables";
 import type { FamilyParent } from "./useParents";
 import { timestampMs } from "./useParents";
 
+// Presence is stamped at most once a minute per parent, however often the screen re-mounts.
+const TOUCH_INTERVAL_MS = 60_000;
+const lastTouch = new Map<string, number>();
+
 /** A member seen within this window counts as viewing now. */
 export const VIEWING_WINDOW_MS = 2 * 60 * 1000;
 
@@ -50,6 +54,9 @@ export function usePresence(parent: FamilyParent): PresenceState {
   useEffect(() => {
     if (!enabled) return;
     // Fire and forget: presence must never block or fail the screen.
+    const now = Date.now();
+    if (now - (lastTouch.get(parent.id) ?? 0) < TOUCH_INTERVAL_MS) return;
+    lastTouch.set(parent.id, now);
     void touchPresence({ parentId: parent.id }).catch(() => undefined);
   }, [enabled, parent.id]);
 

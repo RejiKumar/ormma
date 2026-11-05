@@ -10,6 +10,7 @@ import { Icon } from "../../components/Icon";
 import { PresenceBar } from "../../components/PresenceBar";
 import { DoseCardView } from "../../components/DoseCardView";
 import { ListItem } from "../../components/ListItem";
+import { LoadingState } from "../../components/LoadingState";
 import { Screen } from "../../components/Screen";
 import { PressableScale } from "../../design/PressableScale";
 import { Text } from "../../design/Text";
@@ -198,7 +199,7 @@ function ParentTodaySection({
         {parent.name}
       </Text>
       {loading ? (
-        <Text tone="muted">{t("common.loading")}</Text>
+        <LoadingState variant="cards" testID={`today-loading-${parent.id}`} />
       ) : cards.length === 0 ? (
         <EmptyState testID={`today-empty-${parent.id}`} icon="pill" title={t("screens.today.noEvents")} />
       ) : (
@@ -261,7 +262,7 @@ export function TodayDashboardScreen() {
   return (
     <Screen insideTabs>
       {parentsLoading ? (
-        <Text tone="muted">{t("common.loading")}</Text>
+        <LoadingState variant="today" testID="today-loading" />
       ) : parents.length === 0 ? (
         <EmptyState
           testID="today-no-parents"
@@ -281,7 +282,7 @@ export function TodayDashboardScreen() {
           ))}
           <Text variant="title">{t("screens.today.alertsTitle")}</Text>
           {alertsLoading ? (
-            <Text tone="muted">{t("common.loading")}</Text>
+            <LoadingState variant="lines" testID="alerts-loading" />
           ) : alerts.length === 0 ? (
             <Text testID="today-no-alerts" tone="muted">
               {t("screens.today.noAlerts")}

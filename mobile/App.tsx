@@ -11,6 +11,7 @@ import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
 import { AppTabs } from "./src/navigation/AppTabs";
 import { AuthStack } from "./src/navigation/AuthStack";
+import { ParentsProvider } from "./src/family/useParents";
 import { PushRegistrar } from "./src/push/PushRegistrar";
 
 connectEmulators();
@@ -40,7 +41,14 @@ function useNavigationTheme() {
 function RootNavigator() {
   const { user, initialising } = useAuth();
   if (initialising) return null;
-  return user ? <AppTabs /> : <AuthStack />;
+  // One shared parents loader for every tab, instead of one per screen.
+  return user ? (
+    <ParentsProvider>
+      <AppTabs />
+    </ParentsProvider>
+  ) : (
+    <AuthStack />
+  );
 }
 
 function Root() {

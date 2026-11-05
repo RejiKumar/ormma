@@ -25,6 +25,7 @@ import { useAlerts, type FamilyAlert } from "../../family/useAlerts";
 import { clock12, groupCards, nextCard } from "../../family/cards";
 import { useParents, type FamilyParent } from "../../family/useParents";
 import { useTodayEvents, type TodayDoseEvent } from "../../family/useTodayEvents";
+import { LoadingState } from "../../components/LoadingState";
 
 const ALERTS_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -212,7 +213,7 @@ export function AlertsScreen() {
       ))}
       {alerts.length > 0 ? <Text variant="title">{t("screens.today.alertsTitle")}</Text> : null}
       {parentsLoading || loading ? (
-        <Text tone="muted">{t("common.loading")}</Text>
+        <LoadingState variant="cards" testID="alerts-screen-loading" />
       ) : alerts.length === 0 ? (
         <Text tone="muted">{t("alerts.none")}</Text>
       ) : (

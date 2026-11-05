@@ -3,7 +3,7 @@
 // The member's own role per parent comes from parents/{parentId}/members/{uid}.
 import { collection, documentId, getDoc, onSnapshot, query, where } from "@react-native-firebase/firestore";
 import { getFirestore, doc } from "@react-native-firebase/firestore";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ConsentStatus, EmergencyContact, Language, Role } from "../../../shared/types";
 import { useAuth } from "../auth/AuthProvider";
 import { readParentIds, addParentId, removeParentId } from "./parentIds";
@@ -149,15 +149,21 @@ function merge(existing: FamilyParent[], incoming: FamilyParent[], order: string
     .filter((parent): parent is FamilyParent => parent !== undefined);
 }
 
-export function useParents(): UseParentsResult {
+/**
+ * The loader itself: reads the device's parent ids, listens to those parents and reads the member's
+ * role in each. `enabled` false skips all of it (a screen that reads the shared provider's value).
+ */
+function useParentsState(enabled: boolean): UseParentsResult {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const [parents, setParents] = useState<FamilyParent[]>([]);
   const [loading, setLoading] = useState(true);
   const [version, setVersion] = useState(0);
   const orderRef = useRef<string[]>([]);
+  const remoteSynced = useRef(false);
 
   useEffect(() => {
+    if (!enabled) return;
     if (!uid) {
       orderRef.current = [];
       setParents([]);
@@ -188,22 +194,37 @@ export function useParents(): UseParentsResult {
       setParents((previous) => merge(previous, withRoles, orderRef.current));
     };
 
-    void (async () => {
-      let ids = await readParentIds();
-      if (cancelled) return;
-      // A reinstall or a new phone starts with an empty local list. Ask the server for the ids the
-      // account is a member of and store the missing ones; offline, keep whatever is local.
+    // A reinstall or a new phone starts with an empty local list. Ask the server for the ids the
+    // account is a member of and store the missing ones; offline, keep whatever is local.
+    const syncFromServer = async (known: string[]): Promise<string[]> => {
       try {
         const remote = await listMyParents();
-        const missing = (remote?.parentIds ?? []).filter((id) => !ids.includes(id));
+        const missing = (remote?.parentIds ?? []).filter((id) => !known.includes(id));
         if (missing.length > 0) {
           await Promise.all(missing.map((id) => addParentId(id)));
-          ids = [...ids, ...missing];
+          return [...known, ...missing];
         }
       } catch {
         // Offline or functions unavailable: the local list is still valid.
       }
+      return known;
+    };
+
+    void (async () => {
+      let ids = await readParentIds();
       if (cancelled) return;
+      if (ids.length === 0) {
+        // Nothing local: the server's answer decides whether there is anything to show.
+        ids = await syncFromServer(ids);
+        remoteSynced.current = true;
+        if (cancelled) return;
+      } else if (!remoteSynced.current) {
+        // Something local: show it now and reconcile with the server in the background, once.
+        remoteSynced.current = true;
+        void syncFromServer(ids).then((merged) => {
+          if (!cancelled && merged.length !== ids.length) setVersion((v) => v + 1);
+        });
+      }
       orderRef.current = ids;
       if (ids.length === 0) {
         setParents([]);
@@ -249,9 +270,27 @@ export function useParents(): UseParentsResult {
       cancelled = true;
       for (const unsubscribe of unsubscribers) unsubscribe();
     };
-  }, [uid, version]);
+  }, [uid, version, enabled]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
 
   return { parents, loading, reload };
+}
+
+const ParentsContext = createContext<UseParentsResult | null>(null);
+
+/**
+ * Loads the member's parents once for the whole app. Every screen and hook that calls useParents()
+ * under this provider shares one set of listeners and one server sync instead of starting its own.
+ */
+export function ParentsProvider({ children }: { children: ReactNode }) {
+  const value = useParentsState(true);
+  return <ParentsContext.Provider value={value}>{children}</ParentsContext.Provider>;
+}
+
+/** The member's parents: shared from ParentsProvider, or loaded by this call when there is no provider. */
+export function useParents(): UseParentsResult {
+  const shared = useContext(ParentsContext);
+  const own = useParentsState(shared === null);
+  return shared ?? own;
 }

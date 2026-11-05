@@ -17,6 +17,7 @@ import { useTheme } from "../../design/ThemeProvider";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
 import { DEFAULT_COUNTRY_CODE, isValidE164 } from "../../utils/phone";
+import { LoadingState } from "../../components/LoadingState";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "EmergencyContacts">;
 
@@ -104,7 +105,7 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
     >
       <Text variant="headline">{t("screens.contacts.title")}</Text>
       <Text tone="muted">{t("screens.contacts.subtitle", { name: route.params.parentName })}</Text>
-      {loading ? <Text tone="muted">{t("common.loading")}</Text> : null}
+      {loading ? <LoadingState variant="lines" testID="contacts-loading" /> : null}
       {parent && !isOwner ? (
         <Banner message={t("screens.contacts.readOnly")} testID="contacts-readonly" />
       ) : null}

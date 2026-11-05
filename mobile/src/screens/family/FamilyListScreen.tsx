@@ -10,7 +10,6 @@ import { ParentCircle } from "../../components/ParentCircle";
 import { EmptyState } from "../../components/EmptyState";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
-import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
@@ -21,6 +20,7 @@ import {
   revokeConsent,
 } from "../../family/callables";
 import { removeParentId } from "../../family/parentIds";
+import { LoadingState } from "../../components/LoadingState";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "FamilyList">;
 
@@ -233,7 +233,7 @@ export function FamilyListScreen({ navigation }: Props) {
       }
     >
       {loading ? (
-        <Text tone="muted">{t("common.loading")}</Text>
+        <LoadingState variant="cards" testID="family-loading" />
       ) : parents.length === 0 ? (
         <EmptyState
           testID="family-empty"

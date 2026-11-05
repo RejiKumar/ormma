@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { AuthProvider } from "../auth/AuthProvider";
-import { useParents } from "./useParents";
+import { ParentsProvider, useParents } from "./useParents";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type FirestoreMock = {
@@ -225,5 +225,61 @@ describe("useParents", () => {
     await waitFor(() => expect(fsMock.onSnapshot).toHaveBeenCalledTimes(2));
     const lastChunk = fsMock.where.mock.calls.at(-1)?.[2] as string[];
     expect(lastChunk).toEqual(["p1", "p2"]);
+  });
+
+  describe("shared loading and the server sync", () => {
+    const fns = jest.requireMock("@react-native-firebase/functions") as {
+      __callables: Record<string, jest.Mock>;
+      httpsCallable: (f: unknown, name: string) => jest.Mock;
+    };
+    const listMine = () => {
+      fns.httpsCallable(undefined, "listMyParents");
+      return fns.__callables.listMyParents;
+    };
+
+    it("shows the local parents at once and syncs with the server in the background, once", async () => {
+      await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+      let release: (value: { data: { parentIds: string[] } }) => void = () => undefined;
+      listMine().mockReset();
+      listMine().mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+      const listeners = captureListeners();
+      const { result } = await renderHook(() => useParents(), { wrapper });
+      // The server has not answered, yet the parents list is already being loaded from local ids.
+      await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+      expect(listMine()).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        release({ data: { parentIds: ["p1"] } });
+      });
+      expect(result.current.loading).toBeDefined();
+      expect(listMine()).toHaveBeenCalledTimes(1);
+    });
+
+    it("waits for the server when nothing is stored locally", async () => {
+      listMine().mockReset();
+      listMine().mockResolvedValue({ data: { parentIds: [] } });
+      const { result } = await renderHook(() => useParents(), { wrapper });
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(listMine()).toHaveBeenCalledTimes(1);
+    });
+
+    it("lets many screens share one loader: one server call and one set of listeners", async () => {
+      await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+      listMine().mockReset();
+      listMine().mockResolvedValue({ data: { parentIds: ["p1"] } });
+      const listeners = captureListeners();
+      const shared = ({ children }: { children: React.ReactNode }) => (
+        <AuthProvider>
+          <ParentsProvider>{children}</ParentsProvider>
+        </AuthProvider>
+      );
+      const { result } = await renderHook(() => [useParents(), useParents(), useParents(), useParents(), useParents()], {
+        wrapper: shared,
+      });
+      await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+      expect(listMine()).toHaveBeenCalledTimes(1);
+      expect(listeners).toHaveLength(1);
+      // Every consumer sees the same value.
+      expect(new Set(result.current.map((r) => r.parents)).size).toBe(1);
+    });
   });
 });

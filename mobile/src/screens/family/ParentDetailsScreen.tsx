@@ -12,6 +12,7 @@ import { TextField } from "../../components/TextField";
 import { Text } from "../../design/Text";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
+import { LoadingState } from "../../components/LoadingState";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "ParentDetails">;
 
@@ -88,7 +89,7 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
     >
       <Text variant="headline">{t("screens.parentDetails.title")}</Text>
       <Text tone="muted">{t("screens.parentDetails.subtitle")}</Text>
-      {loading ? <Text tone="muted">{t("common.loading")}</Text> : null}
+      {loading ? <LoadingState variant="lines" testID="details-loading" /> : null}
       {parent && !isOwner ? <Banner message={t("screens.parentDetails.readOnly")} testID="details-readonly" /> : null}
       <TextField
         testID="parent-city"

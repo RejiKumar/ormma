@@ -13,7 +13,7 @@ export interface AppHeaderProps {
 }
 
 /**
- * The app bar from the Family Companion prototype: the lowercase "ormma" mark on the left and a pill
+ * The app bar from the Family Companion prototype: the "Ormma" mark on the left and a pill
  * with the parent's name and a live status dot on the right (green while calm, alert-toned otherwise).
  */
 export function AppHeader({ parentName, extraParents = 0, alert }: AppHeaderProps) {

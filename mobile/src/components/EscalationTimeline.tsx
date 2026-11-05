@@ -9,6 +9,7 @@ import { useEscalation } from "../family/useEscalation";
 import { clock12 } from "../family/cards";
 import { ContactsBlock } from "./ContactsBlock";
 import { Icon, type IconName } from "./Icon";
+import { LoadingState } from "./LoadingState";
 
 // Outcome to the existing status palette and icon, so colour is never the only signal.
 const OUTCOME_STATUS: Record<EscalationAttempt["outcome"], StatusKey> = {
@@ -120,7 +121,7 @@ export function EscalationTimeline({
 
   return (
     <View testID={`escalation-${doseEventId}`} style={{ gap: theme.spacing.md }}>
-      {loading ? <Text tone="muted">{t("escalation.loading")}</Text> : null}
+      {loading ? <LoadingState variant="lines" testID="escalation-loading" /> : null}
       {failed ? <Text tone="muted">{t("escalation.failed")}</Text> : null}
       {data && steps.length === 0 ? <Text tone="muted">{t("escalation.none")}</Text> : null}
       {steps.length > 0 ? (

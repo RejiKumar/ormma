@@ -22,6 +22,7 @@ import {
   type MedicineDraftError,
 } from "./medicineInput";
 import { MedicineFormFields } from "./MedicineFormFields";
+import { LoadingState } from "../../components/LoadingState";
 
 type Props = NativeStackScreenProps<MedicineStackParamList, "AddMedicine">;
 
@@ -107,7 +108,7 @@ export function AddMedicineScreen({ navigation, route }: Props) {
       }
     >
       <Text variant="headline">{t("screens.medicines.addTitle")}</Text>
-      {loading ? <Text tone="muted">{t("common.loading")}</Text> : null}
+      {loading ? <LoadingState variant="lines" testID="add-medicine-loading" /> : null}
       {parent && !canEdit ? (
         <Banner variant="info" message={t("screens.medicines.readOnly")} testID="medicine-readonly" />
       ) : null}
