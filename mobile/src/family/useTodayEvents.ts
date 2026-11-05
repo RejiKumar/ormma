@@ -8,6 +8,7 @@ import type { DoseStatus } from "../../../shared/types";
 import type { DatedParent } from "./useParents";
 import { timestampMs } from "./useParents";
 import { localDayWindow, visibilityRanges } from "./visibility";
+import { useReportLoading } from "../navigation/TabLoading";
 
 export interface TodayDoseEvent {
   id: string;
@@ -151,5 +152,6 @@ export function useTodayEvents(parents: DatedParent[], now: number): UseTodayEve
     // still re-subscribes when role, consent or the clock changes.
   }, [parentsKey, now]);
 
+  useReportLoading(loading);
   return { byParent, loading };
 }

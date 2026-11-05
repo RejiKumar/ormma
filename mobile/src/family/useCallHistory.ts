@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getCallHistory, type CallHistoryEntry } from "./callables";
+import { useReportLoading } from "../navigation/TabLoading";
 
 /** The last calls for one parent (Ormma and family), newest first. Read-only; reload after logging a call. */
 export function useCallHistory(parentId: string | null): {
@@ -36,5 +37,6 @@ export function useCallHistory(parentId: string | null): {
   }, [parentId, version]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
+  useReportLoading(loading);
   return { entries, loading, reload };
 }

@@ -3,6 +3,7 @@
 import { collection, getFirestore, onSnapshot, orderBy, query } from "@react-native-firebase/firestore";
 import { useEffect, useState } from "react";
 import type { MedicineSource } from "../../../shared/types";
+import { useReportLoading } from "../navigation/TabLoading";
 
 export interface Medicine {
   id: string;
@@ -91,5 +92,6 @@ export function useMedicines(parentId: string | null): UseMedicinesResult {
     };
   }, [parentId]);
 
+  useReportLoading(loading);
   return { medicines, loading };
 }

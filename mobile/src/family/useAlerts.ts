@@ -7,6 +7,7 @@ import type { AlertType } from "../../../shared/types";
 import type { DatedParent } from "./useParents";
 import { timestampMs } from "./useParents";
 import { visibilityRanges } from "./visibility";
+import { useReportLoading } from "../navigation/TabLoading";
 
 /** Newest alerts shown on the dashboard. */
 export const ALERTS_LIMIT = 20;
@@ -139,5 +140,7 @@ export function useAlerts(parents: DatedParent[], window: { start: number; end: 
 
   // Until this set of parents has produced its first snapshots, report loading so a screen never
   // shows "no alerts" for the render between the parents arriving and the subscriptions starting.
-  return { alerts, loading: loading || (parents.length > 0 && settledKey !== currentKey) };
+  const reportedLoading = loading || (parents.length > 0 && settledKey !== currentKey);
+  useReportLoading(reportedLoading);
+  return { alerts, loading: reportedLoading };
 }

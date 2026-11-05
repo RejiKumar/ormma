@@ -4,6 +4,7 @@ import { collection, getFirestore, onSnapshot } from "@react-native-firebase/fir
 import { useEffect, useState } from "react";
 import type { NotifyPrefs, Role } from "../../../shared/types";
 import { timestampMs } from "./useParents";
+import { useReportLoading } from "../navigation/TabLoading";
 
 export interface MemberInfo {
   uid: string;
@@ -74,5 +75,6 @@ export function useMembers(parentId: string | null): { members: MemberInfo[]; lo
     };
   }, [parentId]);
 
+  useReportLoading(loading);
   return { members, loading };
 }

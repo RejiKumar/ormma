@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { planOf, type Entitlement, type PlanName, type SubscriptionStatus } from "./plan";
 import { timestampMs } from "./useParents";
+import { useReportLoading } from "../navigation/TabLoading";
 
 export interface UseSubscriptionResult {
   plan: PlanName;
@@ -49,5 +50,6 @@ export function useSubscription(): UseSubscriptionResult {
     return unsubscribe;
   }, [uid]);
 
+  useReportLoading(loading);
   return { plan: planOf(entitlement, Date.now()), entitlement, loading };
 }
