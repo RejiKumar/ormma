@@ -69,7 +69,7 @@ export const privacyPolicy: LegalDocument = {
     {
       "heading": "Contact",
       "blocks": [
-        "For questions, or to ask about your data, write to rejiranair@gmail.com or to Ormma, AZRA, NRA 115, Nettayikonam, Kazhakootam, Thiruvananthapuram, Kerala 695582, India."
+        "For questions, or to ask about your data, write to rejiranair@gmail.com."
       ]
     }
   ]
@@ -148,7 +148,7 @@ export const termsAndConditions: LegalDocument = {
     {
       "heading": "Law and contact",
       "blocks": [
-        "These terms are governed by the laws of India, and the courts at Thiruvananthapuram, Kerala have jurisdiction. Write to rejiranair@gmail.com or to Ormma, AZRA, NRA 115, Nettayikonam, Kazhakootam, Thiruvananthapuram, Kerala 695582, India."
+        "These terms are governed by the laws of India, and the courts at Thiruvananthapuram, Kerala have jurisdiction. Write to rejiranair@gmail.com with any question."
       ]
     }
   ]

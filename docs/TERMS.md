@@ -66,4 +66,4 @@ app. Continuing to use Ormma after a change means you accept it.
 
 ## Law and contact
 
-These terms are governed by the laws of India, and the courts at Thiruvananthapuram, Kerala have jurisdiction. Write to rejiranair@gmail.com or to Ormma, AZRA, NRA 115, Nettayikonam, Kazhakootam, Thiruvananthapuram, Kerala 695582, India.
+These terms are governed by the laws of India, and the courts at Thiruvananthapuram, Kerala have jurisdiction. Write to rejiranair@gmail.com with any question.
