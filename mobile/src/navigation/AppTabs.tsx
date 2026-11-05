@@ -1,6 +1,6 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createBottomTabNavigator, type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AlertDot } from "../components/AlertDot";
 import { AppHeader } from "../components/AppHeader";
@@ -52,6 +52,22 @@ export function AppTabs() {
         headerShown: true,
         // A tab you left stops re-rendering until you come back, so quick switching stays light.
         freezeOnBlur: true,
+        // Every tab is mounted at launch, in the background, so the first switch to it is instant.
+        lazy: false,
+        // No touch ripple on the tab buttons: the borderless Android ripple drew a big grey circle.
+        tabBarButton: ({ children, style, onPress, onLongPress, testID, ...rest }: BottomTabBarButtonProps) => (
+          <Pressable
+            testID={testID}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            style={style}
+            role={rest.role}
+            aria-label={rest["aria-label"]}
+            aria-selected={rest["aria-selected"]}
+          >
+            {children}
+          </Pressable>
+        ),
         sceneStyle: { backgroundColor: theme.colors.background },
         header: () => (
           <AppHeader

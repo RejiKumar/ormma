@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 /** Shortest time the skeleton shows the first time a tab opens, so it does not flash. */
-export const TAB_PRIMING_MS = 350;
+export const TAB_PRIMING_MS = 150;
 /** Same floor for the very first screen after launch. */
 export const FIRST_PRIMING_MS = 600;
 
