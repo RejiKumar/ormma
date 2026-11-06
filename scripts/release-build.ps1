@@ -9,9 +9,7 @@ $backup = Join-Path $android "app\google-services.dev.json"
 
 Remove-Item Env:EXPO_PUBLIC_FIREBASE_EMULATOR_HOST -ErrorAction SilentlyContinue
 
-# Windows path-length workaround: D:
-m must point at mobile
-ode_modules (see docs/CI.md and the
+# Windows path-length workaround: the short folder D:\nm must point at mobile\node_modules (see the
 # withWindowsNativePaths plugin). It is cheap to recreate, so do it on every build.
 Push-Location $root
 npm run android:prepare
