@@ -132,3 +132,4 @@ One line per non-obvious decision. Tags: [DECIDED] final; [PROPOSED Sn] default 
 121. Tabs mount at launch (lazy off) so the first switch is instant; the tab buttons are plain pressables with no ripple, because the borderless Android ripple drew a big grey circle.
 122. A tab keeps its skeleton until every data hook inside it has reported loaded (and stayed loaded 120 ms), with a 6 s ceiling; hooks report through TabLoading and unmount silently, because a state update from a frozen tab's cleanup loops.
 123. Privacy policy and terms are published on Firebase Hosting (ormma-prod.web.app/privacy and /terms), generated from docs/ by scripts/build-legal-site.mjs; the terms are a draft until a lawyer reviews them, and the courts named are those at Thiruvananthapuram.
+124. Deploys run from two manual GitHub workflows (backend, Android release) that only run on main; every frontend run raises versionCode and the patch version and commits the bump to main (docs/CI.md).

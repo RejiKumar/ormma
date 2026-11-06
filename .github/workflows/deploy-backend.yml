@@ -1,0 +1,87 @@
+name: Deploy backend
+
+# Run by hand: GitHub -> Actions -> "Deploy backend" -> Run workflow.
+# Deploys the Cloud Functions, Firestore rules and indexes, Storage rules and the legal pages (Hosting)
+# to the production project ormma-prod. There is one environment: production is main.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What to deploy
+        type: choice
+        default: all
+        options:
+          - all
+          - functions
+          - rules-and-indexes
+          - hosting
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Test and deploy to ormma-prod
+    # Production is main; refuse to deploy from any other branch.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+
+      # The Firebase emulators (rules tests) need Java 21 or newer.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install
+        run: |
+          npm ci
+          npm --prefix functions ci
+
+      - name: Typecheck and unit tests (functions)
+        run: |
+          npm --prefix functions run typecheck
+          npm --prefix functions test
+
+      # Hard rule: any change to firestore.rules needs its emulator tests, so they always run first.
+      - name: Rules tests (emulator)
+        run: npm run test:rules
+
+      - name: Build functions
+        run: npm --prefix functions run build
+
+      - name: Build the legal pages
+        run: node scripts/build-legal-site.mjs
+
+      # A service-account JSON key stored as the GitHub secret FIREBASE_SERVICE_ACCOUNT_JSON.
+      # See docs/CI.md for the roles it needs.
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Deploy
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          case "$TARGET" in
+            functions)          ONLY="functions" ;;
+            rules-and-indexes)  ONLY="firestore:rules,firestore:indexes,storage" ;;
+            hosting)            ONLY="hosting" ;;
+            *)                  ONLY="functions,firestore:rules,firestore:indexes,storage,hosting" ;;
+          esac
+          echo "Deploying: $ONLY"
+          npx firebase deploy --only "$ONLY" --project ormma-prod --non-interactive
