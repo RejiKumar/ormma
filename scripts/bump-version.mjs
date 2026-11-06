@@ -17,7 +17,8 @@ export function bump(config) {
   }
   parts[2] += 1;
   const code = Number(expo.android?.versionCode);
-  if (!Number.isInteger(code) || code < 1) throw new Error("android.versionCode must be a whole number >= 1");
+  if (!Number.isInteger(code) || code < 1)
+    throw new Error("android.versionCode must be a whole number >= 1");
   expo.version = parts.join(".");
   expo.android.versionCode = code + 1;
   return { version: expo.version, versionCode: expo.android.versionCode };
@@ -33,6 +34,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
   console.log(`version ${next.version}, versionCode ${next.versionCode}`);
   if (process.env.GITHUB_OUTPUT) {
-    fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${next.version}\nversion_code=${next.versionCode}\n`);
+    fs.appendFileSync(
+      process.env.GITHUB_OUTPUT,
+      `version=${next.version}\nversion_code=${next.versionCode}\n`,
+    );
   }
 }

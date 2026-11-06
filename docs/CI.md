@@ -3,10 +3,10 @@
 Two workflows, both started by hand (GitHub → **Actions** → pick the workflow → **Run workflow**). Both
 refuse to run from any branch except `main`, because production is `main`.
 
-| Workflow | File | What it does |
-| --- | --- | --- |
-| Deploy backend | `.github/workflows/deploy-backend.yml` | Typechecks and tests the functions, runs the Firestore and Storage rules tests, then deploys to `ormma-prod`. Choose what to deploy: everything, functions only, rules and indexes only, or hosting (legal pages) only. |
-| Deploy frontend (Android release) | `.github/workflows/deploy-frontend.yml` | Raises the version, builds the signed `.aab`, saves it as a downloadable artifact, commits the new version to `main`, and can upload it to a Google Play track. |
+| Workflow                          | File                                    | What it does                                                                                                                                                                                                            |
+| --------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deploy backend                    | `.github/workflows/deploy-backend.yml`  | Typechecks and tests the functions, runs the Firestore and Storage rules tests, then deploys to `ormma-prod`. Choose what to deploy: everything, functions only, rules and indexes only, or hosting (legal pages) only. |
+| Deploy frontend (Android release) | `.github/workflows/deploy-frontend.yml` | Raises the version, builds the signed `.aab`, saves it as a downloadable artifact, commits the new version to `main`, and can upload it to a Google Play track.                                                         |
 
 ## The version rises on every frontend run
 
@@ -21,15 +21,15 @@ example `1.1.0`), edit `version` in `mobile/app.json` by hand before running.
 
 ## Secrets to add (GitHub → Settings → Secrets and variables → Actions)
 
-| Secret | Used by | What to put there |
-| --- | --- | --- |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | backend | The whole JSON key of a service account for `ormma-prod` (see below). |
-| `GOOGLE_SERVICES_JSON_BASE64` | frontend | The production `google-services.json`, base64 encoded. |
-| `UPLOAD_KEYSTORE_BASE64` | frontend | The upload key `ormma-upload.jks`, base64 encoded. |
-| `UPLOAD_KEYSTORE_PASSWORD` | frontend | The keystore password. |
-| `UPLOAD_KEY_ALIAS` | frontend | `ormma-upload` |
-| `UPLOAD_KEY_PASSWORD` | frontend | The key password (the same as the keystore password if you pressed Enter). |
-| `PLAY_SERVICE_ACCOUNT_JSON` | frontend, only when uploading to Play | The JSON key of the Play service account (`ormma-play-verifier`, or a second one with release rights). |
+| Secret                          | Used by                               | What to put there                                                                                      |
+| ------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | backend                               | The whole JSON key of a service account for `ormma-prod` (see below).                                  |
+| `GOOGLE_SERVICES_JSON_BASE64`   | frontend                              | The production `google-services.json`, base64 encoded.                                                 |
+| `UPLOAD_KEYSTORE_BASE64`        | frontend                              | The upload key `ormma-upload.jks`, base64 encoded.                                                     |
+| `UPLOAD_KEYSTORE_PASSWORD`      | frontend                              | The keystore password.                                                                                 |
+| `UPLOAD_KEY_ALIAS`              | frontend                              | `ormma-upload`                                                                                         |
+| `UPLOAD_KEY_PASSWORD`           | frontend                              | The key password (the same as the keystore password if you pressed Enter).                             |
+| `PLAY_SERVICE_ACCOUNT_JSON`     | frontend, only when uploading to Play | The JSON key of the Play service account (`ormma-play-verifier`, or a second one with release rights). |
 
 Base64 encode a file in PowerShell and copy the result into the secret:
 
