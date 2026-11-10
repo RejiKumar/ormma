@@ -71,7 +71,7 @@ module.exports = function withOrmmaSplash(config) {
       // shows as a flicker. Use the splash colour so the hand-off is seamless.
       const styles = path.join(res, "values", "styles.xml");
       let styleXml = fs.readFileSync(styles, "utf8");
-      if (!/<style name="AppTheme"[^>]*>[\s\S]*?android:windowBackground[\s\S]*?<\/style>/.test(styleXml)) {
+      if (!/<style name="AppTheme"[^>]*>(?:(?!<\/style>)[\s\S])*?android:windowBackground/.test(styleXml)) {
         styleXml = styleXml.replace(
           /(<style name="AppTheme"[^>]*>)/,
           `$1
