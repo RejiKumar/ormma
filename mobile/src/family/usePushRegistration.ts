@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAuth } from "@react-native-firebase/auth";
+import { useAuth } from "../auth/AuthProvider";
 import { arrayUnion, doc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
 import {
   AuthorizationStatus,
@@ -19,7 +19,10 @@ export interface PushRegistrationState {
 export function usePushRegistration(): PushRegistrationState {
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const uid = getAuth().currentUser?.uid ?? null;
+  // From the auth context, so signing in re-runs the registration. Reading getAuth().currentUser
+  // during render left uid null forever, because this host never re-rendered after sign-in.
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
 
   useEffect(() => {
     if (!uid) return;
