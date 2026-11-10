@@ -4,15 +4,13 @@ import { useMemo } from "react";
 import { I18nextProvider } from "react-i18next";
 import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthProvider, useAuth } from "./src/auth/AuthProvider";
+import { AuthProvider } from "./src/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "./src/design/ThemeProvider";
 import { useAppFonts } from "./src/design/useAppFonts";
 import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
-import { AppTabs } from "./src/navigation/AppTabs";
 import { navigationRef } from "./src/navigation/navigationRef";
-import { AuthStack } from "./src/navigation/AuthStack";
-import { ParentsProvider } from "./src/family/useParents";
+import { RootNavigator } from "./src/navigation/RootNavigator";
 import { PushRegistrar } from "./src/push/PushRegistrar";
 
 connectEmulators();
@@ -36,20 +34,6 @@ function useNavigationTheme() {
       },
     };
   }, [theme, name]);
-}
-
-/** Signed out shows the auth stack; signed in shows the existing tabs. */
-function RootNavigator() {
-  const { user, initialising } = useAuth();
-  if (initialising) return null;
-  // One shared parents loader for every tab, instead of one per screen.
-  return user ? (
-    <ParentsProvider>
-      <AppTabs />
-    </ParentsProvider>
-  ) : (
-    <AuthStack />
-  );
 }
 
 function Root() {

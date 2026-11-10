@@ -34,6 +34,9 @@ Palette (light start values, kept in `tokens.ts` and the design-system spec): ba
 | `EmptyState`       | Icon, title, description, optional action                                                               |
 | `Skeleton`         | Static loading placeholder (fades in once, never loops)                                                 |
 | `ConfirmCheck`     | Checkmark confirmation with a spring and one light haptic                                               |
+| `IllustrationFrame` | Size and accessibility (described image or decorative) of an SVG illustration from `src/illustrations`, drawn with theme tokens only |
+| `EmptyState`       | Also takes an `illustration`, shown in place of the icon                                                |
+| `FadeIn`           | `design/FadeIn.tsx`: cross-fades loaded content in over 220 ms, shown at once under Reduce Motion        |
 | `ReadingValue`     | A health reading in the neutral style                                                                   |
 | `Text`, `Icon`     | Themed text with script-aware font; SVG icon set                                                        |
 

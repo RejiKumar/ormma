@@ -65,3 +65,13 @@ describe("LoginScreen", () => {
     expect(getPendingConfirmation()).toBeNull();
   });
 });
+
+describe("LoginScreen look", () => {
+  it("shows the Ormma mark and a decorative illustration above the heading", async () => {
+    await renderLogin();
+    expect(screen.getByText("Ormma")).toBeTruthy();
+    const art = screen.getByTestId("auth-illustration", { includeHiddenElements: true });
+    expect(art.props.importantForAccessibility).toBe("no-hide-descendants");
+    expect(screen.getByText("Sign in")).toBeTruthy();
+  });
+});

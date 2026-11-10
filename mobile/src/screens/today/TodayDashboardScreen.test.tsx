@@ -140,7 +140,9 @@ describe("TodayDashboardScreen", () => {
     });
 
     expect(await screen.findByTestId("today-section-p1")).toBeTruthy();
-    expect(screen.getByText("Amma")).toBeTruthy();
+    // A single parent has no name heading: the hero leads the section and carries the name.
+    expect(screen.getAllByText(/Amma/).length).toBeGreaterThan(0);
+    expect(screen.getByTestId("today-section-p1").children[0]).toBe(screen.getByTestId("today-hero-p1"));
     expect(screen.getByText("6:00 PM")).toBeTruthy();
     expect(screen.getByText("Evening")).toBeTruthy();
     expect(screen.getByText("Small round white tablet")).toBeTruthy();

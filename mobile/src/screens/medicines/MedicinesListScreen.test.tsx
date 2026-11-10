@@ -110,6 +110,44 @@ describe("MedicinesListScreen", () => {
     expect(screen.queryByTestId("medicine-add")).toBeNull();
   });
 
+  it("with no parent shows an illustration and Add a parent as the one primary action", async () => {
+    stubGetDoc({});
+    captureListeners();
+    await renderStack();
+    expect(await screen.findByTestId("medicines-no-parents")).toBeTruthy();
+    expect(screen.getByTestId("medicines-add-parent")).toHaveTextContent("Add a parent");
+    expect(screen.getByTestId("medicines-no-parents-illustration", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.queryByTestId("medicine-add")).toBeNull();
+    expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
+  });
+
+  it("an owner with no medicines sees the planner illustration and Add a medicine as the primary action", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+    stubGetDoc({ p1: "owner" });
+    const { listeners } = captureListeners();
+    await renderStack();
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+    await waitFor(() => listeners[0].next(parentsSnap([{ id: "p1", name: "Amma" }])));
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(1));
+    await waitFor(() => listeners[1].next(medicineSnap([])));
+    expect(await screen.findByTestId("medicines-empty")).toBeTruthy();
+    expect(screen.getByTestId("medicine-add")).toHaveTextContent("Add medicine");
+    expect(screen.getByTestId("medicines-empty-illustration", { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it("a viewer with no medicines sees the empty state and no action", async () => {
+    await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
+    stubGetDoc({ p1: "viewer" });
+    const { listeners } = captureListeners();
+    await renderStack();
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(0));
+    await waitFor(() => listeners[0].next(parentsSnap([{ id: "p1", name: "Amma" }])));
+    await waitFor(() => expect(listeners.length).toBeGreaterThan(1));
+    await waitFor(() => listeners[1].next(medicineSnap([])));
+    expect(await screen.findByTestId("medicines-empty")).toBeTruthy();
+    expect(screen.queryByTestId("medicine-add")).toBeNull();
+  });
+
   it("lists the selected parent's medicines with dose, times and inactive state", async () => {
     await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
     stubGetDoc({ p1: "owner" });

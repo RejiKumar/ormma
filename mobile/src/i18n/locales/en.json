@@ -85,6 +85,32 @@
       "generic": "Something went wrong. Please try again."
     }
   },
+  "welcome": {
+    "stepOf": "Step {{current}} of {{total}}",
+    "next": "Next",
+    "skip": "Skip",
+    "getStarted": "Get started",
+    "calls": {
+      "title": "Ormma checks in by phone",
+      "text": "At medicine times, Ormma phones a parent and asks if the medicines were taken. A spoken reply in the parent’s own language is enough."
+    },
+    "replies": {
+      "title": "Replies appear on Today",
+      "text": "What is said on the call becomes a short note on Today, so family can see how the day is going at a glance."
+    },
+    "family": {
+      "title": "Family sees what is shared",
+      "text": "Each family member sees what the parent has agreed to share. The owner decides who joins."
+    }
+  },
+  "checklist": {
+    "title": "Getting started",
+    "parent": "Add a parent",
+    "medicine": "Add a medicine",
+    "invite": "Invite family",
+    "done": "done",
+    "notDone": "not done yet"
+  },
   "languages": {
     "en": "English",
     "ml": "മലയാളം",
@@ -414,7 +440,8 @@
     "termsTitle": "Terms and conditions",
     "updatedOn": "Last updated {{date}}",
     "openOnline": "Open the full text online",
-    "openFailed": "The page could not be opened."
+    "openFailed": "The page could not be opened.",
+    "showWelcome": "Show welcome again"
   },
   "subscription": {
     "title": "Plans",

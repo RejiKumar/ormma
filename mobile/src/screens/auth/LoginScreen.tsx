@@ -7,6 +7,7 @@ import { setPendingConfirmation } from "../../auth/pendingConfirmation";
 import { Button } from "../../components/Button";
 import { Screen } from "../../components/Screen";
 import { TextField } from "../../components/TextField";
+import { AuthHero } from "./AuthHero";
 import { Text } from "../../design/Text";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { DEFAULT_COUNTRY_CODE, isValidE164 } from "../../utils/phone";
@@ -49,6 +50,7 @@ export function LoginScreen({ navigation }: Props) {
         />
       }
     >
+      <AuthHero illustration="welcomeCalls" />
       <Text variant="headline">{t("auth.login.title")}</Text>
       <Text variant="body" tone="muted">
         {t("auth.login.subtitle")}

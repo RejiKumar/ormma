@@ -8,6 +8,7 @@ import { getPendingConfirmation, setPendingConfirmation } from "../../auth/pendi
 import { Button } from "../../components/Button";
 import { Screen } from "../../components/Screen";
 import { TextField } from "../../components/TextField";
+import { AuthHero } from "./AuthHero";
 import { Text } from "../../design/Text";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 
@@ -80,6 +81,7 @@ export function OtpScreen({ route }: Props) {
         />
       }
     >
+      <AuthHero illustration="welcomeReplies" />
       <Text variant="headline">{t("auth.otp.title")}</Text>
       <Text variant="body" tone="muted">
         {t("auth.otp.subtitle", { phone: phoneNumber })}

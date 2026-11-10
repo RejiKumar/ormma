@@ -2,7 +2,12 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
+import { Button } from "../../components/Button";
+import { FadeIn } from "../../design/FadeIn";
 import { DoseRing } from "../../components/DoseRing";
+import { IllustrationFrame } from "../../components/IllustrationFrame";
+import { FirstParentChecklistCard } from "../../onboarding/FirstParentChecklist";
+import { useFirstParentChecklist, type ChecklistKey } from "../../onboarding/useFirstParentChecklist";
 import { EmptyState } from "../../components/EmptyState";
 import { DigestCard } from "../../components/DigestCard";
 import { HeroGradient } from "../../components/HeroGradient";
@@ -135,10 +140,13 @@ function ParentTodaySection({
   parent,
   events,
   loading,
+  showName,
 }: {
   parent: FamilyParent;
   events: TodayDoseEvent[];
   loading: boolean;
+  /** Name heading above the section: only needed to tell several parents apart, so the hero leads a single parent. */
+  showName: boolean;
 }) {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -195,9 +203,11 @@ function ParentTodaySection({
 
   return (
     <View testID={`today-section-${parent.id}`} style={{ gap: theme.spacing.md }}>
-      <Text variant="title" lang={parent.language}>
-        {parent.name}
-      </Text>
+      {showName ? (
+        <Text variant="title" lang={parent.language}>
+          {parent.name}
+        </Text>
+      ) : null}
       {loading ? (
         <LoadingState variant="cards" testID={`today-loading-${parent.id}`} />
       ) : cards.length === 0 ? (
@@ -241,6 +251,7 @@ function ParentTodaySection({
  */
 export function TodayDashboardScreen() {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const { parents, loading: parentsLoading, reload } = useParents();
   // One clock reading per mount: the window only rolls at local midnight.
   const [now] = useState(() => Date.now());
@@ -258,26 +269,59 @@ export function TodayDashboardScreen() {
     [now],
   );
   const { alerts, loading: alertsLoading } = useAlerts(datedParents, alertsWindow);
+  const navigation = useNavigation();
+  const checklist = useFirstParentChecklist(parents, parentsLoading);
+
+  // Each checklist row opens the screen where it is done; without a parent every step starts at Add a parent.
+  const go = (tab: string, params: unknown) =>
+    (navigation as unknown as { navigate: (name: string, params: unknown) => void }).navigate(tab, params);
+  const openChecklist = (key: ChecklistKey) => {
+    const owned = checklist.parent;
+    if (key === "medicine" && owned) {
+      go("Medicines", { screen: "AddMedicine", params: { parentId: owned.id } });
+    } else if (key === "invite" && owned) {
+      go("Family", { screen: "Invite", params: { parentId: owned.id, parentName: owned.name } });
+    } else {
+      go("Family", { screen: "AddParent" });
+    }
+  };
 
   return (
-    <Screen insideTabs>
+    <Screen
+      insideTabs
+      primaryAction={
+        checklist.show && checklist.next ? (
+          <Button
+            testID="today-primary-action"
+            label={t(`checklist.${checklist.next}`)}
+            onPress={() => openChecklist(checklist.next as ChecklistKey)}
+          />
+        ) : undefined
+      }
+    >
       {parentsLoading ? (
         <LoadingState variant="today" testID="today-loading" />
       ) : parents.length === 0 ? (
-        <EmptyState
-          testID="today-no-parents"
-          icon="home"
-          title={t("screens.today.emptyTitle")}
-          description={t("screens.today.emptyDescription")}
-        />
+        <FadeIn style={{ gap: theme.spacing.lg }}>
+          <EmptyState
+            testID="today-no-parents"
+            icon="home"
+            illustration={<IllustrationFrame name="emptyParents" size={180} testID="today-no-parents-illustration" />}
+            title={t("screens.today.emptyTitle")}
+            description={t("screens.today.emptyDescription")}
+          />
+          {checklist.show ? <FirstParentChecklistCard items={checklist.items} onOpen={openChecklist} /> : null}
+        </FadeIn>
       ) : (
-        <>
+        <FadeIn style={{ gap: theme.spacing.lg }}>
+          {checklist.show ? <FirstParentChecklistCard items={checklist.items} onOpen={openChecklist} /> : null}
           {parents.map((parent) => (
             <ParentTodaySection
               key={parent.id}
               parent={parent}
               events={byParent[parent.id] ?? []}
               loading={eventsLoading}
+              showName={parents.length > 1}
             />
           ))}
           <Text variant="title">{t("screens.today.alertsTitle")}</Text>
@@ -298,7 +342,7 @@ export function TodayDashboardScreen() {
               />
             ))
           )}
-        </>
+        </FadeIn>
       )}
     </Screen>
   );

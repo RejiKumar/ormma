@@ -63,6 +63,24 @@ describe("coral is only for missed doses and urgent alerts", () => {
   });
 });
 
+describe("illustrations use theme tokens only", () => {
+  const files = () => sourceFiles(path.join(SRC, "illustrations"));
+
+  it("has no coral token and no literal colour", () => {
+    expect(files().length).toBeGreaterThan(0);
+    for (const file of files()) {
+      const text = fs.readFileSync(file, "utf8");
+      expect({ file: rel(file), coral: /colors\.urgent|status\.missed/.test(text) }).toEqual({ file: rel(file), coral: false });
+      expect({ file: rel(file), literal: /#[0-9a-fA-F]{3,8}\b|rgba?\(/.test(text) }).toEqual({ file: rel(file), literal: false });
+    }
+  });
+
+  it("the check itself catches a literal colour and a coral token", () => {
+    expect(/#[0-9a-fA-F]{3,8}\b|rgba?\(/.test('fill="#C85A32"')).toBe(true);
+    expect(/colors\.urgent|status\.missed/.test("theme.colors.urgent.icon")).toBe(true);
+  });
+});
+
 describe("health readings are never judged", () => {
   const JUDGEMENT =
     /\b(good|bad|normal|abnormal|safe|unsafe|dangerous|healthy|unhealthy|critical|alarming)\b/i;

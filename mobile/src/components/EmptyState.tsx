@@ -6,6 +6,8 @@ import { Icon, type IconName } from "./Icon";
 
 export interface EmptyStateProps {
   icon?: IconName;
+  /** Illustration shown above the title in place of the icon (an `IllustrationFrame`). */
+  illustration?: ReactNode;
   title: string;
   description?: string;
   /** Optional action, for example a secondary Button. */
@@ -14,7 +16,7 @@ export interface EmptyStateProps {
 }
 
 /** Calm placeholder for a screen or list with nothing in it yet. */
-export function EmptyState({ icon = "info", title, description, action, testID }: EmptyStateProps) {
+export function EmptyState({ icon = "info", illustration, title, description, action, testID }: EmptyStateProps) {
   const { theme } = useTheme();
   return (
     <View
@@ -27,7 +29,7 @@ export function EmptyState({ icon = "info", title, description, action, testID }
         padding: theme.spacing.xl,
       }}
     >
-      <Icon name={icon} size={40} color={theme.colors.inkMuted} />
+      {illustration ?? <Icon name={icon} size={40} color={theme.colors.inkMuted} />}
       <Text variant="title" style={{ textAlign: "center" }}>
         {title}
       </Text>

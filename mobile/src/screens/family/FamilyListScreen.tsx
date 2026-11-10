@@ -8,6 +8,8 @@ import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { ParentCircle } from "../../components/ParentCircle";
 import { EmptyState } from "../../components/EmptyState";
+import { IllustrationFrame } from "../../components/IllustrationFrame";
+import { FadeIn } from "../../design/FadeIn";
 import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
 import { useTheme } from "../../design/ThemeProvider";
@@ -238,6 +240,7 @@ export function FamilyListScreen({ navigation }: Props) {
         <EmptyState
           testID="family-empty"
           icon="people"
+          illustration={<IllustrationFrame name="emptyParents" size={160} testID="family-empty-illustration" />}
           title={t("screens.family.emptyTitle")}
           description={t("screens.family.emptyDescription")}
           action={
@@ -250,7 +253,7 @@ export function FamilyListScreen({ navigation }: Props) {
           }
         />
       ) : (
-        <>
+        <FadeIn style={{ gap: theme.spacing.lg }}>
           {rows}
           <Button
             variant="secondary"
@@ -258,7 +261,7 @@ export function FamilyListScreen({ navigation }: Props) {
             testID="family-redeem"
             onPress={() => navigation.navigate("Redeem")}
           />
-        </>
+        </FadeIn>
       )}
       {loading ? null : (
         <Button

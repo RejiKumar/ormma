@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import type { Medicine } from "../family/useMedicines";
+import { useStackTransition } from "./transitions";
 import { AddMedicineScreen } from "../screens/medicines/AddMedicineScreen";
 import { EditMedicineScreen } from "../screens/medicines/EditMedicineScreen";
 import { MedicinesListScreen } from "../screens/medicines/MedicinesListScreen";
@@ -16,8 +17,9 @@ const Stack = createNativeStackNavigator<MedicineStackParamList>();
 /** Medicines tab: the per-parent list plus the add and edit screens. */
 export function MedicineStack() {
   const { t } = useTranslation();
+  const transition = useStackTransition();
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={transition}>
       <Stack.Screen name="MedicinesList" component={MedicinesListScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="AddMedicine"

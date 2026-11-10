@@ -83,6 +83,14 @@ describe("FamilyListScreen", () => {
     expect(screen.getByText(DISCLAIMER)).toBeTruthy();
   });
 
+  it("shows an illustration in the empty state and keeps Add a parent as the only primary action", async () => {
+    captureListeners();
+    await renderFamily();
+    expect(await screen.findByTestId("family-empty")).toBeTruthy();
+    expect(screen.getByTestId("family-empty-illustration", { includeHiddenElements: true })).toBeTruthy();
+    expect(screen.getAllByTestId("family-add")).toHaveLength(1);
+  });
+
   it("lists a pending owner parent with invite button and consent banner", async () => {
     await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
     const { listeners } = captureListeners();

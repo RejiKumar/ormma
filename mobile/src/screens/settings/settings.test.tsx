@@ -65,6 +65,13 @@ describe("SettingsScreen", () => {
     expect(await screen.findByText("Name saved.")).toBeTruthy();
   });
 
+  it("ends the Appearance section with a Show welcome again row that opens the intro", async () => {
+    await renderSettings();
+    expect(screen.getByText("Show welcome again")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("settings-welcome"));
+    expect(navigation.navigate).toHaveBeenCalledWith("Welcome");
+  });
+
   it("opens the plans screen from the plan row and the legal reader from the two entries", async () => {
     await renderSettings();
     await fireEvent.press(screen.getByTestId("settings-plan"));

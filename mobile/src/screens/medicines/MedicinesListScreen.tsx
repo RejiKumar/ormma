@@ -6,6 +6,8 @@ import { Pressable, View } from "react-native";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
 import { EmptyState } from "../../components/EmptyState";
+import { IllustrationFrame } from "../../components/IllustrationFrame";
+import { FadeIn } from "../../design/FadeIn";
 import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
 import { Text } from "../../design/Text";
@@ -58,7 +60,14 @@ export function MedicinesListScreen({ navigation }: Props) {
     <Screen
       insideTabs
       primaryAction={
-        canEdit && selected ? (
+        !parentsLoading && parents.length === 0 ? (
+          <Button
+            label={t("screens.family.addParent")}
+            icon="plus"
+            testID="medicines-add-parent"
+            onPress={() => navigation.getParent()?.navigate("Family", { screen: "AddParent" })}
+          />
+        ) : canEdit && selected ? (
           <Button
             label={t("screens.medicines.add")}
             icon="plus"
@@ -76,11 +85,12 @@ export function MedicinesListScreen({ navigation }: Props) {
         <EmptyState
           testID="medicines-no-parents"
           icon="pill"
+          illustration={<IllustrationFrame name="emptyParents" size={160} testID="medicines-no-parents-illustration" />}
           title={t("screens.medicines.emptyTitle")}
           description={t("screens.medicines.emptyDescription")}
         />
       ) : (
-        <>
+        <FadeIn style={{ gap: theme.spacing.lg }}>
           {parents.length > 1 ? (
             <View style={{ gap: theme.spacing.xs }}>
               <Text variant="label">{t("screens.medicines.selectParent")}</Text>
@@ -123,6 +133,7 @@ export function MedicinesListScreen({ navigation }: Props) {
             <EmptyState
               testID="medicines-empty"
               icon="pill"
+              illustration={<IllustrationFrame name="emptyPlanner" size={160} testID="medicines-empty-illustration" />}
               title={t("screens.medicines.emptyTitle")}
               description={t("screens.medicines.emptyDescription")}
             />
@@ -249,7 +260,7 @@ export function MedicinesListScreen({ navigation }: Props) {
               ) : null}
             </>
           )}
-        </>
+        </FadeIn>
       )}
     </Screen>
   );
