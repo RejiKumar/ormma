@@ -18,36 +18,40 @@ const renderRoot = () =>
     </NavigationContainer>,
   );
 
+const signIn = () => authMock.__setUser({ uid: "u1", phoneNumber: "+919876543210" });
+
 describe("RootNavigator", () => {
   beforeEach(async () => {
     await AsyncStorage.clear();
     authMock.__setUser(null);
   });
 
-  it("shows the welcome intro first on a device that has not seen it, then sign-in after Skip, and remembers it", async () => {
-    await renderRoot();
-    expect(await screen.findByText("Ormma checks in by phone")).toBeTruthy();
-    expect(screen.queryByText("Sign in")).toBeNull();
-    await fireEvent.press(screen.getByTestId("welcome-skip"));
-    expect(await screen.findByText("Sign in")).toBeTruthy();
-    await waitFor(async () => expect(await AsyncStorage.getItem(WELCOME_SEEN_KEY)).toBe("1"));
-  });
-
-  it("goes straight to sign-in once the intro was seen", async () => {
-    await AsyncStorage.setItem(WELCOME_SEEN_KEY, "1");
+  it("goes straight to sign-in when signed out, even on a device that has not seen the intro", async () => {
     await renderRoot();
     expect(await screen.findByText("Sign in")).toBeTruthy();
     expect(screen.queryByText("Ormma checks in by phone")).toBeNull();
   });
 
-  it("never forces the intro on a signed-in user", async () => {
-    authMock.__setUser({ uid: "u1", phoneNumber: "+919876543210" });
+  it("shows the intro the first time a signed-in user reaches Today, then Today after Skip, and remembers it", async () => {
+    signIn();
+    await renderRoot();
+    expect(await screen.findByText("Ormma checks in by phone")).toBeTruthy();
+    expect(screen.queryByTestId("today-no-parents")).toBeNull();
+    await fireEvent.press(screen.getByTestId("welcome-skip"));
+    expect(await screen.findByTestId("today-no-parents")).toBeTruthy();
+    await waitFor(async () => expect(await AsyncStorage.getItem(WELCOME_SEEN_KEY)).toBe("1"));
+  });
+
+  it("goes straight to Today once the intro was seen", async () => {
+    await AsyncStorage.setItem(WELCOME_SEEN_KEY, "1");
+    signIn();
     await renderRoot();
     expect(await screen.findByTestId("today-no-parents")).toBeTruthy();
     expect(screen.queryByText("Ormma checks in by phone")).toBeNull();
   });
 
   it("shows the intro once when storage cannot be read", async () => {
+    signIn();
     jest.spyOn(AsyncStorage, "getItem").mockRejectedValueOnce(new Error("denied"));
     await renderRoot();
     expect(await screen.findByText("Ormma checks in by phone")).toBeTruthy();

@@ -6,6 +6,7 @@ import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "./src/auth/AuthProvider";
 import { ThemeProvider, useTheme } from "./src/design/ThemeProvider";
+import { themes } from "./src/design/tokens";
 import { useAppFonts } from "./src/design/useAppFonts";
 import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
@@ -37,10 +38,12 @@ function useNavigationTheme() {
 }
 
 function Root() {
-  const { theme, name } = useTheme();
+  const { name, ready } = useTheme();
   const navigationTheme = useNavigationTheme();
   const fontsReady = useAppFonts();
-  if (!fontsReady) return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
+  // Hold the splash colour (the light background) until fonts and the saved theme are both ready, so a
+  // dark-theme user does not see the light theme flash before the dark one is applied.
+  if (!fontsReady || !ready) return <View style={{ flex: 1, backgroundColor: themes.light.colors.background }} />;
   return (
     <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       <AuthProvider>

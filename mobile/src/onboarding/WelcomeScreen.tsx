@@ -40,7 +40,7 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
         </View>
       }
     >
-      <FadeIn key={step} testID={`welcome-step-${step}`} style={{ gap: theme.spacing.lg }}>
+      <FadeIn key={step} instant={step === 0} testID={`welcome-step-${step}`} style={{ gap: theme.spacing.lg }}>
         <View style={{ paddingTop: theme.spacing.sm }}>
           <IllustrationFrame name={current.illustration} size={140} testID={`welcome-illustration-${step}`} />
         </View>

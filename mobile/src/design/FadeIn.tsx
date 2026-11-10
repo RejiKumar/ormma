@@ -11,16 +11,27 @@ export const FADE_IN_MS = motion.duration.base;
 export const fadeStartOpacity = (reduceMotion: boolean): number => (reduceMotion ? 1 : 0);
 
 /**
- * Fades its children in once when mounted. Under Reduce Motion the children are shown at once.
+ * Fades its children in once when mounted. Under Reduce Motion, or when `instant`, the children are shown at once.
  * It never repeats.
  */
-export function FadeIn({ children, style, testID }: { children: ReactNode; style?: StyleProp<ViewStyle>; testID?: string }) {
+export function FadeIn({
+  children,
+  style,
+  testID,
+  instant = false,
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+  /** Show at once with no fade, for content that is the first thing on screen after the splash. */
+  instant?: boolean;
+}) {
   const { reduceMotion } = useMotion();
-  const opacity = useSharedValue(fadeStartOpacity(reduceMotion));
+  const opacity = useSharedValue(instant ? 1 : fadeStartOpacity(reduceMotion));
 
   useEffect(() => {
-    opacity.value = reduceMotion ? 1 : withTiming(1, { duration: FADE_IN_MS, easing: Easing.out(Easing.quad) });
-  }, [reduceMotion, opacity]);
+    opacity.value = reduceMotion || instant ? 1 : withTiming(1, { duration: FADE_IN_MS, easing: Easing.out(Easing.quad) });
+  }, [reduceMotion, instant, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   return (

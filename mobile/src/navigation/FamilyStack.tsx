@@ -1,6 +1,5 @@
-import { createNativeStackNavigator, type NativeStackScreenProps } from "@react-navigation/native-stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
-import { WelcomeScreen } from "../onboarding/WelcomeScreen";
 import { useStackTransition } from "./transitions";
 import { AddParentScreen } from "../screens/family/AddParentScreen";
 import { EmergencyContactsScreen } from "../screens/family/EmergencyContactsScreen";
@@ -23,15 +22,9 @@ export type FamilyStackParamList = {
   Settings: undefined;
   Subscription: undefined;
   Legal: { doc: LegalDocName };
-  Welcome: undefined;
 };
 
 const Stack = createNativeStackNavigator<FamilyStackParamList>();
-
-/** The welcome intro opened again from Settings: finishing or skipping goes back to Settings. */
-function WelcomeReplayScreen({ navigation }: NativeStackScreenProps<FamilyStackParamList, "Welcome">) {
-  return <WelcomeScreen onDone={() => navigation.goBack()} />;
-}
 
 /** Family tab: the parents list plus the add-parent, invite and accept-invite screens. */
 export function FamilyStack() {
@@ -73,7 +66,6 @@ export function FamilyStack() {
           title: route.params.doc === "privacy" ? t("settings.privacyTitle") : t("settings.termsTitle"),
         })}
       />
-      <Stack.Screen name="Welcome" component={WelcomeReplayScreen} options={{ headerShown: false }} />
       <Stack.Screen
         name="Redeem"
         component={RedeemScreen}

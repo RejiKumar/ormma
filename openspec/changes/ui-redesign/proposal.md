@@ -8,7 +8,7 @@ The app works but looks plain next to Play Store apps. The user said so on 2026-
 
 ## What Changes
 
-1. **Welcome and sign-in.** A three-step intro (what Ormma does, how the calls work, who sees what) shown once before the phone field. Sign-in gets the Ormma mark, one warm illustration and one line of purpose. No app-language picker yet (see Open questions).
+1. **Welcome and sign-in.** A three-step intro (what Ormma does, how the calls work, who sees what) shown once, the first time a signed-in user reaches Today. Sign-in gets the Ormma mark, one warm illustration and one line of purpose. No app-language picker yet (see Open questions).
 2. **Today.** Keep the existing hero card, ring and timeline. Add a "first parent" checklist card for an account with no parent (add a parent, add a medicine, invite family), shown above an illustrated empty state with one primary action. Refine spacing and the ParentCard so the hero reads as the focal point.
 3. **Empty states on every tab.** `EmptyState` gains an illustration slot and a primary action. Today, Medicines, Family and the alerts view each use it with an action that leads somewhere ("Add your first parent", "Add a medicine").
 4. **Depth and polish.** Layered surfaces (soft level 1 and 2 shadows, tinted hero shadow), larger rounded cards, more use of the brand sage and its tint, screen-to-screen transitions, skeleton-to-content cross-fade, a reviewed dark theme (hairline borders, lifted sage) checked on every redesigned screen. All motion keeps Reduce Motion support.
@@ -24,14 +24,13 @@ Out of scope:
 ## Capabilities
 
 ### New Capabilities
-- `onboarding`: the first-run welcome flow (three intro steps, shown once, skippable, replayable from Settings) and the first-parent checklist on an empty Today.
+- `onboarding`: the first-run welcome flow (three intro steps, shown once on the first arrival at Today, skippable) and the first-parent checklist on an empty Today.
 - `insights-view`: the Insights tab content (7-day adherence per parent, latest weekly summary and trend alerts, usual missed slot), its wording rules and its empty states. Only created if the user approves item 5.
 
 ### Modified Capabilities
 - `design-system`: illustration and EmptyState action requirements; layered elevation and screen transition requirements; dark-theme review; the Bottom navigation and Coral usage requirements change if Insights replaces Escalation (tab name, alert dot moves to the header bell).
 - `dashboard`: the empty Today state shows the first-parent checklist and an action, not a bare message.
 - `escalation-view`: the Alerts tab dot becomes a header bell dot; the escalation timeline and emergency contacts are reached from the bell's Alerts screen. Only if item 5 is approved.
-- `settings`: a "Show welcome again" row. The "four tabs" statement is unchanged if item 5 swaps one tab for another.
 
 ## Spec changes
 

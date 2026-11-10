@@ -9,7 +9,6 @@ Output: `e2e/report/report.html` (screenshots embedded) and `results.json`.
 
 | ID   | Scenario | Expected |
 | ---- | -------- | -------- |
-| TC00 | Welcome intro on a fresh install | Three steps in order, Get started lands on Sign in |
 | TC01 | Sign in after the intro | Sign in screen, phone field, Send code, medical-advice line |
 | TC02 | Phone field default | Starts with +91 |
 | TC03 | Too-short number | Neutral validation message, stays on Sign in |
@@ -17,7 +16,7 @@ Output: `e2e/report/report.html` (screenshots embedded) and `results.json`.
 | TC05 | Code screen | Shows the number and a resend control |
 | TC06 | Wrong code | "That code is not correct…" message |
 | TC07 | Empty code | Not accepted, stays on the code screen |
-| TC08 | Correct code (needs code) | Signs in, leaves the code screen; an account with no parent shows Getting started, Add a parent and Invite family |
+| TC08 | Correct code (needs code) | Signs in, leaves the code screen; on a fresh install the three welcome steps come first; an account with no parent shows Getting started, Add a parent and Invite family |
 | TC09 | Tabs (needs code) | Each tab opens and shows content with no flicker |
 | TC10 | Settings, plan, legal links (needs code) | Open; legal pages load from ormma-prod.web.app |
 | TC11 | Restart (needs code) | Still signed in |

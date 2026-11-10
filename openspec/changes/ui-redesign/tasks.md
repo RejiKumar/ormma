@@ -13,8 +13,8 @@ Sections 1 to 5 keep the four BRD tabs and need no backend change. Section 6 (In
 ## 2. Welcome intro and sign-in
 
 - [x] 2.1 Build the `Welcome` screen: three steps from `en.json`, Next and Skip, disclaimer visible, 48 dp controls, step change skipped under Reduce Motion. Verify: screen tests cover first, middle and last step, Skip, Finish and the accessible reading order.
-- [x] 2.2 Store `ormma.welcomeSeen` in AsyncStorage and gate `RootNavigator` on it, with no flash of sign-in while it loads. Verify: tests for first launch, seen, and a storage read failure that falls back to showing the intro once.
-- [x] 2.3 Add the "Show welcome again" row to the end of the Appearance section in Settings and the `Welcome` route in the Family stack that returns to Settings on finish. Verify: `settings.test.tsx` covers the row and the return.
+- [x] 2.2 Store `ormma.welcomeSeen` in AsyncStorage and show the intro to a signed-in user before the tabs on first arrival at Today, with no flash of Today while it loads. Signed-out users go straight to sign-in. Verify: tests for signed out, first arrival, seen, and a storage read failure that falls back to showing the intro once.
+- [x] 2.3 Removed at the user's request on 2026-11-10: no "Show welcome again" row in Settings and no replay route. Verify: `settings.test.tsx` asserts the row is absent.
 - [x] 2.4 Restyle `LoginScreen` and `OtpScreen` with the Ormma mark and one illustration, keeping the existing validation, error messages and the single primary action. Verify: existing `LoginScreen` and `OtpScreen` tests pass unchanged apart from new elements.
 - [x] 2.5 Scan all new intro and sign-in strings for medical advice or judgement wording. Verify: the existing wording and design-rules tests include the new catalogue keys and pass.
 

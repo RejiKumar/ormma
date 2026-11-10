@@ -86,19 +86,6 @@ const skip = (id, title, steps, why) => {
 
 await start();
 
-await tc("TC00", "Welcome intro shows on a fresh install and can be finished", ["Fresh install state", "Open the app", "Tap Next twice", "Tap Get started"], async (r) => {
-  await waitText("Ormma checks in by phone");
-  r.shots.push(await shot("TC00-welcome-1"));
-  await tap("Next");
-  await waitText("Replies appear on Today");
-  await tap("Next");
-  await waitText("Family sees what is shared");
-  r.shots.push(await shot("TC00-welcome-3"));
-  await tap("Get started");
-  await waitText("Sign in");
-  return "Three steps shown, Get started lands on Sign in";
-});
-
 await tc("TC01", "App launches on the sign-in screen", ["Fresh install state", "Open the app"], async (r) => {
   await waitText("Sign in");
   const t = await allText();
@@ -168,8 +155,20 @@ if (!CODE) {
     await typeInto(0, CODE);
     await tap("Verify");
     await driver.pause(8000);
-    const t = await allText();
+    let t = await allText();
     if (t.includes("Enter the code")) throw new Error("still on the code screen");
+    // First arrival on Today on a fresh install: the three-step welcome comes first.
+    if (t.includes("Ormma checks in by phone")) {
+      r.shots.push(await shot("TC08-welcome-1"));
+      await tap("Next");
+      await waitText("Replies appear on Today");
+      await tap("Next");
+      await waitText("Family sees what is shared");
+      r.shots.push(await shot("TC08-welcome-3"));
+      await tap("Get started");
+      await driver.pause(1500);
+      t = await allText();
+    }
     r.shots.push(await shot("TC08-signed-in"));
     // An account with no parent shows the illustrated empty state, the checklist and one primary action.
     if (t.includes("Nothing here yet")) {

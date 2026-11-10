@@ -173,11 +173,6 @@ export function SettingsScreen({ navigation }: Props) {
             onPress={() => setPreference(choice.value)}
           />
         ))}
-        <ListItem
-          testID="settings-welcome"
-          title={t("settings.showWelcome")}
-          onPress={() => navigation.navigate("Welcome")}
-        />
       </Card>
 
       <Card style={{ gap: theme.spacing.sm }}>

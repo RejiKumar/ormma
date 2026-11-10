@@ -440,8 +440,7 @@
     "termsTitle": "Terms and conditions",
     "updatedOn": "Last updated {{date}}",
     "openOnline": "Open the full text online",
-    "openFailed": "The page could not be opened.",
-    "showWelcome": "Show welcome again"
+    "openFailed": "The page could not be opened."
   },
   "subscription": {
     "title": "Plans",
