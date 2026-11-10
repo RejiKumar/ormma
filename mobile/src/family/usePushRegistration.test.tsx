@@ -1,4 +1,5 @@
 import React from "react";
+import { PermissionsAndroid, Platform } from "react-native";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 
 const mockUpdateDoc = jest.fn(async () => undefined);
@@ -54,6 +55,38 @@ describe("usePushRegistration", () => {
     await act(async () => {});
     expect(messagingMock.requestPermission).toHaveBeenCalled();
     expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+
+  describe("on Android 13+", () => {
+    const originalOS = Platform.OS;
+    const originalVersion = Platform.Version;
+    beforeEach(() => {
+      Object.defineProperty(Platform, "OS", { configurable: true, get: () => "android" });
+      Object.defineProperty(Platform, "Version", { configurable: true, get: () => 36 });
+      mockUser = { uid: "u1" };
+    });
+    afterEach(() => {
+      Object.defineProperty(Platform, "OS", { configurable: true, get: () => originalOS });
+      Object.defineProperty(Platform, "Version", {
+        configurable: true,
+        get: () => originalVersion,
+      });
+      jest.restoreAllMocks();
+    });
+
+    it("asks Android for the notification permission and saves the token when granted", async () => {
+      const request = jest.spyOn(PermissionsAndroid, "request").mockResolvedValue("granted");
+      await renderHook(() => usePushRegistration());
+      await waitFor(() => expect(mockUpdateDoc).toHaveBeenCalledTimes(1));
+      expect(request).toHaveBeenCalledWith("android.permission.POST_NOTIFICATIONS");
+    });
+
+    it("saves no token when the user declines the Android permission", async () => {
+      jest.spyOn(PermissionsAndroid, "request").mockResolvedValue("denied");
+      await renderHook(() => usePushRegistration());
+      await act(async () => {});
+      expect(mockUpdateDoc).not.toHaveBeenCalled();
+    });
   });
 });
 

@@ -1,3 +1,4 @@
+import { PermissionsAndroid, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { arrayUnion, doc, getFirestore, updateDoc } from "@react-native-firebase/firestore";
@@ -31,6 +32,14 @@ export function usePushRegistration(): PushRegistrationState {
 
     const register = async () => {
       try {
+        // On Android the messaging library never shows a prompt (its requestPermission just returns
+        // "authorized"), so Android 13+ needs the runtime permission asked for here.
+        if (Platform.OS === "android" && Number(Platform.Version) >= 33) {
+          const result = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+          );
+          if (result !== PermissionsAndroid.RESULTS.GRANTED) return;
+        }
         const status = await requestPermission(messaging);
         if (status !== AuthorizationStatus.AUTHORIZED) return;
         const fcmToken = await getToken(messaging);
