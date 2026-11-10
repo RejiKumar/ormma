@@ -65,6 +65,20 @@ module.exports = function withOrmmaSplash(config) {
       let xml = fs.readFileSync(colors, "utf8");
       xml = xml.replace(/(<color name="splashscreen_background">)[^<]*(<\/color>)/, `$1${BACKGROUND}$2`);
       fs.writeFileSync(colors, xml);
+
+      // MainActivity switches to AppTheme before the first frame. Without a window background Android
+      // paints its own default (dark grey on a night-mode device) between the splash and the app, which
+      // shows as a flicker. Use the splash colour so the hand-off is seamless.
+      const styles = path.join(res, "values", "styles.xml");
+      let styleXml = fs.readFileSync(styles, "utf8");
+      if (!/<style name="AppTheme"[^>]*>[\s\S]*?android:windowBackground[\s\S]*?<\/style>/.test(styleXml)) {
+        styleXml = styleXml.replace(
+          /(<style name="AppTheme"[^>]*>)/,
+          `$1
+    <item name="android:windowBackground">@color/splashscreen_background</item>`,
+        );
+        fs.writeFileSync(styles, styleXml);
+      }
       return cfg;
     },
   ]);
