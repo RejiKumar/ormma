@@ -31,8 +31,21 @@ async function ensureUserDoc(firebaseUser: User): Promise<void> {
     const db = getFirestore();
     const ref = doc(db, "users", firebaseUser.uid);
     const snapshot = await getDoc(ref);
-    if (snapshot.exists()) return;
-    await setDoc(ref, { displayName: "", phone, fcmTokens: [], createdAt: Timestamp.now() });
+    if (!snapshot.exists()) {
+      await setDoc(ref, { displayName: "", phone, fcmTokens: [], createdAt: Timestamp.now() });
+      return;
+    }
+    // The rules only accept a write when all four fields are present, so a document that lost one
+    // (for example edited by hand) would silently reject every push-token save. Put back what is
+    // missing, never touching fields that exist.
+    const existing = snapshot.data() as Record<string, unknown> | undefined;
+    if (!existing) return;
+    const missing: Record<string, unknown> = {};
+    if (typeof existing.displayName !== "string") missing.displayName = "";
+    if (typeof existing.phone !== "string" || !isValidE164(existing.phone)) missing.phone = phone;
+    if (!Array.isArray(existing.fcmTokens)) missing.fcmTokens = [];
+    if (existing.createdAt === undefined || existing.createdAt === null) missing.createdAt = Timestamp.now();
+    if (Object.keys(missing).length > 0) await setDoc(ref, missing, { merge: true });
   } catch (error) {
     // Ids and statuses only in logs (hard rule 6).
     const code = (error as { code?: string } | null)?.code ?? "unknown";

@@ -30,8 +30,12 @@ const onTokenRefresh = jest.fn((messagingArg, cb) => {
   return () => tokens.delete(cb);
 });
 const onMessage = jest.fn(() => () => {});
+const onNotificationOpenedApp = jest.fn(() => () => {});
+const getInitialNotification = jest.fn(async () => null);
 
 module.exports = messaging;
+module.exports.onNotificationOpenedApp = onNotificationOpenedApp;
+module.exports.getInitialNotification = getInitialNotification;
 module.exports.default = messaging;
 module.exports.getMessaging = getMessaging;
 module.exports.getToken = getToken;
@@ -72,6 +76,10 @@ module.exports.__resetMessaging = () => {
   });
   onMessage.mockClear();
   onMessage.mockImplementation(() => () => {});
+  onNotificationOpenedApp.mockClear();
+  onNotificationOpenedApp.mockImplementation(() => () => {});
+  getInitialNotification.mockClear();
+  getInitialNotification.mockImplementation(async () => null);
   messaging.mockClear();
   messaging.mockReturnValue(messagingInstance);
   messagingInstance.getToken.mockClear();

@@ -10,6 +10,7 @@ import { useAppFonts } from "./src/design/useAppFonts";
 import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
 import { AppTabs } from "./src/navigation/AppTabs";
+import { navigationRef } from "./src/navigation/navigationRef";
 import { AuthStack } from "./src/navigation/AuthStack";
 import { ParentsProvider } from "./src/family/useParents";
 import { PushRegistrar } from "./src/push/PushRegistrar";
@@ -57,7 +58,7 @@ function Root() {
   const fontsReady = useAppFonts();
   if (!fontsReady) return <View style={{ flex: 1, backgroundColor: theme.colors.background }} />;
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       <AuthProvider>
         <PushRegistrar />
         <RootNavigator />

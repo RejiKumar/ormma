@@ -57,7 +57,8 @@ describe("AddMedicineScreen", () => {
     navigation.goBack.mockClear();
     fsMock.getDoc.mockImplementation((ref: unknown) => {
       const path = typeof ref === "object" && ref !== null && "path" in ref ? String((ref as { path: string }).path) : "";
-      if (path.includes("users/u1")) return Promise.resolve(docSnap({}));
+      if (path.includes("users/u1"))
+        return Promise.resolve(docSnap({ displayName: "", phone: "+919876543210", fcmTokens: [], createdAt: {} }));
       if (path === "parents/p1/members/u1") return Promise.resolve(docSnap({ role: memberRole }));
       return Promise.resolve(docSnap(undefined));
     });

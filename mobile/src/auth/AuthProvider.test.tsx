@@ -59,12 +59,44 @@ describe("AuthProvider", () => {
   });
 
   it("does not overwrite an existing users doc", async () => {
-    firestoreMock.getDoc.mockResolvedValue({ exists: () => true });
+    firestoreMock.getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ displayName: "Asha", phone: "+919876543211", fcmTokens: ["t1"], createdAt: {} }),
+    });
     authMock.__setUser({ uid: "u_existing", phoneNumber: "+919876543211" });
     await renderProvider();
     expect(await screen.findByText("in:u_existing")).toBeTruthy();
     await waitFor(() => expect(firestoreMock.getDoc).toHaveBeenCalled());
     expect(firestoreMock.setDoc).not.toHaveBeenCalled();
+  });
+
+  it("puts back a missing phone on an existing doc, merging and keeping the other fields", async () => {
+    firestoreMock.getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ displayName: "Asha", fcmTokens: ["t1"], createdAt: {} }),
+    });
+    authMock.__setUser({ uid: "u_repair", phoneNumber: "+919876543213" });
+    await renderProvider();
+    await waitFor(() => expect(firestoreMock.setDoc).toHaveBeenCalledTimes(1));
+    const [ref, data, options] = firestoreMock.setDoc.mock.calls[0] as [
+      { path: string },
+      Record<string, unknown>,
+      { merge: boolean },
+    ];
+    expect(ref.path).toBe("users/u_repair");
+    expect(data).toEqual({ phone: "+919876543213" });
+    expect(options).toEqual({ merge: true });
+  });
+
+  it("restores every missing required field without touching the ones that exist", async () => {
+    firestoreMock.getDoc.mockResolvedValue({ exists: () => true, data: () => ({ phone: "+919876543214" }) });
+    authMock.__setUser({ uid: "u_repair2", phoneNumber: "+919876543214" });
+    await renderProvider();
+    await waitFor(() => expect(firestoreMock.setDoc).toHaveBeenCalledTimes(1));
+    const data = firestoreMock.setDoc.mock.calls[0][1] as Record<string, unknown>;
+    expect(Object.keys(data).sort()).toEqual(["createdAt", "displayName", "fcmTokens"]);
+    expect(data.displayName).toBe("");
+    expect(data.fcmTokens).toEqual([]);
   });
 
   it("stays signed in when provisioning fails, logging only the status code", async () => {
