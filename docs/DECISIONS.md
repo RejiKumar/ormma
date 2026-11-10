@@ -146,3 +146,4 @@ One line per non-obvious decision. Tags: [DECIDED] final; [PROPOSED Sn] default 
 135. Welcome: Skip moved into the bottom action slot beside Next; as scroll content it sat below the fold on a 1080x2400 phone (found on a device, jsdom tests cannot see it).
 136. Welcome intro moved from before sign-in to the first arrival on Today (signed in, once per device); the "Show welcome again" Settings row and its route were removed at the user's request on 2026-11-10. Sign-in now shows at once after the splash.
 137. Start-up flicker: the app now holds the splash cream until fonts and the saved theme are both ready (a dark-theme user used to see the light theme first), and the first welcome step appears without a fade.
+138. Start-up flash: AppTheme had no windowBackground, so Android painted its default (dark grey on a night-mode device) between the splash and the first React frame; the splash plugin now sets it to the splash cream.
