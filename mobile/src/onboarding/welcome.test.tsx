@@ -36,7 +36,7 @@ describe("WelcomeScreen", () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
-  it("hides its illustration from screen readers and lists title, text, then Skip and Next", async () => {
+  it("hides its illustration from screen readers and lists title, text, then Next and Skip", async () => {
     await renderApp(<WelcomeScreen onDone={jest.fn()} />);
     const frame = screen.getByTestId("welcome-illustration-0", { includeHiddenElements: true });
     expect(frame.props.importantForAccessibility).toBe("no-hide-descendants");
@@ -46,8 +46,8 @@ describe("WelcomeScreen", () => {
     const skip = json.indexOf("welcome-skip");
     const next = json.indexOf("welcome-next");
     expect(title).toBeLessThan(text);
-    expect(text).toBeLessThan(skip);
-    expect(skip).toBeLessThan(next);
+    expect(text).toBeLessThan(next);
+    expect(next).toBeLessThan(skip);
   });
 
   it("keeps Next and Skip at least 48 dp tall", async () => {

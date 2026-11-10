@@ -30,11 +30,14 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   return (
     <Screen
       primaryAction={
-        <Button
-          testID="welcome-next"
-          label={last ? t("welcome.getStarted") : t("welcome.next")}
-          onPress={() => (last ? onDone() : setStep(step + 1))}
-        />
+        <View style={{ gap: theme.spacing.xs }}>
+          <Button
+            testID="welcome-next"
+            label={last ? t("welcome.getStarted") : t("welcome.next")}
+            onPress={() => (last ? onDone() : setStep(step + 1))}
+          />
+          <Button variant="quiet" testID="welcome-skip" label={t("welcome.skip")} onPress={onDone} />
+        </View>
       }
     >
       <FadeIn key={step} testID={`welcome-step-${step}`} style={{ gap: theme.spacing.lg }}>
@@ -51,7 +54,6 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
           {t(`welcome.${current.key}.text`)}
         </Text>
       </FadeIn>
-      <Button variant="quiet" testID="welcome-skip" label={t("welcome.skip")} onPress={onDone} />
     </Screen>
   );
 }
