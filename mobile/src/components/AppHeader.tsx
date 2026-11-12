@@ -39,7 +39,7 @@ export function AppHeader({ parentName, extraParents = 0, alert, onSignOut }: Ap
         justifyContent: "space-between",
       }}
     >
-      <Text variant="brand" accessibilityRole="header" style={{ letterSpacing: -0.3 }}>
+      <Text variant="brand" accessibilityRole="header" style={{ letterSpacing: -0.3, color: c.primary }}>
         {t("app.brand")}
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.sm }}>

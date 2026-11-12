@@ -2,7 +2,7 @@
 
 Direction: warm, calm clarity. Light theme by default, a separately designed dark theme, and a "system" option. Bento-style cards, rounded geometry, one primary action per screen, bottom tab navigation, everything reachable in the thumb zone. Capability spec: `openspec/specs/design-system/spec.md`.
 
-Palette (light start values, kept in `tokens.ts` and the design-system spec): background `#FAF7F2` warm cream, surface `#FFFFFF`, ink `#1F2A2E`, primary `#2D5A4C` sage, accent `#F2A93B` amber, border `#EBE6DD`. Status colours (taken green, pending slate, missed coral, unclear violet, calling teal), the coral rule and the neutral reading style are unchanged; the dark theme is re-hued to a lifted sage and designed separately. Contrast decides any pair adjustment (decision #51).
+Palette (light, kept in `tokens.ts` and the design-system spec; refreshed 2026-11-12): background `#F1F8F7` mint-white, surface `#FFFFFF`, ink `#0B2522`, primary `#067266` teal, hero gradient from the primary into ocean blue `#0A5C8C`, accent `#FFB020` amber, border `#D3E4E1`. Status colours (taken green, pending slate, missed coral, unclear violet, calling blue), the coral rule and the neutral reading style keep their roles; the dark theme is a lifted teal on deep blue-green, designed separately. Contrast decides any pair adjustment (decision #51).
 
 ## Where things live
 

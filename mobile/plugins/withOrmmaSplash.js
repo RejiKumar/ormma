@@ -10,7 +10,7 @@ const path = require("path");
  * splash (Android 11 and older) and the system splash (Android 12 and newer), and it survives
  * `expo prebuild` because it runs as part of it.
  */
-const BACKGROUND = "#F8F7F4";
+const BACKGROUND = "#F1F8F7";
 const MARK_DP = 180;
 
 module.exports = function withOrmmaSplash(config) {

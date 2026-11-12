@@ -29,23 +29,10 @@ describe("TextField", () => {
     expect(screen.getByText("Not valid")).toBeTruthy();
   });
 
-  it("shows the hint only when there is no error", async () => {
-    const { rerenderApp } = await renderApp(
-      <TextField label="Phone" value="" onChangeText={onChangeText} hint="Hint text" testID="tf" />,
-    );
-    expect(screen.getByText("Hint text")).toBeTruthy();
-    await rerenderApp(
-      <TextField
-        label="Phone"
-        value=""
-        onChangeText={onChangeText}
-        hint="Hint text"
-        error="Not valid"
-        testID="tf"
-      />,
-    );
-    expect(screen.getByText("Not valid")).toBeTruthy();
-    expect(screen.queryByText("Hint text")).toBeNull();
+  it("shows no hint or placeholder under the field", async () => {
+    await renderApp(<TextField label="Phone" value="" onChangeText={onChangeText} testID="tf" />);
+    expect(screen.getByTestId("tf").props.placeholder).toBeUndefined();
+    expect(screen.queryByText(/for example/i)).toBeNull();
   });
 
   it("respects editable false", async () => {

@@ -1,6 +1,6 @@
 // Design tokens: the single source of colours, type scale, spacing, radius, elevation and motion.
 // Screens and components read these through useTheme(); they never use literal values.
-// Direction: warm, calm clarity. The dark theme is designed separately, not inverted.
+// Direction: fresh, calm clarity: mint-white canvas, vivid teal, a teal-to-ocean hero. The dark theme is designed separately, not inverted.
 import { MIN_LARGE_OR_GRAPHIC_RATIO, MIN_TEXT_RATIO } from "./contrast";
 
 export type ThemeName = "light" | "dark";
@@ -47,66 +47,66 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
-  background: "#F8F7F4",
+  background: "#F1F8F7",
   surface: "#FFFFFF",
-  /** Neutral chip. */
-  surfaceAlt: "#EDEAE4",
-  border: "#E5E2DC",
-  ink: "#1A2421",
-  /** Muted text. A shade of #6B7470 that reaches 4.5:1 on every light surface, chip included. */
-  inkMuted: "#626B67",
-  /** The supplied muted grey, for dashed borders and other graphics only. */
-  mutedGraphic: "#6B7470",
+  /** Neutral chip: a pale mint. */
+  surfaceAlt: "#E1EEEC",
+  border: "#D3E4E1",
+  ink: "#0B2522",
+  /** Muted text. Reaches 4.5:1 on every light surface, chip included. */
+  inkMuted: "#44605C",
+  /** Muted graphic colour, for dashed borders and other graphics only. */
+  mutedGraphic: "#587672",
   inkOnPrimary: "#FFFFFF",
   inkOnAccent: "#1F2A2E",
-  primary: "#2D5A4C",
-  primaryTint: "#EBF1EE",
-  /** End colour of the hero gradient (starts at `primary`). */
-  heroEnd: "#204237",
-  accent: "#F2A93B",
-  focus: "#1C3B31",
+  primary: "#067266",
+  primaryTint: "#D6F0EB",
+  /** End colour of the hero gradient (starts at `primary`): teal into ocean blue. */
+  heroEnd: "#0A5C8C",
+  accent: "#FFB020",
+  focus: "#064A42",
   status: {
-    taken: { fg: "#1C3B32", bg: "#EBF1EE", icon: "#2D5A4C" },
-    pending: { fg: "#626B67", bg: "#EDEAE4", icon: "#626B67" },
+    taken: { fg: "#06593F", bg: "#D5F2E4", icon: "#0A8559" },
+    pending: { fg: "#44605C", bg: "#E1EEEC", icon: "#44605C" },
     missed: { fg: "#B04E28", bg: "#FCEEE8", icon: "#C85A32" },
-    unclear: { fg: "#5E4388", bg: "#EFE9F7", icon: "#7452B0" },
-    calling: { fg: "#0F6B6B", bg: "#DDEFEE", icon: "#0F6B6B" },
-    not_taken: { fg: "#7A5210", bg: "#F7EDD4", icon: "#8F6415" },
-    no_answer: { fg: "#38536E", bg: "#E8EEF5", icon: "#46617D" },
+    unclear: { fg: "#5A3F8C", bg: "#ECE6F8", icon: "#6F4DB5" },
+    calling: { fg: "#08568F", bg: "#D9EAF9", icon: "#0A66AC" },
+    not_taken: { fg: "#7A5210", bg: "#FBEFCF", icon: "#8F6415" },
+    no_answer: { fg: "#374F66", bg: "#E4EBF3", icon: "#425E78" },
   },
   urgent: { fg: "#9F3326", bg: "#FCEEE8", icon: "#C85A32" },
-  reading: { fg: "#1A2421", bg: "#F1EFEA" },
-  avatars: ["#F6D9C7", "#D3E6E3", "#E2D8EF", "#F2E3B3", "#D6E2F0", "#E2DED2"],
-  shadow: "#1A2421",
+  reading: { fg: "#0B2522", bg: "#E9F3F1" },
+  avatars: ["#FFD8C2", "#BDE8DE", "#DDD1F8", "#FFE7A3", "#C5DFFA", "#F8CFE2"],
+  shadow: "#0B2522",
 };
 
 export const darkColors: ThemeColors = {
-  background: "#121819",
-  surface: "#1A2224",
-  surfaceAlt: "#222C2F",
-  border: "#333D39",
-  ink: "#E8EFF0",
-  inkMuted: "#A6B5BA",
-  mutedGraphic: "#7F8E93",
-  inkOnPrimary: "#082626",
+  background: "#091618",
+  surface: "#10262A",
+  surfaceAlt: "#183439",
+  border: "#27474C",
+  ink: "#E7F6F3",
+  inkMuted: "#9FBEBA",
+  mutedGraphic: "#7A9C98",
+  inkOnPrimary: "#032019",
   inkOnAccent: "#1B1406",
-  primary: "#8FBEA4",
-  primaryTint: "#233029",
-  heroEnd: "#7AAA92",
-  accent: "#F2A93B",
-  focus: "#A3D0B5",
+  primary: "#3ED0B3",
+  primaryTint: "#12332F",
+  heroEnd: "#45AEE0",
+  accent: "#FFB020",
+  focus: "#8DE6D2",
   status: {
-    taken: { fg: "#86D9A8", bg: "#1B3A2A", icon: "#86D9A8" },
-    pending: { fg: "#B9C5CA", bg: "#2A3438", icon: "#B9C5CA" },
+    taken: { fg: "#7FE3B0", bg: "#10392A", icon: "#7FE3B0" },
+    pending: { fg: "#B6CDCA", bg: "#1E383C", icon: "#B6CDCA" },
     missed: { fg: "#FFA79A", bg: "#4A2420", icon: "#FF8E7E" },
     unclear: { fg: "#CDB8F2", bg: "#34294B", icon: "#CDB8F2" },
-    calling: { fg: "#7FD9D6", bg: "#1B3A3A", icon: "#7FD9D6" },
+    calling: { fg: "#8CCBFF", bg: "#12324B", icon: "#8CCBFF" },
     not_taken: { fg: "#F2D18A", bg: "#3B2F1C", icon: "#EFC36E" },
     no_answer: { fg: "#A9C6E2", bg: "#26333F", icon: "#9CBFE0" },
   },
   urgent: { fg: "#FFB3A7", bg: "#55231D", icon: "#FF8E7E" },
-  reading: { fg: "#E8EFF0", bg: "#222C2F" },
-  avatars: ["#5A4636", "#2F4A47", "#493D5C", "#5C512A", "#34475C", "#4A463C"],
+  reading: { fg: "#E7F6F3", bg: "#183439" },
+  avatars: ["#5E4636", "#2B5A52", "#4E4268", "#665A2C", "#355278", "#68415A"],
   shadow: "#000000",
 };
 

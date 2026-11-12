@@ -106,3 +106,18 @@ The app SHALL provide a light theme and a separately designed dark theme, and SH
 #### Scenario: Remembered choice
 - **WHEN** the user restarts the app
 - **THEN** the theme again follows the operating system, because no choice is stored and the Settings screen offers no theme control
+
+### Requirement: Supplied palette and text colours
+Requested by the user on 2026-11-12 because the earlier forest-green and cream palette looked dull: the light theme SHALL use this fresher palette: canvas `#F1F8F7`, ink `#0B2522`, muted ink `#44605C`, border `#D3E4E1`, surface `#FFFFFF`, primary `#067266`, primary tint `#D6F0EB`, hero gradient from primary into `#0A5C8C`, neutral chip `#E1EEEC`, accent `#FFB020`, coral `#C85A32` and coral tint `#FCEEE8`. Coral and its tint SHALL stay exactly as before and SHALL stay reserved for the missed status and urgent alerts. These values SHALL be used as given for backgrounds, borders, dots, icons and graphics. Where a palette text colour on its background is below 4.5:1, the token for text on that background SHALL be a darker shade of the same hue that passes the contrast test, and the unchanged value SHALL still be used for the non-text parts. The launcher icon and the splash mark SHALL use the same teal.
+
+#### Scenario: Backgrounds and borders
+- **WHEN** a screen renders in the light theme
+- **THEN** its canvas is `#F1F8F7`, cards are `#FFFFFF` with a `#D3E4E1` border and the neutral chip is `#E1EEEC`
+
+#### Scenario: Muted text on the neutral chip
+- **WHEN** muted text is shown on the neutral chip
+- **THEN** its colour reaches 4.5:1 on `#E1EEEC`
+
+#### Scenario: Coral text
+- **WHEN** the Not confirmed badge text is shown on the coral tint
+- **THEN** the text colour reaches 4.5:1 on `#FCEEE8` and the dot, icon and border use `#C85A32`

@@ -15,10 +15,8 @@ export interface TextFieldProps {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
-  placeholder?: string;
   /** Validation or server error shown under the field. Pass text from the i18n catalogue. */
   error?: string;
-  hint?: string;
   keyboardType?: KeyboardTypeOptions;
   autoComplete?: TextInputProps["autoComplete"];
   textContentType?: TextInputProps["textContentType"];
@@ -34,16 +32,14 @@ export interface TextFieldProps {
 }
 
 /**
- * Labelled text input. Validation errors are shown in ink with an icon, never in coral
+ * Labelled text input. It never shows a hint or a placeholder: only the label above and a validation error below. Validation errors are shown in ink with an icon, never in coral
  * (coral is reserved for the missed status and urgent alerts).
  */
 export function TextField({
   label,
   value,
   onChangeText,
-  placeholder,
   error,
-  hint,
   keyboardType,
   autoComplete,
   textContentType,
@@ -87,8 +83,6 @@ export function TextField({
           accessibilityLabel={label}
           value={value}
           onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={c.inkMuted}
           keyboardType={keyboardType}
           autoComplete={autoComplete}
           textContentType={textContentType}
@@ -111,11 +105,6 @@ export function TextField({
           }}
         />
       </View>
-      {hint && !error ? (
-        <Text variant="caption" tone="muted">
-          {hint}
-        </Text>
-      ) : null}
       {error ? (
         <View
           accessibilityLiveRegion="polite"
