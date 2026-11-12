@@ -85,7 +85,7 @@ Never put any of these in the app, in git, or in a `.env` that is committed.
 npm install && npm --prefix functions install
 npm --prefix functions run build
 npm run test:rules          # emulator tests must pass first
-firebase deploy --only functions,firestore:rules,firestore:indexes,storage:rules --project prod
+firebase deploy --only functions,firestore:rules,firestore:indexes,storage --project prod
 ```
 
 Write down the deployed URLs for the webhook and `voiceAudio`, then finish `EXOTEL_WEBHOOK_URL` and

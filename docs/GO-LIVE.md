@@ -17,7 +17,7 @@ Steps:
    cd functions
    npm run build
    cd ..
-   firebase deploy --only functions,firestore:indexes,firestore:rules --project ormma-prod
+   firebase deploy --only functions,firestore:indexes,firestore:rules,storage --project ormma-prod
    ```
    Wait until the indexes show as Enabled in Firebase, then check **Functions** shows every function healthy.
 2. Do **not** set `CALL_PROVIDER` yet. Leave it unset.
