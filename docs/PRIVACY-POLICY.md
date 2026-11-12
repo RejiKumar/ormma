@@ -47,8 +47,8 @@ stored in Mumbai (asia-south1).
 
 An owner can export a parent's data and delete a parent and its data from the Family tab. Deleting
 removes the parent, medicines, dose history, alerts, family call log and emergency contacts. For anything
-else, write to the contact address below. In Settings you can change your name, switch between light and
-dark appearance, and delete your account, which removes your profile, your place in every family and your
+else, write to the contact address below. In Settings you can change your name and delete your
+account, which removes your profile, your place in every family and your
 plan record. You must delete the parents you own first. A Google Play subscription is cancelled in Google
 Play.
 

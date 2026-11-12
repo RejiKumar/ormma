@@ -9,7 +9,7 @@ Palette (light start values, kept in `tokens.ts` and the design-system spec): ba
 | Path                                     | What                                                                                                        |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `mobile/src/design/tokens.ts`            | Colours (light and dark), type scale, spacing, radius, elevation, motion durations, declared contrast pairs |
-| `mobile/src/design/ThemeProvider.tsx`    | `ThemeProvider`, `useTheme()`; options light, dark, system; remembered on the device (`ormma.theme`)        |
+| `mobile/src/design/ThemeProvider.tsx`    | `ThemeProvider`, `useTheme()`; follows the phone's light or dark setting, no in-app choice, nothing stored |
 | `mobile/src/design/fonts.ts`, `Text.tsx` | Fonts per script, line heights, themed `Text`                                                               |
 | `mobile/src/design/motion.ts`            | Spring presets, Reduce Motion, light haptic                                                                 |
 | `mobile/src/design/contrast.ts`          | WCAG helpers used by the contrast test                                                                      |
