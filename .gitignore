@@ -60,3 +60,6 @@ google-services.prod.json
 e2e/node_modules/
 e2e/report/
 e2e/appium.log
+
+# Local speech test output (functions/scripts/try-speech.mjs)
+functions/speech-test/
