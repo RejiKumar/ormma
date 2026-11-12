@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import type { MedicineDoc, ParentDoc } from "../../../shared/types";
 import { getDb } from "../db";
+import { callActivation, callsEnabled, type CallActivation } from "../exotel/config";
 import {
   localDateKey,
   localEventIdSuffix,
@@ -86,12 +87,18 @@ const timeZoneOf = (parent: ParentDoc | undefined): string =>
  * each parent's timezone and creates events with `create` so an existing id is never overwritten.
  */
 export async function generateDoseEventsHandler(
-  options: { nowMs?: number } = {},
+  options: { nowMs?: number; activation?: CallActivation } = {},
 ): Promise<GenerationSummary> {
   const nowMs = options.nowMs ?? Date.now();
   const windowEnd = nowMs + GENERATION_HORIZON_MS;
   const db = getDb();
   const summary: GenerationSummary = { parents: 0, planned: 0, created: 0, existing: 0, failed: 0 };
+
+  // Calling is off: create no dose events, so nothing can later look missed (go-live-calls).
+  if (!callsEnabled(options.activation ?? callActivation())) {
+    console.info("generateDoseEvents: calling is off", { status: "calling_off" });
+    return summary;
+  }
 
   const parentsSnap = await db.collection("parents").where("active", "==", true).get();
 

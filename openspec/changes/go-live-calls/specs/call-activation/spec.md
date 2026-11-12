@@ -6,7 +6,7 @@ Defines when the system makes real check-in calls, what is paused while it does 
 ## ADDED Requirements
 
 ### Requirement: Calling is on only when it is configured
-Calling SHALL be on only when `CALL_PROVIDER` is `exotel` and the Exotel configuration is complete. In every other production state calling SHALL be off. The log-only provider SHALL exist only when `CALL_PROVIDER` is `log`, for tests and emulators, and SHALL NOT be a fallback.
+Calling SHALL be on only when `CALL_PROVIDER` is `exotel` and the Exotel configuration is complete, or when `CALL_PROVIDER` is `log`, which is the test mode for tests and emulators: calling counts as on but nothing is dialled. In every other state, including production without a complete Exotel set-up, calling SHALL be off. The log-only provider SHALL be used only when `CALL_PROVIDER` is `log` and SHALL NOT be a fallback.
 
 #### Scenario: Configured
 - **WHEN** `CALL_PROVIDER` is `exotel` and every Exotel setting is present
@@ -22,7 +22,7 @@ Calling SHALL be on only when `CALL_PROVIDER` is `exotel` and the Exotel configu
 
 #### Scenario: Test provider
 - **WHEN** `CALL_PROVIDER` is `log`
-- **THEN** the log-only provider is used and no real call is placed
+- **THEN** calling counts as on, the log-only provider is used and no real call is placed
 
 ### Requirement: Nothing runs while calling is off
 While calling is off, the daily generation SHALL create no dose events, the dispatcher SHALL claim no event and place no call, the missed-dose checker SHALL raise no alert and change no status, and the evening digest SHALL send nothing about doses. Each run SHALL end quietly with a status code in the log.

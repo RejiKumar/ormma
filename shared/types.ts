@@ -214,6 +214,11 @@ export interface CallSessionDoc {
   dtmfInput: string | null;
   startedAt: Timestamp;
   endedAt: Timestamp | null;
+  /** Server-only, set by the spoken reply endpoint: the reply is being processed, applied once, or needs review. */
+  voiceReplyState?: "processing" | "applied" | "review";
+  voiceReplyAt?: Timestamp;
+  /** Review reason codes only, never a transcript. */
+  voiceReplyReasons?: string[];
 }
 
 // ---------- parents/{parentId}/prescriptions/{prescriptionId} ----------

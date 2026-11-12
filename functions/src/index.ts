@@ -5,6 +5,7 @@ import { getDb } from "./db";
 import { AdminPushSender } from "./alerts/fcm";
 import { EXOTEL_SECRETS, WEBHOOK_SECRETS, createCallProvider } from "./exotel/config";
 import { exotelWebhookHandler } from "./exotel/webhook";
+import { getCallStatusHandler } from "./callStatus";
 import { createParentHandler, listMyParentsHandler } from "./family";
 import { getDoseEscalationHandler, logFamilyCallHandler, touchPresenceHandler } from "./companion";
 import {
@@ -30,13 +31,21 @@ import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
   createPromptAudioService,
+  createSttClient,
+  STT_SECRETS,
 } from "./voice/config";
+import { AI_SECRETS, createReplyModelClient } from "./reply/config";
 import { voiceAudioHandler, voicePromptHandler } from "./voice/prompt";
+import { voiceReplyHandler } from "./voice/reply";
 
 // Every function deploys to Mumbai. Set once here so none can land in another region.
 setGlobalOptions({ region: "asia-south1" });
 
 export { SUPPORTED_LANGUAGES } from "./validation";
+
+// On or off for calling, nothing else. The app shows a calm note while it says off.
+// Declares the Exotel secrets so it sees the same on/off answer as the scheduled functions.
+export const getCallStatus = onCall({ secrets: EXOTEL_SECRETS }, (request) => getCallStatusHandler(request));
 
 export const createParent = onCall(createParentHandler);
 // Returns the caller's parent ids so a reinstall or a new phone can rebuild the local list.
@@ -73,14 +82,15 @@ export const grantConsent = onCall(grantConsentHandler);
 
 // Daily at 00:30 India time. Creates the next 24 hours of dose events per parent (idempotent).
 export const generateDoseEvents = onSchedule(
-  { schedule: "30 0 * * *", timeZone: "Asia/Kolkata" },
+  { schedule: "30 0 * * *", timeZone: "Asia/Kolkata", secrets: EXOTEL_SECRETS },
   async () => {
     await generateDoseEventsHandler();
   },
 );
 
-// Every minute. Claims due events and hands them to the call provider. `CALL_PROVIDER=exotel`
-// opts in to real calls; otherwise the log-only provider is used.
+// Every minute. Claims due events and hands them to the call provider. Real calls need
+// `CALL_PROVIDER=exotel` and a complete Exotel set-up; otherwise calling is off and this does nothing.
+// Every gated function declares the same secrets so they all see the same on/off answer.
 export const dispatchDueCalls = onSchedule(
   { schedule: "* * * * *", timeZone: "Asia/Kolkata", secrets: EXOTEL_SECRETS },
   async () => {
@@ -91,7 +101,7 @@ export const dispatchDueCalls = onSchedule(
 // Every minute. Marks events missed after the parent's policy window and alerts the family once per
 // event or group. Alerts are written transactionally; FCM delivery follows the commit.
 export const missedDoseChecker = onSchedule(
-  { schedule: "* * * * *", timeZone: "Asia/Kolkata" },
+  { schedule: "* * * * *", timeZone: "Asia/Kolkata", secrets: EXOTEL_SECRETS },
   async () => {
     await missedDoseCheckerHandler({ sender: new AdminPushSender() });
   },
@@ -99,7 +109,7 @@ export const missedDoseChecker = onSchedule(
 
 // Every 15 minutes. Sends the evening summary once per parent per local day, in the 20:00 hour.
 export const sendEveningDigest = onSchedule(
-  { schedule: "*/15 * * * *", timeZone: "Asia/Kolkata" },
+  { schedule: "*/15 * * * *", timeZone: "Asia/Kolkata", secrets: EXOTEL_SECRETS },
   async () => {
     await eveningDigestHandler({ db: getDb(), sender: new AdminPushSender() });
   },
@@ -146,6 +156,31 @@ export const voiceAudio = onRequest({ secrets: VOICE_AUDIO_SECRETS }, async (req
     response.status(500).json({ error: "internal" });
   }
 });
+
+// The parent's recorded spoken answer. Exotel posts the recording; 200 means applied, 422 means the
+// flow should play the keypad prompt. Audio and transcripts stay in memory and out of logs.
+export const voiceReply = onRequest(
+  { secrets: [...WEBHOOK_SECRETS, ...STT_SECRETS, ...AI_SECRETS], timeoutSeconds: 20 },
+  async (request, response) => {
+    try {
+      const result = await voiceReplyHandler(
+        { method: request.method, query: request.query as Record<string, unknown>, body: request.body },
+        {
+          db: getDb(),
+          token: process.env.EXOTEL_WEBHOOK_TOKEN ?? "",
+          stt: createSttClient(),
+          model: createReplyModelClient(),
+          sender: new AdminPushSender(),
+        },
+      );
+      response.status(result.status).json(result.body);
+    } catch (error) {
+      const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+      console.error("voiceReply: handler failed", { code });
+      response.status(422).json({ usable: false, reason: "error" });
+    }
+  },
+);
 
 // Exotel StatusCallback (POST) and Passthru gather (GET) arrive on one authenticated endpoint.
 export const exotelWebhook = onRequest({ secrets: WEBHOOK_SECRETS }, async (request, response) => {

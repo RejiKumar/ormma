@@ -17,6 +17,46 @@ export const STT_MODELS: Record<Language, string> = {
   "en-IN": "telephony_short",
 };
 
+/** What the recording is. Exotel can deliver either; anything else is not usable. */
+export type AudioFormat = "mp3" | "wav";
+
+export interface WavInfo {
+  sampleRate: number;
+  channels: number;
+  /** The raw 16-bit PCM samples, without the WAV header. */
+  pcm: Buffer;
+}
+
+/**
+ * Reads a PCM 16-bit WAV file: the sample rate and channel count come from its header, and the
+ * samples are returned without it. Returns null for anything else (other encodings, a damaged file).
+ */
+export function parseWav(buffer: Buffer): WavInfo | null {
+  if (buffer.length < 44) return null;
+  if (buffer.toString("ascii", 0, 4) !== "RIFF" || buffer.toString("ascii", 8, 12) !== "WAVE") return null;
+  let offset = 12;
+  let fmt: { format: number; channels: number; sampleRate: number; bits: number } | null = null;
+  while (offset + 8 <= buffer.length) {
+    const id = buffer.toString("ascii", offset, offset + 4);
+    const size = buffer.readUInt32LE(offset + 4);
+    const body = offset + 8;
+    if (id === "fmt " && body + 16 <= buffer.length) {
+      fmt = {
+        format: buffer.readUInt16LE(body),
+        channels: buffer.readUInt16LE(body + 2),
+        sampleRate: buffer.readUInt32LE(body + 4),
+        bits: buffer.readUInt16LE(body + 14),
+      };
+    } else if (id === "data") {
+      if (!fmt || fmt.format !== 1 || fmt.bits !== 16 || fmt.channels < 1 || fmt.sampleRate < 8000) return null;
+      const end = Math.min(buffer.length, body + size);
+      return { sampleRate: fmt.sampleRate, channels: fmt.channels, pcm: buffer.subarray(body, end) };
+    }
+    offset = body + size + (size % 2);
+  }
+  return null;
+}
+
 export type SttStatus = "ok" | "low_confidence" | "empty";
 
 export type SttResult =
@@ -30,6 +70,7 @@ export type SttErrorCode =
   | "invalid_json"
   | "invalid_response"
   | "audio_too_large"
+  | "unsupported_audio"
   | `http_${number}`;
 
 export class SttError extends Error {
@@ -40,7 +81,7 @@ export class SttError extends Error {
 }
 
 export interface SttClient {
-  transcribe(audio: Buffer, language: Language): Promise<SttResult>;
+  transcribe(audio: Buffer, language: Language, format?: AudioFormat): Promise<SttResult>;
 }
 
 function emptyResult(): SttResult {
@@ -104,24 +145,39 @@ export class GoogleSttClient implements SttClient {
     private readonly fetchImpl: typeof fetch = fetch,
   ) {}
 
-  async transcribe(audio: Buffer, language: Language): Promise<SttResult> {
+  async transcribe(audio: Buffer, language: Language, format: AudioFormat = "mp3"): Promise<SttResult> {
     if (audio.length === 0) return emptyResult();
     if (audio.length > STT_MAX_AUDIO_BYTES) throw new SttError("audio_too_large");
+
+    // MP3 is sent as is at 8 kHz. WAV is read for its rate and channels and sent as raw 16-bit samples.
+    let content = audio;
+    let encoding: string = STT_ENCODING;
+    let sampleRateHertz: number = STT_SAMPLE_RATE_HZ;
+    let audioChannelCount = 1;
+    if (format === "wav") {
+      const wav = parseWav(audio);
+      if (!wav) throw new SttError("unsupported_audio");
+      if (wav.pcm.length === 0) return emptyResult();
+      content = wav.pcm;
+      encoding = "LINEAR16";
+      sampleRateHertz = wav.sampleRate;
+      audioChannelCount = wav.channels;
+    }
 
     const endpoint = `https://speech.googleapis.com/v1/speech:recognize?key=${encodeURIComponent(
       this.apiKey,
     )}`;
     const body = {
       config: {
-        encoding: STT_ENCODING,
-        sampleRateHertz: STT_SAMPLE_RATE_HZ,
+        encoding,
+        sampleRateHertz,
         languageCode: language,
         model: STT_MODELS[language],
-        audioChannelCount: 1,
+        audioChannelCount,
         maxAlternatives: 1,
         enableAutomaticPunctuation: false,
       },
-      audio: { content: audio.toString("base64") },
+      audio: { content: content.toString("base64") },
     };
 
     let response: Response;

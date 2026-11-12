@@ -143,7 +143,7 @@ Then rebuild the dev client (`npx expo run:android` / `run:ios`) — config-plug
 
 ## Exotel telephony (manual, Stage 5)
 
-The dispatcher stays on the log-only provider unless `CALL_PROVIDER=exotel`. Emulator runs and tests never dial.
+Calling is **off** unless `CALL_PROVIDER=exotel` with a complete Exotel set-up: nothing is generated, dispatched or alerted. For local and emulator runs set `CALL_PROVIDER=log`: calling counts as on, the log-only provider records the call and nothing is dialled.
 
 1. **Create the secrets** (Secret Manager via the Firebase CLI). Values never go in git or the app:
    ```
@@ -159,7 +159,7 @@ The dispatcher stays on the log-only provider unless `CALL_PROVIDER=exotel`. Emu
 2. **Opt in**: add `CALL_PROVIDER=exotel` to `functions/.env.<projectId>` (or the deployed environment variables), deploy functions, then confirm `dispatchDueCalls` dials.
 3. **Dashboard flow**: Greeting → Gather (one digit; 1/2/9, timeout a few seconds) → Passthru **GET, sync** to `https://asia-south1-<project>.cloudfunctions.net/exotelWebhook?token=<EXOTEL_WEBHOOK_TOKEN>&kind=gather` → Closing. The Passthru must pass the gather `digits` through (it also receives `CallSid` and `CustomField`). The flow only collects a key this stage; spoken prompts/audio are Stage 6. The provider sets `StatusCallback` (terminal + answered, JSON) and `CustomField = parentId`; the webhook routes on those plus `CallSid`.
 4. **Manual live verification** (cannot be automated here; needs Exotel KYC, an approved caller ID/DLT and a real phone): place one call through the dispatcher, confirm the workflow answers, press 1/2/9 and see `taken`/`not_taken`/consent revoked in the app, then confirm the terminal callback closes the `callSessions` row. Check logs contain ids/status codes only — never transcripts or phone numbers.
-5. Without Exotel credentials you can still run everything locally: the logging provider and the emulator webhook tests (mocked HTTP + emulator Firestore) cover the code paths.
+5. Without Exotel credentials you can still run everything locally with `CALL_PROVIDER=log`: the logging provider and the emulator webhook tests (mocked HTTP + emulator Firestore) cover the code paths. The spoken reply endpoint (`voiceReply`) is described in `docs/EXOTEL-FLOW.md`.
 
 ## Voice prompts and TTS (manual, Stage 6)
 

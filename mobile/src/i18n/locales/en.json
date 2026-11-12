@@ -149,7 +149,8 @@
       "digestCopy": "Copy update for WhatsApp",
       "digestCopied": "Copied. Paste it in WhatsApp.",
       "digestCopyFailed": "Could not copy. Use Share instead.",
-      "badgeTakenNoTime": "Taken"
+      "badgeTakenNoTime": "Taken",
+      "callsSoon": "Check-in calls will start soon."
     },
     "medicines": {
       "title": "Medicines",

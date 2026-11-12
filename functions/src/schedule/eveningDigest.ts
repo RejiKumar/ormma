@@ -1,5 +1,6 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type { DoseEventDoc, MedicineDoc, ParentDoc } from "../../../shared/types";
+import { callActivation, callsEnabled, type CallActivation } from "../exotel/config";
 import { resolveMemberTokens, pruneInvalidTokens, type PushSender } from "../alerts/fcm";
 import { buildDigestText, type DigestEvent } from "../digestText";
 import { FALLBACK_TIME_ZONE, localDateKey, localWallClock, nextDateKey, zonedTimeToMs } from "./time";
@@ -20,9 +21,15 @@ export async function eveningDigestHandler(deps: {
   db: Firestore;
   sender: PushSender;
   nowMs?: number;
+  activation?: CallActivation;
 }): Promise<DigestRunResult> {
   const { db, sender } = deps;
   const nowMs = deps.nowMs ?? Date.now();
+  // Calling is off: there is no day of calls to summarise, and a digest would claim something false.
+  if (!callsEnabled(deps.activation ?? callActivation())) {
+    console.info("eveningDigest: calling is off", { status: "calling_off" });
+    return { parents: 0, sent: 0, skipped: 0 };
+  }
   const parentsSnap = await db.collection("parents").where("active", "==", true).get();
   const result: DigestRunResult = { parents: 0, sent: 0, skipped: 0 };
 

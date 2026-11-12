@@ -76,8 +76,7 @@ Never put any of these in the app, in git, or in a `.env` that is committed.
    `EXOTEL_FLOW_URL`.
 4. Point the status callback at `EXOTEL_WEBHOOK_URL` (with `?token=<EXOTEL_WEBHOOK_TOKEN>` if your flow
    adds it as a parameter).
-5. Turn real calls on in production: set the function environment `CALL_PROVIDER=exotel`
-   (otherwise the log-only provider is used and no call is placed).
+5. Turn real calls on in production with `CALL_PROVIDER=exotel` and `CALLS_LIVE_FROM=<ISO time>` in `functions/.env.ormma-prod`, then redeploy. Without them calling is **off**: nothing is generated, called or alerted, and the app shows "Check-in calls will start soon.". The exact order is in `docs/GO-LIVE.md`.
 6. Place one test call to your own phone before adding any family.
 
 ## 4. Deploy backend **[you]**
@@ -222,7 +221,7 @@ The app sells one subscription, Ormma Family, monthly and yearly. Prices below a
 ## 9. Before you press Production
 
 - [ ] `docs/PRELAUNCH-CHECKLIST.md` is fully ticked
-- [ ] Rules and functions deployed to `ormma-prod`, secrets set, `CALL_PROVIDER=exotel`
+- [ ] Rules and functions deployed to `ormma-prod`, secrets set, `CALL_PROVIDER=exotel` and `CALLS_LIVE_FROM` set (`docs/GO-LIVE.md`)
 - [ ] One real call placed and answered; a missed-dose alert and push notification received
 - [ ] Release build installed from Play internal testing on a real phone and signed in by real SMS
 - [ ] Consent flow, export and delete tried with a real owner account

@@ -11,8 +11,9 @@ import type {
   QuietHours,
   ResolvedBy,
 } from "../../../shared/types";
-import { LoggingCallProvider, type CallProvider } from "../callProvider";
+import type { CallProvider } from "../callProvider";
 import { getDb } from "../db";
+import { callActivation, createCallProvider, type CallActivation } from "../exotel/config";
 import { isQuietNow } from "./quietHours";
 import { applyTransition, type DoseEventState } from "./stateMachine";
 import { localClock } from "./time";
@@ -211,7 +212,10 @@ export interface DispatchSummary {
 
 export interface DispatchOptions {
   nowMs?: number;
-  provider?: CallProvider;
+  /** A provider to use. `null` means calling is off. Left out, the provider comes from the environment. */
+  provider?: CallProvider | null;
+  /** The go-live cutoff and mode. Left out, they come from the environment. */
+  activation?: CallActivation;
   limit?: number;
 }
 
@@ -311,15 +315,22 @@ async function revertGroup(
 
 /**
  * Minute dispatcher. Claims eligible groups transactionally and hands them to the provider.
- * The default provider is log-only; nothing dials in this stage.
+ * With no provider (calling off) it does nothing.
  */
 export async function dispatchDueCallsHandler(
   options: DispatchOptions = {},
 ): Promise<DispatchSummary> {
   const nowMs = options.nowMs ?? Date.now();
-  const provider = options.provider ?? new LoggingCallProvider();
+  const activation = options.activation ?? callActivation();
+  const provider = options.provider === undefined ? createCallProvider() : options.provider;
   const limit = options.limit ?? DISPATCH_QUERY_LIMIT;
   const db = getDb();
+
+  // Calling is off: claim nothing, place nothing, write nothing. Never a fake call (go-live-calls).
+  if (provider === null) {
+    console.info("dispatchDueCalls: calling is off", { status: "calling_off" });
+    return { due: 0, called: 0, eventsCalled: 0, skipped: 0, failed: 0 };
+  }
 
   const dueSnap = await db
     .collectionGroup("doseEvents")
@@ -342,6 +353,8 @@ export async function dispatchDueCallsHandler(
     const parentId = doc.ref.parent.parent?.id;
     if (!parentId) continue;
     const data = doc.data();
+    // Go-live cutoff: a dose scheduled before it is never called.
+    if (activation.liveFromMs !== null && (toMillis(data.scheduledFor) ?? 0) < activation.liveFromMs) continue;
     events.push({
       id: doc.id,
       parentId,

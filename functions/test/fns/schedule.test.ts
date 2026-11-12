@@ -3,8 +3,10 @@ import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import type { MedicineDoc, ParentDoc } from "../../../shared/types";
 import type { PushSender } from "../../src/alerts/fcm";
 import type { CallProvider, CallRequest } from "../../src/callProvider";
+import type { CallActivation } from "../../src/exotel/config";
 import { dispatchDueCallsHandler } from "../../src/schedule/dispatch";
 import { generateDoseEventsHandler } from "../../src/schedule/generate";
+import { eveningDigestHandler } from "../../src/schedule/eveningDigest";
 import { missedDoseCheckerHandler } from "../../src/schedule/missedDose";
 import { zonedTimeToMs } from "../../src/schedule/time";
 
@@ -531,5 +533,125 @@ describe("missedDoseCheckerHandler (emulator)", () => {
     await missedDoseCheckerHandler({ nowMs, sender });
 
     expect((await db().collection(`parents/${parentId}/alerts`).get()).size).toBe(1);
+  });
+});
+
+// go-live-calls: calling off pauses everything quietly, and the go-live cutoff protects older doses.
+describe("calling off and the go-live cutoff (emulator)", () => {
+  const OFF: CallActivation = { mode: "off", liveFromMs: null };
+  const DATE = "2026-12-10";
+  const eventId = (medicineId: string, time: string) => `${medicineId}_${DATE.replace(/-/g, "")}${time.replace(":", "")}`;
+
+  async function seedDue(time = "10:00") {
+    const parentId = await seedParent();
+    const medicineId = await seedMedicine(parentId, { times: [time] });
+    const id = eventId(medicineId, time);
+    await seedEvent(parentId, id, medicineId, at(DATE, time));
+    return { parentId, medicineId, id };
+  }
+  const eventDoc = async (parentId: string, id: string) =>
+    (await db().doc(`parents/${parentId}/doseEvents/${id}`).get()).data() as Record<string, unknown>;
+  const calledFor = (provider: { startCall: jest.Mock }, parentId: string) =>
+    provider.startCall.mock.calls.some((call) => (call[0] as CallRequest).parentId === parentId);
+
+  it("generation creates no dose events while calling is off, and does when it is on", async () => {
+    const parentId = await seedParent();
+    await seedMedicine(parentId, { times: ["10:00"] });
+    const nowMs = at(DATE, "00:30");
+    const off = await generateDoseEventsHandler({ nowMs, activation: OFF });
+    expect(off).toEqual({ parents: 0, planned: 0, created: 0, existing: 0, failed: 0 });
+    expect((await db().collection(`parents/${parentId}/doseEvents`).get()).size).toBe(0);
+    await generateDoseEventsHandler({ nowMs, activation: { mode: "log", liveFromMs: null } });
+    expect((await db().collection(`parents/${parentId}/doseEvents`).get()).size).toBeGreaterThan(0);
+  });
+
+  it("the dispatcher claims nothing and writes nothing without a provider", async () => {
+    const { parentId, id } = await seedDue();
+    const summary = await dispatchDueCallsHandler({ nowMs: at(DATE, "10:05"), provider: null });
+    expect(summary).toEqual({ due: 0, called: 0, eventsCalled: 0, skipped: 0, failed: 0 });
+    const data = await eventDoc(parentId, id);
+    expect(data.status).toBe("pending");
+    expect(data.attempts).toBe(0);
+    expect(data.lastCallSid).toBeNull();
+  });
+
+  it("the dispatcher does not fall back to a fake provider when the environment is off", async () => {
+    const { parentId, id } = await seedDue();
+    const previous = process.env.CALL_PROVIDER;
+    delete process.env.CALL_PROVIDER;
+    try {
+      await dispatchDueCallsHandler({ nowMs: at(DATE, "10:05") });
+    } finally {
+      process.env.CALL_PROVIDER = previous;
+    }
+    const data = await eventDoc(parentId, id);
+    expect(data.status).toBe("pending");
+    expect(data.lastCallSid).toBeNull();
+  });
+
+  it("a dose scheduled before the go-live cutoff is not dispatched, one after it is", async () => {
+    const before = await seedDue("10:00");
+    const after = await seedDue("11:00");
+    const provider = fakeProvider();
+    await dispatchDueCallsHandler({
+      nowMs: at(DATE, "11:05"),
+      provider,
+      activation: { mode: "log", liveFromMs: at(DATE, "10:30") },
+    });
+    expect(calledFor(provider, before.parentId)).toBe(false);
+    expect((await eventDoc(before.parentId, before.id)).status).toBe("pending");
+    expect(calledFor(provider, after.parentId)).toBe(true);
+  });
+
+  it("with no cutoff set a due dose is dispatched as before", async () => {
+    const { parentId } = await seedDue("10:00");
+    const provider = fakeProvider();
+    await dispatchDueCallsHandler({ nowMs: at(DATE, "10:05"), provider, activation: { mode: "log", liveFromMs: null } });
+    expect(calledFor(provider, parentId)).toBe(true);
+  });
+
+  it("the missed-dose checker raises no alert and changes no status while calling is off", async () => {
+    const { parentId, id } = await seedDue("10:00");
+    await seedMember(parentId);
+    const sender = fakeSender();
+    const summary = await missedDoseCheckerHandler({ nowMs: at(DATE, "12:00"), sender, activation: OFF });
+    expect(summary).toEqual({ scanned: 0, groups: 0, missed: 0, alerted: 0, failed: 0 });
+    expect((await db().collection(`parents/${parentId}/alerts`).get()).size).toBe(0);
+    expect((await eventDoc(parentId, id)).status).toBe("pending");
+    expect(sender.sendMulticast).not.toHaveBeenCalled();
+  });
+
+  it("the missed-dose checker ignores a dose scheduled before the cutoff", async () => {
+    const { parentId, id } = await seedDue("10:00");
+    await seedMember(parentId);
+    await missedDoseCheckerHandler({
+      nowMs: at(DATE, "12:00"),
+      sender: fakeSender(),
+      activation: { mode: "log", liveFromMs: at(DATE, "10:30") },
+    });
+    expect((await db().collection(`parents/${parentId}/alerts`).get()).size).toBe(0);
+    expect((await eventDoc(parentId, id)).status).toBe("pending");
+  });
+
+  it("the missed-dose checker still alerts once a normal dose is missed while calling is on", async () => {
+    const { parentId, id } = await seedDue("10:00");
+    await seedMember(parentId);
+    await missedDoseCheckerHandler({
+      nowMs: at(DATE, "12:00"),
+      sender: fakeSender(),
+      activation: { mode: "log", liveFromMs: at(DATE, "09:00") },
+    });
+    expect((await db().collection(`parents/${parentId}/alerts`).get()).size).toBe(1);
+    expect((await eventDoc(parentId, id)).status).toBe("missed");
+  });
+
+  it("the evening digest sends nothing while calling is off", async () => {
+    const parentId = await seedParent();
+    await seedMember(parentId);
+    const sender = fakeSender();
+    const result = await eveningDigestHandler({ db: db(), sender, nowMs: at(DATE, "20:05"), activation: OFF });
+    expect(result).toEqual({ parents: 0, sent: 0, skipped: 0 });
+    expect(sender.sendMulticast).not.toHaveBeenCalled();
+    expect((await db().doc(`parents/${parentId}`).get()).data()?.lastDigestDate).toBeUndefined();
   });
 });

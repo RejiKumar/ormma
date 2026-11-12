@@ -4,6 +4,7 @@ import { notifyAlert, writeAlert } from "../alerts/createAlert";
 import type { PushSender } from "../alerts/fcm";
 import { buildMissedDoseMessage, type MissedDoseVariant } from "../alerts/templates";
 import { getDb } from "../db";
+import { callActivation, callsEnabled, type CallActivation } from "../exotel/config";
 import { DEFAULT_CALL_POLICY, toDoseEventState } from "./dispatch";
 import { applyTransition, type DoseEventState } from "./stateMachine";
 
@@ -128,6 +129,8 @@ export interface MissedOptions {
   nowMs?: number;
   sender: PushSender;
   limit?: number;
+  /** Mode and go-live cutoff. Left out, they come from the environment. */
+  activation?: CallActivation;
 }
 
 export async function missedDoseCheckerHandler(options: MissedOptions): Promise<MissedSummary> {
@@ -135,6 +138,13 @@ export async function missedDoseCheckerHandler(options: MissedOptions): Promise<
   const limit = options.limit ?? MISSED_QUERY_LIMIT;
   const db = getDb();
   const summary: MissedSummary = { scanned: 0, groups: 0, missed: 0, alerted: 0, failed: 0 };
+  const activation = options.activation ?? callActivation();
+
+  // Calling is off: raise no alert and change no status. A dose that no call could reach is not missed.
+  if (!callsEnabled(activation)) {
+    console.info("missedDoseChecker: calling is off", { status: "calling_off" });
+    return summary;
+  }
 
   const dueSnap = await db
     .collectionGroup("doseEvents")
@@ -146,7 +156,11 @@ export async function missedDoseCheckerHandler(options: MissedOptions): Promise<
   for (const doc of dueSnap.docs) {
     const parentId = doc.ref.parent.parent?.id;
     if (!parentId) continue;
-    events.push({ id: doc.id, parentId, data: doc.data() as Record<string, unknown> });
+    const data = doc.data() as Record<string, unknown>;
+    // Go-live cutoff: a dose scheduled before it never raises an alert.
+    const scheduled = (data.scheduledFor as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0;
+    if (activation.liveFromMs !== null && scheduled < activation.liveFromMs) continue;
+    events.push({ id: doc.id, parentId, data });
   }
   summary.scanned = events.length;
   if (events.length === 0) return summary;

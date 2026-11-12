@@ -25,6 +25,11 @@ function invoke<Req, Res>(name: string, payload: Req): Promise<Res> {
   return callable(payload).then((result) => result.data);
 }
 
+/** Whether check-in calls are switched on. Nothing else about calling is exposed to the app. */
+export function getCallStatus(): Promise<{ callsEnabled?: boolean } | undefined> {
+  return invoke("getCallStatus", {});
+}
+
 export function createParent(payload: CreateParentPayload): Promise<{ parentId: string }> {
   return invoke("createParent", payload);
 }

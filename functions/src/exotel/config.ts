@@ -69,13 +69,59 @@ export function exotelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Exote
 }
 
 /**
- * Chooses the telephony provider. `CALL_PROVIDER=exotel` opts in to real calls; anything else uses
- * the log-only provider so local and emulator runs never dial.
+ * "exotel": real calls. "log": the test provider (`CALL_PROVIDER=log`, tests and emulators), calling
+ * is on but nothing is dialled. "off": production without a complete Exotel set-up; every scheduled
+ * function pauses quietly (go-live-calls: call-activation spec).
+ */
+export type CallMode = "exotel" | "log" | "off";
+
+export interface CallActivation {
+  mode: CallMode;
+  /** Doses scheduled before this instant (ms) are never dispatched or alerted. Null: no cutoff. */
+  liveFromMs: number | null;
+}
+
+let reportedMissing = "";
+
+/**
+ * The one place that decides whether calling is on. Real calls need `CALL_PROVIDER=exotel` and a
+ * complete Exotel configuration; anything else is off. Never falls back to the log provider. Logs
+ * the names of missing settings (never values), once per distinct set.
+ */
+export function callActivation(env: NodeJS.ProcessEnv = process.env): CallActivation {
+  const liveFrom = env.CALLS_LIVE_FROM ? Date.parse(env.CALLS_LIVE_FROM) : Number.NaN;
+  const liveFromMs = Number.isFinite(liveFrom) ? liveFrom : null;
+
+  if (env.CALL_PROVIDER === "log") return { mode: "log", liveFromMs };
+  if (env.CALL_PROVIDER !== "exotel") return { mode: "off", liveFromMs };
+  try {
+    exotelConfigFromEnv(env);
+    return { mode: "exotel", liveFromMs };
+  } catch (error) {
+    if (error instanceof ExotelConfigError) {
+      const names = error.missing.join(",");
+      if (names !== reportedMissing) {
+        reportedMissing = names;
+        console.warn("callActivation: calling is off, exotel settings missing", { missing: error.missing });
+      }
+      return { mode: "off", liveFromMs };
+    }
+    throw error;
+  }
+}
+
+export const callsEnabled = (activation: CallActivation): boolean => activation.mode !== "off";
+
+/**
+ * Chooses the telephony provider, or null when calling is off. Never returns the log-only provider
+ * unless `CALL_PROVIDER=log`, so production cannot record fake calls.
  */
 export function createCallProvider(
   env: NodeJS.ProcessEnv = process.env,
   fetchImpl: typeof fetch = fetch,
-): CallProvider {
-  if (env.CALL_PROVIDER !== "exotel") return new LoggingCallProvider();
-  return new ExotelCallProvider(exotelConfigFromEnv(env), fetchImpl);
+): CallProvider | null {
+  const { mode } = callActivation(env);
+  if (mode === "exotel") return new ExotelCallProvider(exotelConfigFromEnv(env), fetchImpl);
+  if (mode === "log") return new LoggingCallProvider();
+  return null;
 }

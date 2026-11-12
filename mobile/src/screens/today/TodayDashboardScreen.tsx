@@ -2,6 +2,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
+import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
 import { FadeIn } from "../../design/FadeIn";
 import { DoseRing } from "../../components/DoseRing";
@@ -21,6 +22,7 @@ import { PressableScale } from "../../design/PressableScale";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useAlerts } from "../../family/useAlerts";
+import { useCallStatus } from "../../family/useCallStatus";
 import { useMedicines } from "../../family/useMedicines";
 import type { DatedParent, FamilyParent } from "../../family/useParents";
 import { useParents } from "../../family/useParents";
@@ -271,6 +273,7 @@ export function TodayDashboardScreen() {
   const { alerts, loading: alertsLoading } = useAlerts(datedParents, alertsWindow);
   const navigation = useNavigation();
   const checklist = useFirstParentChecklist(parents, parentsLoading);
+  const { callsEnabled } = useCallStatus();
 
   // Each checklist row opens the screen where it is done; without a parent every step starts at Add a parent.
   const go = (tab: string, params: unknown) =>
@@ -299,6 +302,7 @@ export function TodayDashboardScreen() {
         ) : undefined
       }
     >
+      {callsEnabled === false ? <Banner testID="today-calls-soon" message={t("screens.today.callsSoon")} /> : null}
       {parentsLoading ? (
         <LoadingState variant="today" testID="today-loading" />
       ) : parents.length === 0 ? (
