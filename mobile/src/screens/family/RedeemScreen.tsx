@@ -78,7 +78,6 @@ export function RedeemScreen({ navigation }: Props) {
         autoCapitalize="characters"
         autoCorrect={false}
         maxLength={8}
-        hint={t("screens.redeem.codeHint")}
         onSubmitEditing={() => void join()}
       />
       {errorMessage ? <FormError message={errorMessage} testID="redeem-error" /> : null}

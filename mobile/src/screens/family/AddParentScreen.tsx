@@ -111,7 +111,6 @@ export function AddParentScreen({ navigation }: Props) {
         keyboardType="phone-pad"
         autoComplete="tel"
         autoCapitalize="none"
-        hint={t("screens.addParent.phoneHint")}
       />
       <View style={{ gap: theme.spacing.xs }}>
         <Text variant="label">{t("screens.addParent.languageLabel")}</Text>

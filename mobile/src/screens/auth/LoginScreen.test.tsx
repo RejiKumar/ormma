@@ -35,7 +35,7 @@ describe("LoginScreen", () => {
     await fireEvent.press(screen.getByTestId("login-send"));
     expect(
       await screen.findByText(
-        "That phone number is not valid. Use international format, for example +919876543210.",
+        "That phone number is not valid. Include the country code.",
       ),
     ).toBeTruthy();
     expect(authMock.signInWithPhoneNumber).not.toHaveBeenCalled();

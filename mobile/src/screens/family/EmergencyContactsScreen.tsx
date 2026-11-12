@@ -127,7 +127,6 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
             onChangeText={(phone) => update(index, { phone })}
             keyboardType="phone-pad"
             autoCapitalize="none"
-            hint={t("screens.contacts.phoneHint")}
             editable={isOwner}
           />
           <TextField
@@ -135,7 +134,6 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
             label={t("screens.contacts.noteLabel")}
             value={row.note}
             onChangeText={(note) => update(index, { note })}
-            hint={t("screens.contacts.noteHint", { name: route.params.parentName })}
             maxLength={MAX_NOTE}
             editable={isOwner}
           />

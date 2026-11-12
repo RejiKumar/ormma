@@ -105,7 +105,6 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
         label={t("screens.parentDetails.prescriberLabel")}
         value={prescriber}
         onChangeText={setPrescriber}
-        hint={t("screens.parentDetails.prescriberHint")}
         maxLength={MAX_PRESCRIBER}
         autoCapitalize="words"
         editable={isOwner}
@@ -115,7 +114,6 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
         label={t("screens.parentDetails.refillLabel")}
         value={refillDue}
         onChangeText={setRefillDue}
-        hint={t("screens.parentDetails.refillHint")}
         keyboardType="numbers-and-punctuation"
         maxLength={10}
         editable={isOwner}

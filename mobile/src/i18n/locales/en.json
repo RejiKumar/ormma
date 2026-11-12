@@ -77,7 +77,7 @@
       "resendIn": "Resend in {{seconds}}s"
     },
     "errors": {
-      "invalidPhone": "That phone number is not valid. Use international format, for example +919876543210.",
+      "invalidPhone": "That phone number is not valid. Include the country code.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
       "invalidCode": "That code is not correct. Check the message and try again.",
       "incompleteCode": "Enter all 6 digits of the code.",
@@ -162,13 +162,11 @@
       "editTitle": "Edit medicine",
       "nameLabel": "Medicine name",
       "doseLabel": "Dose",
-      "doseHint": "For example 1 tablet",
       "timesLabel": "Dose times",
       "timeLabel": "Time",
       "removeTime": "Remove this time",
       "addTime": "Add another time",
       "startDateLabel": "Start date",
-      "startDateHint": "YYYY-MM-DD",
       "save": "Save medicine",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",
@@ -192,11 +190,8 @@
       "prescribedBy": "Prescribed by {{name}}",
       "refillDue": "refill due {{date}}",
       "frequencyLabel": "How often",
-      "frequencyHint": "For example Twice daily, after food",
       "pillLabel": "How it looks",
-      "pillHint": "For example Small round white tablet",
-      "purposeLabel": "What it is for",
-      "purposeHint": "For example Sugar"
+      "purposeLabel": "What it is for"
     },
     "family": {
       "title": "Family",
@@ -236,7 +231,7 @@
       "badgeSeenYesterday": "Seen yesterday",
       "badgeSeenDate": "Seen {{date}}",
       "yourDetails": "Your details",
-      "relationshipLabel": "Your relationship, for example Son",
+      "relationshipLabel": "Your relationship",
       "cityLabel": "Your city",
       "saveDetails": "Save",
       "notificationsTitle": "Notifications",
@@ -267,7 +262,6 @@
       "subtitle": "The app will call this parent at medicine times.",
       "nameLabel": "Parent's name",
       "phoneLabel": "Phone number",
-      "phoneHint": "For example +919876543210",
       "languageLabel": "Language for calls",
       "save": "Save parent",
       "errors": {
@@ -297,7 +291,6 @@
       "title": "Enter invite code",
       "subtitle": "Enter the 8-character code a family member shared with you.",
       "codeLabel": "Invite code",
-      "codeHint": "8 letters and numbers, for example K7M2P9XA",
       "join": "Join family",
       "errors": {
         "invalidFormat": "That code is not valid. It is 8 letters and numbers.",
@@ -314,7 +307,6 @@
       "subtitle": "People the family can call if {{name}} does not answer. Up to 3.",
       "label": "Name",
       "phone": "Phone number",
-      "phoneHint": "For example +919876543210",
       "kind": "Type",
       "add": "Add a contact",
       "remove": "Remove this contact",
@@ -322,20 +314,17 @@
       "readOnly": "Only the family owner can change emergency contacts.",
       "errors": {
         "labelRequired": "Enter a name for each contact.",
-        "invalidPhone": "Enter each phone number with its country code, for example +919876543210.",
+        "invalidPhone": "Enter each phone number with its country code.",
         "failed": "Could not save the contacts. Please try again."
       },
-      "noteLabel": "Short note (optional)",
-      "noteHint": "For example 2 min walk from {{name}}"
+      "noteLabel": "Short note (optional)"
     },
     "parentDetails": {
       "title": "Parent details",
       "subtitle": "Shown to the family. Only owners can change them.",
       "cityLabel": "City",
       "prescriberLabel": "Prescribed by",
-      "prescriberHint": "For example Dr. Nair",
       "refillLabel": "Refill due",
-      "refillHint": "YYYY-MM-DD",
       "save": "Save details",
       "readOnly": "Only the family owner can change these details.",
       "errors": {

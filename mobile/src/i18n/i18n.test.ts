@@ -67,3 +67,25 @@ describe("i18n", () => {
     expect(pickLanguage(undefined)).toBe("en");
   });
 });
+
+/** Every string in a catalogue, with its dotted key. */
+function entries(obj: Record<string, unknown>, prefix = ""): Array<[string, string]> {
+  return Object.entries(obj).flatMap(([k, v]) =>
+    v && typeof v === "object"
+      ? entries(v as Record<string, unknown>, `${prefix}${k}.`)
+      : ([[`${prefix}${k}`, String(v)]] as Array<[string, string]>),
+  );
+}
+
+describe("no hint or example text", () => {
+  // Product decision 2026-11-12: forms show no hints and no example values.
+  it("has no visible hint keys and no example text in any language", () => {
+    for (const catalogue of [en, hi, ml, ta]) {
+      for (const [key, value] of entries(catalogue as Record<string, unknown>)) {
+        // settings.rowHint is a screen-reader hint, not text shown on a form.
+        if (key !== "settings.rowHint") expect(key).not.toMatch(/hint$/i);
+        expect(value).not.toMatch(/for example|e\.g\.|\+91\d{6,}/i);
+      }
+    }
+  });
+});

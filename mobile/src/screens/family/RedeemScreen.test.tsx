@@ -33,10 +33,10 @@ describe("RedeemScreen", () => {
     jest.restoreAllMocks();
   });
 
-  it("shows the title, hint and disclaimer", async () => {
+  it("shows the title and disclaimer, and no example text", async () => {
     await renderRedeem();
     expect(screen.getByText("Enter invite code")).toBeTruthy();
-    expect(screen.getByText("8 letters and numbers, for example K7M2P9XA")).toBeTruthy();
+    expect(screen.queryByText(/for example/i)).toBeNull();
     expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
   });
 

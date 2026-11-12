@@ -61,7 +61,7 @@ describe("AddParentScreen", () => {
     await pressSave();
     expect(
       await screen.findByText(
-        "That phone number is not valid. Use international format, for example +919876543210.",
+        "That phone number is not valid. Include the country code.",
       ),
     ).toBeTruthy();
     expect(createParent).not.toHaveBeenCalled();

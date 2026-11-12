@@ -55,7 +55,6 @@ export function MedicineFormFields({
         label={t("screens.medicines.doseLabel")}
         value={draft.doseText}
         onChangeText={(doseText) => onChange({ ...draft, doseText })}
-        hint={t("screens.medicines.doseHint")}
         editable={editable}
       />
       <TextField
@@ -63,7 +62,6 @@ export function MedicineFormFields({
         label={t("screens.medicines.frequencyLabel")}
         value={draft.frequencyText}
         onChangeText={(frequencyText) => onChange({ ...draft, frequencyText })}
-        hint={t("screens.medicines.frequencyHint")}
         maxLength={MAX_FREQUENCY}
         editable={editable}
       />
@@ -72,7 +70,6 @@ export function MedicineFormFields({
         label={t("screens.medicines.pillLabel")}
         value={draft.pillDescription}
         onChangeText={(pillDescription) => onChange({ ...draft, pillDescription })}
-        hint={t("screens.medicines.pillHint")}
         maxLength={MAX_PILL}
         editable={editable}
       />
@@ -81,7 +78,6 @@ export function MedicineFormFields({
         label={t("screens.medicines.purposeLabel")}
         value={draft.purpose}
         onChangeText={(purpose) => onChange({ ...draft, purpose })}
-        hint={t("screens.medicines.purposeHint")}
         maxLength={MAX_PURPOSE}
         editable={editable}
       />
@@ -129,7 +125,6 @@ export function MedicineFormFields({
         label={t("screens.medicines.startDateLabel")}
         value={draft.startDate}
         onChangeText={(startDate) => onChange({ ...draft, startDate })}
-        hint={t("screens.medicines.startDateHint")}
         autoCapitalize="none"
         autoCorrect={false}
         maxLength={10}
