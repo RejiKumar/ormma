@@ -34,6 +34,9 @@ async function start() {
       "appium:noReset": true,
       "appium:autoGrantPermissions": true,
       "appium:newCommandTimeout": 300,
+      // Android 36 images refuse to start the Appium Settings helper as a foreground service; skipping its
+      // install keeps element lookup and taps working. Set ORMMA_SKIP_INIT=1 on such an emulator.
+      ...(process.env.ORMMA_SKIP_INIT ? { "appium:skipDeviceInitialization": true } : {}),
     },
   });
 }
@@ -157,6 +160,12 @@ if (!CODE) {
     await driver.pause(8000);
     let t = await allText();
     if (t.includes("Enter the code")) throw new Error("still on the code screen");
+    // Android 13 and newer asks for the notification permission right after sign-in, over the welcome.
+    if (t.includes("Allow Ormma to send you notifications?")) {
+      await tap("Allow");
+      await driver.pause(1500);
+      t = await allText();
+    }
     // First arrival on Today on a fresh install: the three-step welcome comes first.
     if (t.includes("Ormma checks in by phone")) {
       r.shots.push(await shot("TC08-welcome-1"));
@@ -172,8 +181,18 @@ if (!CODE) {
     r.shots.push(await shot("TC08-signed-in"));
     // An account with no parent shows the illustrated empty state, the checklist and one primary action.
     if (t.includes("Nothing here yet")) {
-      for (const need of ["Getting started", "Add a parent", "Invite family"])
+      for (const need of ["Getting started", "Add a parent"])
         if (!t.includes(need)) throw new Error(`empty Today is missing "${need}"`);
+      // The third row can sit below the fold on a short screen, so scroll before looking for it.
+      const size = await driver.getWindowRect();
+      await driver.execute("mobile: swipeGesture", {
+        left: Math.round(size.width * 0.2), top: Math.round(size.height * 0.45),
+        width: Math.round(size.width * 0.6), height: Math.round(size.height * 0.4),
+        direction: "up", percent: 0.8,
+      });
+      await driver.pause(800);
+      const invite = await driver.$('//*[contains(@text,"Invite family") or contains(@content-desc,"Invite family")]');
+      if (!(await invite.isExisting())) throw new Error('empty Today is missing "Invite family"');
     }
     return `Screen text: ${t.slice(0, 12).join(" / ")}`;
   });

@@ -4,7 +4,7 @@ Target: the signed release bundle (`com.ormma.app`) on the `flutter_emulator` AV
 (`ormma-prod`) with the Firebase test number +917871458828. Calls stay disabled (`CALL_PROVIDER` unset).
 
 Run: start Appium (`appium --port 4723`), then `cd e2e && npm install && node run.mjs`.
-Set `ORMMA_TEST_CODE` to the fixed Firebase test code to enable the signed-in cases.
+Set `ORMMA_TEST_CODE` to the fixed Firebase test code to enable the signed-in cases. On an Android 36 emulator set `ORMMA_SKIP_INIT=1` (the Appium Settings helper cannot start there). Use an emulator image with the Play Store: Google APIs images without it hang on sign-in.
 Output: `e2e/report/report.html` (screenshots embedded) and `results.json`.
 
 | ID   | Scenario | Expected |
