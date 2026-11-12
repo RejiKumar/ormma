@@ -36,7 +36,7 @@ Ormma has a free plan and a paid plan, Ormma Family, billed monthly or yearly th
 are shown in Google Play before you buy. Payment, renewal, cancellation and refunds are handled by Google
 Play under its terms, and you manage your subscription in Google Play. When a paid plan ends there is a
 grace period of 7 days; after that the free plan limits apply. We never delete your data because a plan
-ends. Missed-dose alerts, urgent alerts, the escalation view and the Call buttons are included on every plan.
+ends. Missed-dose alerts, urgent alerts, the Alerts tab and the Call buttons are included on every plan.
 
 ## Acceptable use
 

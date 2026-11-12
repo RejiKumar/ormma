@@ -2,6 +2,7 @@ import { createBottomTabNavigator, type BottomTabBarButtonProps } from "@react-n
 import { useTranslation } from "react-i18next";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSignOut } from "../auth/useSignOut";
 import { AlertDot } from "../components/AlertDot";
 import { AppHeader } from "../components/AppHeader";
 import { Icon } from "../components/Icon";
@@ -37,7 +38,7 @@ export function tabBarStyles(theme: Theme, bottomInset = 0) {
   };
 }
 
-/** Bottom tab navigation: Today, Medicines, Escalation and Family. */
+/** Bottom tab navigation: Today, Medicines, Alerts and Family. */
 export function AppTabs() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -45,6 +46,7 @@ export function AppTabs() {
   const styles = tabBarStyles(theme, insets.bottom);
   const unreadUrgent = useUnreadUrgentAlertCount();
   const { parents } = useParents();
+  const confirmSignOut = useSignOut();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -74,6 +76,7 @@ export function AppTabs() {
             parentName={parents[0] ? [parents[0].name, parents[0].city].filter((part) => part.length > 0).join(" · ") : null}
             extraParents={Math.max(0, parents.length - 1)}
             alert={unreadUrgent > 0}
+            onSignOut={confirmSignOut}
           />
         ),
         tabBarActiveTintColor: theme.colors.primary,

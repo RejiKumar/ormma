@@ -55,6 +55,13 @@ export const ICONS = {
       { t: "path", d: "m8.5 8.5 7 7" },
     ],
   },
+  logout: {
+    els: [
+      { t: "path", d: "M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" },
+      { t: "path", d: "M16 8l4 4-4 4" },
+      { t: "path", d: "M20 12H9" },
+    ],
+  },
   copy: {
     els: [{ t: "rect", x: 9, y: 9, w: 11, h: 11, rx: 3 }, { t: "path", d: "M5 15V6a2 2 0 0 1 2-2h9" }],
   },

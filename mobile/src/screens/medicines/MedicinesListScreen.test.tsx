@@ -311,6 +311,6 @@ describe("MedicinesListScreen", () => {
     expect(screen.queryByText(/^Metformin/)).toBeNull();
 
     await fireEvent.press(screen.getByTestId("medicine-m2"));
-    expect(await screen.findByText("Edit medicine")).toBeTruthy();
+    expect(await screen.findByTestId("edit-medicine-loading")).toBeTruthy();
   });
 });

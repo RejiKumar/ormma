@@ -6,32 +6,31 @@ import { authErrorMessage } from "../../auth/authErrorMessage";
 import { setPendingConfirmation } from "../../auth/pendingConfirmation";
 import { Button } from "../../components/Button";
 import { Screen } from "../../components/Screen";
-import { TextField } from "../../components/TextField";
+import { PhoneField } from "../../components/PhoneField";
 import { AuthHero } from "./AuthHero";
 import { Text } from "../../design/Text";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
-import { DEFAULT_COUNTRY_CODE, isValidE164 } from "../../utils/phone";
+import { isValidIndiaMobile, toE164India } from "../../utils/phone";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
 export function LoginScreen({ navigation }: Props) {
   const { t } = useTranslation();
-  const [phone, setPhone] = useState(DEFAULT_COUNTRY_CODE);
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
   const [sending, setSending] = useState(false);
 
   const sendCode = async () => {
-    const trimmed = phone.trim();
-    if (!isValidE164(trimmed)) {
+    if (!isValidIndiaMobile(phone)) {
       setError(t("auth.errors.invalidPhone"));
       return;
     }
     setError(undefined);
     setSending(true);
     try {
-      const confirmation = await signInWithPhoneNumber(getAuth(), trimmed);
+      const confirmation = await signInWithPhoneNumber(getAuth(), toE164India(phone));
       setPendingConfirmation(confirmation);
-      navigation.navigate("Otp", { phoneNumber: trimmed });
+      navigation.navigate("Otp", { phoneNumber: toE164India(phone) });
     } catch (err) {
       setError(authErrorMessage(err, t));
     } finally {
@@ -55,16 +54,13 @@ export function LoginScreen({ navigation }: Props) {
       <Text variant="body" tone="muted">
         {t("auth.login.subtitle")}
       </Text>
-      <TextField
+      <PhoneField
         testID="login-phone"
         label={t("auth.login.phoneLabel")}
         value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        textContentType="telephoneNumber"
-        autoCapitalize="none"
+        onChangeValue={setPhone}
         error={error}
+        returnKeyType="done"
         onSubmitEditing={() => void sendCode()}
       />
     </Screen>

@@ -26,11 +26,11 @@
   "tabs": {
     "today": "Today",
     "medicines": "Medicines",
-    "alerts": "Escalation",
+    "alerts": "Alerts",
     "family": "Family"
   },
   "alerts": {
-    "title": "Escalation",
+    "title": "Alerts",
     "emergencyPrompt": "Please call your local emergency services if you are worried.",
     "callNow": "Call now",
     "markAsTaken": "Mark as taken",
@@ -77,7 +77,7 @@
       "resendIn": "Resend in {{seconds}}s"
     },
     "errors": {
-      "invalidPhone": "That phone number is not valid. Include the country code.",
+      "invalidPhone": "Enter a 10-digit mobile number.",
       "tooManyRequests": "Too many attempts. Please wait a few minutes and try again.",
       "invalidCode": "That code is not correct. Check the message and try again.",
       "incompleteCode": "Enter all 6 digits of the code.",
@@ -314,7 +314,7 @@
       "readOnly": "Only the family owner can change emergency contacts.",
       "errors": {
         "labelRequired": "Enter a name for each contact.",
-        "invalidPhone": "Enter each phone number with its country code.",
+        "invalidPhone": "Enter each phone number as 10 digits.",
         "failed": "Could not save the contacts. Please try again."
       },
       "noteLabel": "Short note (optional)"
@@ -379,7 +379,7 @@
     "kindParent": "Parent",
     "kindClinic": "Clinic",
     "protocolTitle": "Check-in protocol",
-    "calmTitle": "Nothing to escalate today",
+    "calmTitle": "No alerts today",
     "calmBody": "{{name}} replied to every call. These are the steps Ormma follows if a call is not answered.",
     "missedTitle": "{{name}} has not confirmed the {{time}} dose",
     "missedBody": "These are the calls Ormma made.",
@@ -417,14 +417,10 @@
     "signOutConfirm": "You will need your phone number and a new code to sign in again.",
     "deleteAccount": "Delete account",
     "deleteTitle": "Delete account",
-    "deleteMessage": "This deletes your profile and your place in every family. Other members keep their data. A Google Play subscription is cancelled in Google Play.",
+    "deleteMessage": "This permanently deletes your profile and your place in every family. It cannot be undone. Other members keep their data. A Google Play subscription is cancelled in Google Play.",
     "deleteConfirm": "Delete",
     "ownsParents": "Delete the parents you own first.",
     "deleteFailed": "The account could not be deleted. Try again.",
-    "appearanceTitle": "Appearance",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System",
     "privacyTitle": "Privacy policy",
     "termsTitle": "Terms and conditions",
     "updatedOn": "Last updated {{date}}",
@@ -438,7 +434,7 @@
     "freeLine": "1 parent, 2 members per parent, check-in calls for the first 2 dose times each day.",
     "paidTitle": "Ormma Family",
     "paidLine": "Up to 3 parents, 6 members per parent, check-in calls for every dose time.",
-    "everyPlan": "Missed-dose alerts, urgent alerts, the escalation view and the Call buttons are included on every plan.",
+    "everyPlan": "Missed-dose alerts, urgent alerts, the Alerts tab and the Call buttons are included on every plan.",
     "currentPlan": "Your plan",
     "monthly": "Monthly",
     "yearly": "Yearly",

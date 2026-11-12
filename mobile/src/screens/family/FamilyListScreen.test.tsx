@@ -172,6 +172,6 @@ describe("FamilyListScreen", () => {
     captureListeners();
     await renderFamily();
     await fireEvent.press(await screen.findByTestId("family-settings"));
-    expect(await screen.findByTestId("settings-sign-out")).toBeTruthy();
+    expect(await screen.findByTestId("settings-name")).toBeTruthy();
   });
 });

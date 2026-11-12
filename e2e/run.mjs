@@ -98,25 +98,27 @@ await tc("TC01", "App launches on the sign-in screen", ["Fresh install state", "
   return "Heading, phone field, Send code and the medical-advice line are shown";
 });
 
-await tc("TC02", "Phone field starts with the +91 prefix", ["Read the phone field"], async () => {
+await tc("TC02", "Phone field shows a fixed +91 prefix and starts empty", ["Read the phone field"], async () => {
   const v = await (await driver.$$("android.widget.EditText"))[0].getText();
-  if (v.trim() !== "+91") throw new Error(`field shows "${v}"`);
+  if (v.trim() !== "") throw new Error(`field shows "${v}"`);
+  if (!(await allText()).includes("+91")) throw new Error("the +91 prefix is not shown");
 });
 
-await tc("TC03", "Too-short number is rejected without leaving the screen", ["Type +9112", "Tap Send code"], async (r) => {
+await tc("TC03", "Too-short number is rejected without leaving the screen", ["Type 12", "Tap Send code"], async (r) => {
   await typeInto(0, "12");
   await tap("Send code");
   await driver.pause(1500);
   const t = await allText();
   if (!t.includes("Sign in")) throw new Error("left the sign-in screen");
+  if (!t.includes("Enter a 10-digit mobile number.")) throw new Error("no 10-digit message");
   r.shots.push(await shot("TC03-short-number"));
   return `Screen text: ${t.filter((x) => !["Sign in", "Phone number", "Send code"].includes(x)).join(" / ")}`;
 });
 
-await tc("TC04", "Valid test number moves to the code screen (production Auth, new API key)", ["Enter +91" + NUMBER, "Tap Send code"], async (r) => {
+await tc("TC04", "Valid test number moves to the code screen (production Auth, new API key)", ["Enter " + NUMBER + " (10 digits, +91 is added)", "Tap Send code"], async (r) => {
   const field = (await driver.$$("android.widget.EditText"))[0];
   await field.click();
-  await field.setValue("+91" + NUMBER);
+  await field.setValue(NUMBER);
   await driver.hideKeyboard().catch(() => {});
   await tap("Send code");
   await waitText("Enter the code", 90000);

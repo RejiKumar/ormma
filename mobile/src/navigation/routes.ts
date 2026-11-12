@@ -19,7 +19,7 @@ export interface TabRoute {
   component: ComponentType;
 }
 
-/** The bottom tabs: Today, Medicines, Escalation (Alerts) and Family. */
+/** The bottom tabs: Today, Medicines, Alerts and Family. */
 export function getTabRoutes(): TabRoute[] {
   return [
     { name: "Today", labelKey: "tabs.today", icon: "home", component: Today },

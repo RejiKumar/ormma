@@ -35,7 +35,6 @@ describe("RedeemScreen", () => {
 
   it("shows the title and disclaimer, and no example text", async () => {
     await renderRedeem();
-    expect(screen.getByText("Enter invite code")).toBeTruthy();
     expect(screen.queryByText(/for example/i)).toBeNull();
     expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
   });

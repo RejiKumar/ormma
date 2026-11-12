@@ -81,3 +81,26 @@ An empty state SHALL name what is missing, say in one sentence what will appear 
 #### Scenario: Neutral tone
 - **WHEN** any empty state is rendered
 - **THEN** it uses the neutral and primary styles and no coral
+
+### Requirement: Indian mobile number entry
+Every field that asks for a phone number (sign-in, a parent's number, an emergency contact's number) SHALL show a fixed, non-editable "+91" prefix and accept exactly 10 digits that start with 6, 7, 8 or 9. Typing SHALL accept digits only and stop at 10. A pasted or autofilled number SHALL have a leading +91, 91 or 0 removed. The app SHALL add "+91" itself, so numbers are still stored and sent in E.164 format. The validation message SHALL name the problem without an example number.
+
+#### Scenario: Fixed prefix
+- **WHEN** a phone field is shown
+- **THEN** "+91" is shown before an empty input and cannot be edited
+
+#### Scenario: At most 10 digits
+- **WHEN** the user types 11 digits or letters
+- **THEN** the field holds only the first 10 digits
+
+#### Scenario: Paste
+- **WHEN** the user pastes "+91 98765 43210" or "09876543210"
+- **THEN** the field holds 9876543210
+
+#### Scenario: Too short or not a mobile number
+- **WHEN** the user submits 9 digits, or 10 digits that start with 0 to 5
+- **THEN** nothing is sent and the message "Enter a 10-digit mobile number." is shown
+
+#### Scenario: Stored in E.164
+- **WHEN** the user submits 8157807124
+- **THEN** the number sent and stored is +918157807124

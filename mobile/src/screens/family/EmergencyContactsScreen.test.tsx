@@ -57,11 +57,11 @@ describe("EmergencyContactsScreen", () => {
     expect(goBack).toHaveBeenCalled();
   });
 
-  it("rejects a phone that is not in E.164 format and stores nothing", async () => {
+  it("rejects a number that is not 10 digits and stores nothing", async () => {
     await renderScreen();
     await fireEvent.changeText(screen.getByTestId("contact-phone-0"), "98765");
     await fireEvent.press(screen.getByTestId("contacts-save"));
-    expect(await screen.findByTestId("contacts-error")).toHaveTextContent(/country code/);
+    expect(await screen.findByTestId("contacts-error")).toHaveTextContent(/10 digits/);
     expect(fsMock.updateDoc).not.toHaveBeenCalled();
   });
 

@@ -65,7 +65,7 @@ export function TodaySkeleton() {
   );
 }
 
-/** Medicines, Escalation and Family: title and subtitle bars, then four list cards. */
+/** Medicines, Alerts and Family: title and subtitle bars, then four list cards. */
 export function ListSkeleton({ rows = 4 }: { rows?: number }) {
   const { theme } = useTheme();
   const r = theme.radius;

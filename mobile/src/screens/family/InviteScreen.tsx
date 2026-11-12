@@ -74,7 +74,6 @@ export function InviteScreen({ route }: Props) {
         )
       }
     >
-      <Text variant="headline">{t("screens.invite.title")}</Text>
       <Text tone="muted">{t("screens.invite.subtitle", { name: parentName })}</Text>
       {code ? (
         <Card style={{ gap: theme.spacing.md }}>

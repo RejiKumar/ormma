@@ -39,6 +39,13 @@ Every screen and component added or changed by the redesign SHALL be reviewed in
 - **WHEN** a redesigned card renders in the dark theme
 - **THEN** it has a hairline border and no shadow
 
+### Requirement: Screen titles are not repeated
+A screen opened from a tab SHALL show its title once, in the navigation header. The page content SHALL NOT repeat the same text as a heading directly under the header. Subtitles and section headings with different text are allowed.
+
+#### Scenario: One title
+- **WHEN** a screen such as Add a parent, Invite, Emergency contacts, Parent details, Enter invite code, Add medicine, Edit medicine, or a legal document is opened
+- **THEN** its title appears in the header and is not repeated as a heading in the page
+
 ## MODIFIED Requirements
 
 ### Requirement: Core components
@@ -53,7 +60,7 @@ The design system SHALL provide Button, Card, StatusChip, DoseRing, ParentCard, 
 - **THEN** it shows the illustration above the title and description, and the action below them
 
 ### Requirement: Coral usage
-Coral SHALL be used only for the missed status (badge, timeline dot and icon), the urgent banner, the app bar status dot while a dose is missed and the alert dot that signals an unread urgent or missed-dose alert (on the Escalation tab, or on the header bell when the Insights tab replaces it). Actions such as "See what Ormma tried" and "I called" SHALL use the primary or neutral button styles.
+Coral SHALL be used only for the missed status (badge, timeline dot and icon), the urgent banner, the app bar status dot while a dose is missed and the alert dot that signals an unread urgent or missed-dose alert (on the Alerts tab, or on the header bell when the Insights tab replaces it). Actions such as "See what Ormma tried" and "I called" SHALL use the primary or neutral button styles.
 
 #### Scenario: Action buttons
 - **WHEN** the hero shows "See what Ormma tried" or the presence bar shows "I called <name>"
@@ -64,7 +71,7 @@ Coral SHALL be used only for the missed status (badge, timeline dot and icon), t
 - **THEN** coral tokens are used only by the files that show the missed status, the urgent banner, the app bar dot and the alert dot
 
 ### Requirement: Bottom navigation
-The bottom navigation SHALL be 64 dp high with a surface background and a 1 px top border. Tab labels SHALL be 11 px medium. The active tab SHALL show its icon and label in the primary colour inside a primary tint pill with a 16 px radius, and inactive tabs SHALL use the muted colour. Each tab SHALL stay at least 48 dp for touch. The tabs SHALL be Today, Medicines, Escalation and Family. While an unread urgent or missed-dose alert exists, a 6 px coral dot SHALL be shown on the Escalation tab. If the user approves replacing Escalation with Insights, the tabs SHALL be Today, Medicines, Insights and Family, and the 6 px coral dot SHALL move to a bell in the app header that opens the Alerts screen.
+The bottom navigation SHALL be 64 dp high with a surface background and a 1 px top border. Tab labels SHALL be 11 px medium. The active tab SHALL show its icon and label in the primary colour inside a primary tint pill with a 16 px radius, and inactive tabs SHALL use the muted colour. Each tab SHALL stay at least 48 dp for touch. The tabs SHALL be Today, Medicines, Alerts and Family. While an unread urgent or missed-dose alert exists, a 6 px coral dot SHALL be shown on the Alerts tab. If the user approves replacing Escalation with Insights, the tabs SHALL be Today, Medicines, Insights and Family, and the 6 px coral dot SHALL move to a bell in the app header that opens the Alerts screen.
 
 #### Scenario: Active tab
 - **WHEN** the Medicines tab is active
@@ -72,10 +79,10 @@ The bottom navigation SHALL be 64 dp high with a surface background and a 1 px t
 
 #### Scenario: Alert dot
 - **WHEN** an unread missed-dose alert exists
-- **THEN** a 6 px coral dot is drawn over the Escalation icon, or over the header bell when the Insights tab is present, with the same accessible label as before
+- **THEN** a 6 px coral dot is drawn over the Alerts icon, or over the header bell when the Insights tab is present, with the same accessible label as before
 
 ### Requirement: Screen type scale
-Headings, labels and captions on the tab screens (Today, Medicines, Escalation or Insights, and Family) SHALL follow these sizes: brand 18 bold, hero title 22 over 28 with -0.4 letter spacing, hero subtitle 12 over 16, section heading 16 semibold, card heading 15 semibold, note body 14 over 21, chip 12 medium, badge and receipt 11, tag 10 uppercase semibold with 0.5 letter spacing. Sizes SHALL still scale with the operating system font scale.
+Headings, labels and captions on the tab screens (Today, Medicines, Alerts or Insights, and Family) SHALL follow these sizes: brand 18 bold, hero title 22 over 28 with -0.4 letter spacing, hero subtitle 12 over 16, section heading 16 semibold, card heading 15 semibold, note body 14 over 21, chip 12 medium, badge and receipt 11, tag 10 uppercase semibold with 0.5 letter spacing. Sizes SHALL still scale with the operating system font scale.
 
 #### Scenario: Hero title
 - **WHEN** the hero card shows its title
@@ -84,3 +91,18 @@ Headings, labels and captions on the tab screens (Today, Medicines, Escalation o
 #### Scenario: Font scale
 - **WHEN** the system font size is raised
 - **THEN** these sizes grow and no text is clipped
+
+### Requirement: Light, dark and system themes
+The app SHALL provide a light theme and a separately designed dark theme, and SHALL follow the operating system setting. There SHALL be no in-app control to choose a theme, and no theme choice SHALL be stored. The theme SHALL be known on the first rendered frame, so the app never shows one theme and then switches to the other.
+
+#### Scenario: Default
+- **WHEN** the app starts for the first time and the operating system is in light mode
+- **THEN** the light theme is used, and the dark theme is used when the operating system is in dark mode
+
+#### Scenario: System option
+- **WHEN** the operating system switches between light and dark while the app is open
+- **THEN** the app switches theme accordingly
+
+#### Scenario: Remembered choice
+- **WHEN** the user restarts the app
+- **THEN** the theme again follows the operating system, because no choice is stored and the Settings screen offers no theme control

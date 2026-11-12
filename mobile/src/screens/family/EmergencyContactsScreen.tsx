@@ -11,12 +11,13 @@ import { Card } from "../../components/Card";
 import { FormError } from "../../components/FormError";
 import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
+import { PhoneField } from "../../components/PhoneField";
 import { TextField } from "../../components/TextField";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
-import { DEFAULT_COUNTRY_CODE, isValidE164 } from "../../utils/phone";
+import { fromE164India, isValidIndiaMobile, toE164India } from "../../utils/phone";
 import { LoadingState } from "../../components/LoadingState";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "EmergencyContacts">;
@@ -49,7 +50,7 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
   // Start from what is stored, once the parent has loaded.
   useEffect(() => {
     if (!parent || loaded) return;
-    setRows(parent.emergencyContacts.map((c) => ({ label: c.label, kind: c.kind, phone: c.phone, note: c.note ?? "" })));
+    setRows(parent.emergencyContacts.map((c) => ({ label: c.label, kind: c.kind, phone: fromE164India(c.phone), note: c.note ?? "" })));
     setLoaded(true);
   }, [parent, loaded]);
 
@@ -61,14 +62,14 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
     if (!parent) return;
     const cleaned = rows.map((row) => {
       const note = row.note.trim();
-      return { label: row.label.trim(), kind: row.kind, phone: row.phone.trim(), ...(note.length > 0 ? { note } : {}) };
+      return { label: row.label.trim(), kind: row.kind, phone: row.phone, ...(note.length > 0 ? { note } : {}) };
     });
     if (cleaned.some((row) => row.label.length === 0 || row.label.length > MAX_LABEL)) {
       setError(t("screens.contacts.errors.labelRequired"));
       revealError();
       return;
     }
-    if (cleaned.some((row) => !isValidE164(row.phone))) {
+    if (cleaned.some((row) => !isValidIndiaMobile(row.phone))) {
       setError(t("screens.contacts.errors.invalidPhone"));
       revealError();
       return;
@@ -76,7 +77,9 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
     setError(undefined);
     setSaving(true);
     try {
-      await updateDoc(doc(getFirestore(), "parents", parent.id), { emergencyContacts: cleaned });
+      await updateDoc(doc(getFirestore(), "parents", parent.id), {
+        emergencyContacts: cleaned.map((row) => ({ ...row, phone: toE164India(row.phone) })),
+      });
       navigation.goBack();
     } catch (err) {
       // Ids and statuses only in logs (hard rule 6): never the numbers.
@@ -103,7 +106,6 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
         ) : null
       }
     >
-      <Text variant="headline">{t("screens.contacts.title")}</Text>
       <Text tone="muted">{t("screens.contacts.subtitle", { name: route.params.parentName })}</Text>
       {loading ? <LoadingState variant="lines" testID="contacts-loading" /> : null}
       {parent && !isOwner ? (
@@ -120,13 +122,11 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
             maxLength={MAX_LABEL}
             editable={isOwner}
           />
-          <TextField
+          <PhoneField
             testID={`contact-phone-${index}`}
             label={t("screens.contacts.phone")}
             value={row.phone}
-            onChangeText={(phone) => update(index, { phone })}
-            keyboardType="phone-pad"
-            autoCapitalize="none"
+            onChangeValue={(phone) => update(index, { phone })}
             editable={isOwner}
           />
           <TextField
@@ -191,7 +191,7 @@ export function EmergencyContactsScreen({ navigation, route }: Props) {
           label={t("screens.contacts.add")}
           testID="contacts-add"
           onPress={() =>
-            setRows((current) => [...current, { label: "", kind: "neighbour", phone: DEFAULT_COUNTRY_CODE, note: "" }])
+            setRows((current) => [...current, { label: "", kind: "neighbour", phone: "", note: "" }])
           }
         />
       ) : null}

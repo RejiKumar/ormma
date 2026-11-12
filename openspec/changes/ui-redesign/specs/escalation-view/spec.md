@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: Alerts screen from the header bell
-When the Insights tab replaces the Escalation tab, the app header SHALL show a bell that opens the Alerts screen, a screen that contains everything the Escalation tab showed: the alerts list, the escalation timeline for a missed, no-answer or not-taken dose, and the emergency contacts with their call buttons. The bell SHALL be at least 48 dp, SHALL have an accessible name, and SHALL be present on every tab. Opening the Alerts screen SHALL NOT remove, hide or delay any alert, and urgent alerts SHALL stay visible there until read.
+When the Insights tab replaces the Alerts tab, the app header SHALL show a bell that opens the Alerts screen, a screen that contains everything the Alerts tab showed: the alerts list, the escalation timeline for a missed, no-answer or not-taken dose, and the emergency contacts with their call buttons. The bell SHALL be at least 48 dp, SHALL have an accessible name, and SHALL be present on every tab. Opening the Alerts screen SHALL NOT remove, hide or delay any alert, and urgent alerts SHALL stay visible there until read.
 
 #### Scenario: Open from the bell
 - **WHEN** a member taps the header bell

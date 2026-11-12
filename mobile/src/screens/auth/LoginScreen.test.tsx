@@ -22,9 +22,10 @@ describe("LoginScreen", () => {
     authMock.signInWithPhoneNumber.mockReset();
   });
 
-  it("defaults to the +91 prefix and shows the disclaimer", async () => {
+  it("shows a fixed +91 prefix, an empty 10-digit field and the disclaimer", async () => {
     await renderLogin();
-    expect(screen.getByTestId("login-phone").props.value).toBe("+91");
+    expect(screen.getByTestId("login-phone-prefix")).toHaveTextContent("+91");
+    expect(screen.getByTestId("login-phone").props.value).toBe("");
     expect(screen.getByText("Sign in")).toBeTruthy();
     expect(screen.getByText(DISCLAIMER)).toBeTruthy();
   });
@@ -35,7 +36,7 @@ describe("LoginScreen", () => {
     await fireEvent.press(screen.getByTestId("login-send"));
     expect(
       await screen.findByText(
-        "That phone number is not valid. Include the country code.",
+        "Enter a 10-digit mobile number.",
       ),
     ).toBeTruthy();
     expect(authMock.signInWithPhoneNumber).not.toHaveBeenCalled();
@@ -73,5 +74,49 @@ describe("LoginScreen look", () => {
     const art = screen.getByTestId("auth-illustration", { includeHiddenElements: true });
     expect(art.props.importantForAccessibility).toBe("no-hide-descendants");
     expect(screen.getByText("Sign in")).toBeTruthy();
+  });
+});
+
+describe("LoginScreen phone field", () => {
+  beforeEach(() => {
+    setPendingConfirmation(null);
+    authMock.signInWithPhoneNumber.mockReset();
+  });
+
+  it("accepts at most 10 digits and ignores other characters", async () => {
+    await renderLogin();
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "98765432109");
+    expect(screen.getByTestId("login-phone").props.value).toBe("9876543210");
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "98a76");
+    expect(screen.getByTestId("login-phone").props.value).toBe("9876");
+  });
+
+  it("cleans a pasted number that has +91 or a leading 0", async () => {
+    await renderLogin();
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "+91 98765 43210");
+    expect(screen.getByTestId("login-phone").props.value).toBe("9876543210");
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "");
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "09876543210");
+    expect(screen.getByTestId("login-phone").props.value).toBe("9876543210");
+  });
+
+  it("refuses 9 digits and a number that cannot be a mobile number", async () => {
+    await renderLogin();
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "987654321");
+    await fireEvent.press(screen.getByTestId("login-send"));
+    expect(await screen.findByText("Enter a 10-digit mobile number.")).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "1234567890");
+    await fireEvent.press(screen.getByTestId("login-send"));
+    expect(await screen.findByText("Enter a 10-digit mobile number.")).toBeTruthy();
+    expect(authMock.signInWithPhoneNumber).not.toHaveBeenCalled();
+  });
+
+  it("sends the code to +91 and the 10 digits", async () => {
+    authMock.signInWithPhoneNumber.mockResolvedValue({ confirm: jest.fn() });
+    await renderLogin();
+    await fireEvent.changeText(screen.getByTestId("login-phone"), "8157807124");
+    await fireEvent.press(screen.getByTestId("login-send"));
+    await screen.findByText("Enter the code");
+    expect(authMock.signInWithPhoneNumber).toHaveBeenCalledWith(expect.anything(), "+918157807124");
   });
 });

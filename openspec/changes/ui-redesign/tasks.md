@@ -1,6 +1,6 @@
 # Tasks
 
-Sections 1 to 5 keep the four BRD tabs and need no backend change. Section 6 (Insights and the header bell) starts only after the user confirms replacing the Escalation tab. Run mobile checks from `mobile/`: `npx jest`, `npx tsc --noEmit`, `npx eslint src`.
+Sections 1 to 5 keep the four BRD tabs and need no backend change. Section 6 (Insights and the header bell) starts only after the user confirms replacing the Alerts tab. Run mobile checks from `mobile/`: `npx jest`, `npx tsc --noEmit`, `npx eslint src`.
 
 ## 1. Design foundations
 
@@ -53,3 +53,11 @@ Sections 1 to 5 keep the four BRD tabs and need no backend change. Section 6 (In
 - Wait for the user's OK on this proposal before `/opsx:apply`.
 - After sections 1 to 5 are verified on devices, ask for the decision on section 6.
 - `/opsx:archive` after the user accepts the build.
+
+## 7. Follow-up fixes requested by the user on 2026-11-12
+
+- [x] 7.1 Phone fields take a fixed +91 prefix and exactly 10 digits (6 to 9 first), on sign-in, Add a parent and emergency contacts; the number is still stored as E.164. Verify: `phone.test.ts` and the Login, AddParent and EmergencyContacts tests.
+- [x] 7.2 Remove the page heading that repeats the header title on eight screens. Verify: tests no longer find the repeated heading.
+- [x] 7.3 Rename the Escalation tab to Alerts in the app, the legal text and these specs. Verify: navigation test lists Alerts.
+- [x] 7.4 Remove the Appearance section; the theme follows the phone. Verify: `ThemeProvider.test.tsx` and the Settings test.
+- [x] 7.5 Move Sign out to an icon at the right of the app bar with the confirmation, and remove it from Settings; make the Delete account text say it is permanent. Verify: `AppHeader.test.tsx`, the navigation test and the Settings test.

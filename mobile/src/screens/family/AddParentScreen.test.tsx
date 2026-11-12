@@ -37,11 +37,12 @@ describe("AddParentScreen", () => {
     jest.restoreAllMocks();
   });
 
-  it("shows the title, disclaimer, and prefilled +91 phone", async () => {
+  it("shows the disclaimer and a fixed +91 prefix, and does not repeat the header title", async () => {
     await renderAddParent();
-    expect(screen.getByText("Add a parent")).toBeTruthy();
+    expect(screen.queryByText("Add a parent")).toBeNull();
     expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
-    expect(screen.getByTestId("add-phone").props.value).toBe("+91");
+    expect(screen.getByTestId("add-phone-prefix")).toHaveTextContent("+91");
+    expect(screen.getByTestId("add-phone").props.value).toBe("");
   });
 
   it("requires a name before calling Firebase", async () => {
@@ -61,7 +62,7 @@ describe("AddParentScreen", () => {
     await pressSave();
     expect(
       await screen.findByText(
-        "That phone number is not valid. Include the country code.",
+        "Enter a 10-digit mobile number.",
       ),
     ).toBeTruthy();
     expect(createParent).not.toHaveBeenCalled();

@@ -28,7 +28,7 @@ describe("settings and subscription wording", () => {
 
   it("states the safety features are included on every plan without claiming outcomes", () => {
     expect(catalogue.subscription.everyPlan).toBe(
-      "Missed-dose alerts, urgent alerts, the escalation view and the Call buttons are included on every plan.",
+      "Missed-dose alerts, urgent alerts, the Alerts tab and the Call buttons are included on every plan.",
     );
   });
 });

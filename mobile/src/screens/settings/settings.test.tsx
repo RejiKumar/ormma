@@ -50,7 +50,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByTestId("settings-phone")).toHaveTextContent("+919812345678");
     await waitFor(() => expect(screen.getByTestId("settings-name").props.value).toBe("Rahul"));
     expect(screen.getByText("Free plan")).toBeTruthy();
-    expect(screen.getByText("Appearance")).toBeTruthy();
+    expect(screen.queryByText("Appearance")).toBeNull();
     expect(screen.getByText("Privacy policy")).toBeTruthy();
     expect(screen.getByText("Terms and conditions")).toBeTruthy();
   });
@@ -88,22 +88,10 @@ describe("SettingsScreen", () => {
     expect(screen.getByText(/^Ormma Family · Until /)).toBeTruthy();
   });
 
-  it("applies and remembers the appearance choice", async () => {
+  it("has no Sign out button: it is the icon in the app bar", async () => {
     await renderSettings();
-    await fireEvent.press(screen.getByTestId("settings-theme-dark"));
-    await waitFor(async () => expect(await AsyncStorage.getAllKeys()).not.toHaveLength(0));
-    const stored = await AsyncStorage.multiGet(await AsyncStorage.getAllKeys());
-    expect(JSON.stringify(stored)).toContain("dark");
-  });
-
-  it("signs out only after confirming", async () => {
-    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
-    await renderSettings();
-    await fireEvent.press(screen.getByTestId("settings-sign-out"));
-    expect(authMock.signOut).not.toHaveBeenCalled();
-    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
-    buttons.find((b) => b.text === "Sign out")?.onPress?.();
-    expect(authMock.signOut).toHaveBeenCalled();
+    expect(screen.queryByTestId("settings-sign-out")).toBeNull();
+    expect(screen.queryByText("Sign out")).toBeNull();
   });
 
   it("refuses to delete while the member owns a parent and says what to do", async () => {
@@ -134,7 +122,6 @@ describe("LegalScreen", () => {
 
   it("shows the full privacy policy text with its date, offline", async () => {
     await renderApp(<LegalScreen navigation={navigation as never} route={route("privacy")} />);
-    expect(screen.getByTestId("legal-title")).toHaveTextContent("Ormma privacy policy");
     expect(screen.getByText("What we collect")).toBeTruthy();
     expect(screen.getByText(/^Last updated /)).toBeTruthy();
     // The published page exists, so the screen offers the full text online as well.
@@ -143,7 +130,6 @@ describe("LegalScreen", () => {
 
   it("shows the terms with the no-medical-advice section", async () => {
     await renderApp(<LegalScreen navigation={navigation as never} route={route("terms")} />);
-    expect(screen.getByTestId("legal-title")).toHaveTextContent("Ormma terms and conditions");
     expect(screen.getByText("No medical advice")).toBeTruthy();
   });
 });

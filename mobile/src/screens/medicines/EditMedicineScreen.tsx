@@ -8,7 +8,6 @@ import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
 import { FormError } from "../../components/FormError";
 import { Screen } from "../../components/Screen";
-import { Text } from "../../design/Text";
 import { useParents } from "../../family/useParents";
 import type { MedicineStackParamList } from "../../navigation/MedicineStack";
 import {
@@ -123,7 +122,6 @@ export function EditMedicineScreen({ navigation, route }: Props) {
         ) : null
       }
     >
-      <Text variant="headline">{t("screens.medicines.editTitle")}</Text>
       {loading ? <LoadingState variant="lines" testID="edit-medicine-loading" /> : null}
       {parent && !canEdit ? (
         <Banner variant="info" message={t("screens.medicines.readOnly")} testID="medicine-readonly" />

@@ -12,26 +12,20 @@ import { ListItem } from "../../components/ListItem";
 import { Screen } from "../../components/Screen";
 import { TextField } from "../../components/TextField";
 import { Text } from "../../design/Text";
-import { useTheme, type ThemePreference } from "../../design/ThemeProvider";
+import { useTheme } from "../../design/ThemeProvider";
 import { deleteMyAccount, setMyDisplayName } from "../../family/callables";
 import { useSubscription } from "../../family/useSubscription";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "Settings">;
 
-const CHOICES: Array<{ value: ThemePreference; label: "settings.light" | "settings.dark" | "settings.system" }> = [
-  { value: "light", label: "settings.light" },
-  { value: "dark", label: "settings.dark" },
-  { value: "system", label: "settings.system" },
-];
-
 const shortDate = (ms: number) =>
   new Date(ms).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
-/** Settings: Account (name, plan, sign out, delete), Appearance, Privacy policy and Terms. */
+/** Settings: Account (name, plan, delete), Privacy policy and Terms. Sign out is the icon in the app bar. */
 export function SettingsScreen({ navigation }: Props) {
   const { t } = useTranslation();
-  const { theme, preference, setPreference } = useTheme();
+  const { theme } = useTheme();
   const { user } = useAuth();
   const { plan, entitlement } = useSubscription();
   const [name, setName] = useState("");
@@ -71,18 +65,6 @@ export function SettingsScreen({ navigation }: Props) {
     } finally {
       setSaving(false);
     }
-  };
-
-  const onSignOut = () => {
-    Alert.alert(t("settings.signOut"), t("settings.signOutConfirm"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("settings.signOut"),
-        style: "destructive",
-        // AuthProvider sees the change and the navigator returns to the sign-in screen.
-        onPress: () => void signOut(getAuth()).catch(() => Alert.alert(t("common.error"))),
-      },
-    ]);
   };
 
   const confirmDelete = async () => {
@@ -155,24 +137,8 @@ export function SettingsScreen({ navigation }: Props) {
           onPress={() => navigation.navigate("Subscription")}
           accessibilityLabel={`${t("settings.planLabel")}, ${planLine}`}
         />
-        <Button variant="quiet" label={t("settings.signOut")} testID="settings-sign-out" onPress={onSignOut} />
         <Button variant="quiet" label={t("settings.deleteAccount")} testID="settings-delete" onPress={onDelete} />
         {deleteMessage ? <Banner testID="settings-delete-message" message={deleteMessage} /> : null}
-      </Card>
-
-      <Text variant="section" accessibilityRole="header">
-        {t("settings.appearanceTitle")}
-      </Text>
-      <Card style={{ gap: theme.spacing.sm }}>
-        {CHOICES.map((choice) => (
-          <Button
-            key={choice.value}
-            variant={preference === choice.value ? "primary" : "secondary"}
-            label={t(choice.label)}
-            testID={`settings-theme-${choice.value}`}
-            onPress={() => setPreference(choice.value)}
-          />
-        ))}
       </Card>
 
       <Card style={{ gap: theme.spacing.sm }}>

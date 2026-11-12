@@ -29,6 +29,8 @@ export interface TextFieldProps {
   returnKeyType?: TextInputProps["returnKeyType"];
   onSubmitEditing?: () => void;
   testID?: string;
+  /** Fixed text before the input, for example +91. It is not editable and is part of the field's border. */
+  prefix?: string;
 }
 
 /**
@@ -52,6 +54,7 @@ export function TextField({
   returnKeyType,
   onSubmitEditing,
   testID,
+  prefix,
 }: TextFieldProps) {
   const { theme } = useTheme();
   const c = theme.colors;
@@ -63,37 +66,51 @@ export function TextField({
       <Text variant="label" testID={testID ? `${testID}-label` : undefined}>
         {label}
       </Text>
-      <TextInput
-        accessibilityLabel={label}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={c.inkMuted}
-        keyboardType={keyboardType}
-        autoComplete={autoComplete}
-        textContentType={textContentType}
-        autoCapitalize={autoCapitalize}
-        autoCorrect={autoCorrect}
-        maxLength={maxLength}
-        editable={editable}
-        returnKeyType={returnKeyType}
-        onSubmitEditing={onSubmitEditing}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        testID={testID}
+      <View
         style={{
+          flexDirection: "row",
+          alignItems: "center",
           minHeight: 56,
           borderRadius: theme.radius.lg,
           borderWidth: 1.5,
           borderColor,
           backgroundColor: c.surface,
           paddingHorizontal: theme.spacing.lg,
-          paddingVertical: theme.spacing.md,
-          fontSize: theme.typeScale.bodyLarge.size,
-          color: c.ink,
-          fontFamily: fontFamilyFor("latin", "400"),
         }}
-      />
+      >
+        {prefix ? (
+          <Text variant="bodyLarge" testID={testID ? `${testID}-prefix` : undefined} style={{ marginRight: theme.spacing.sm }}>
+            {prefix}
+          </Text>
+        ) : null}
+        <TextInput
+          accessibilityLabel={label}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={c.inkMuted}
+          keyboardType={keyboardType}
+          autoComplete={autoComplete}
+          textContentType={textContentType}
+          autoCapitalize={autoCapitalize}
+          autoCorrect={autoCorrect}
+          maxLength={maxLength}
+          editable={editable}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          testID={testID}
+          style={{
+            flex: 1,
+            minHeight: 54,
+            paddingVertical: theme.spacing.md,
+            fontSize: theme.typeScale.bodyLarge.size,
+            color: c.ink,
+            fontFamily: fontFamilyFor("latin", "400"),
+          }}
+        />
+      </View>
       {hint && !error ? (
         <Text variant="caption" tone="muted">
           {hint}

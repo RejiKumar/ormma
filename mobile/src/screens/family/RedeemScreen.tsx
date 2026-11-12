@@ -68,7 +68,6 @@ export function RedeemScreen({ navigation }: Props) {
         />
       }
     >
-      <Text variant="headline">{t("screens.redeem.title")}</Text>
       <Text tone="muted">{t("screens.redeem.subtitle")}</Text>
       <TextField
         testID="redeem-code"

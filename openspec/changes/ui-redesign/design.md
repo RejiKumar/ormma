@@ -45,7 +45,7 @@ See `proposal.md` for motivation and scope, and `specs/` for the requirements.
 
 - [Illustrations look amateur] → Keep them geometric and simple (shapes and soft curves), review in a built screenshot on both themes before merging, and fall back to the icon-only empty state for any screen that does not look right.
 - [Insights range query is denied for a member whose consent window starts mid-week] → Clamp the query start to the visible-from date; add an emulator rules test that a viewer's 7-day query succeeds and an over-wide query is denied, with `firestore.rules` unchanged.
-- [Replacing the Escalation tab departs from the BRD] → Section 6 is separable and waits for explicit approval; sections 1 to 5 keep the four BRD tabs.
+- [Replacing the Alerts tab departs from the BRD] → Section 6 is separable and waits for explicit approval; sections 1 to 5 keep the four BRD tabs.
 - [Welcome adds friction] → Skippable on every step, shown once, three short steps.
 - [More motion hurts low-end phones or users sensitive to motion] → Only springs under 300 ms and one cross-fade; nothing loops; Reduce Motion removes all of it.
 - [Contrast regressions from new tints] → Every new foreground token is added to both themes' declared contrast pairs, so `contrast.test.ts` fails before a bad pair ships.

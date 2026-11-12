@@ -9,7 +9,6 @@ import { Banner } from "../../components/Banner";
 import { Button } from "../../components/Button";
 import { FormError } from "../../components/FormError";
 import { Screen } from "../../components/Screen";
-import { Text } from "../../design/Text";
 import { useParents } from "../../family/useParents";
 import { localDateKey } from "../../family/visibility";
 import type { MedicineStackParamList } from "../../navigation/MedicineStack";
@@ -107,7 +106,6 @@ export function AddMedicineScreen({ navigation, route }: Props) {
         ) : null
       }
     >
-      <Text variant="headline">{t("screens.medicines.addTitle")}</Text>
       {loading ? <LoadingState variant="lines" testID="add-medicine-loading" /> : null}
       {parent && !canEdit ? (
         <Banner variant="info" message={t("screens.medicines.readOnly")} testID="medicine-readonly" />

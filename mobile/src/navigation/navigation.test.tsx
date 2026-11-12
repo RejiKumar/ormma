@@ -1,5 +1,6 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { fireEvent, screen } from "@testing-library/react-native";
+import { Alert } from "react-native";
 import { AuthProvider } from "../auth/AuthProvider";
 import { MIN_TOUCH_TARGET, darkTheme, lightTheme } from "../design/tokens";
 import { renderApp } from "../test-utils";
@@ -53,7 +54,7 @@ describe("AppTabs", () => {
     await renderTabs();
     expect(screen.getByTestId("today-no-parents")).toBeTruthy();
     expect(screen.getByText("Nothing here yet")).toBeTruthy();
-    for (const label of ["Today", "Medicines", "Escalation", "Family"]) {
+    for (const label of ["Today", "Medicines", "Alerts", "Family"]) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
     expect(screen.getByText("This app does not provide medical advice.")).toBeTruthy();
@@ -63,10 +64,26 @@ describe("AppTabs", () => {
     await renderTabs();
     await fireEvent.press(screen.getByRole("button", { name: "Medicines" }));
     expect(await screen.findByTestId("medicines-no-parents")).toBeTruthy();
-    await fireEvent.press(screen.getAllByRole("button", { name: "Escalation" })[0]);
+    await fireEvent.press(screen.getAllByRole("button", { name: "Alerts" })[0]);
     expect(await screen.findByText("No alerts yet")).toBeTruthy();
     await fireEvent.press(screen.getAllByRole("button", { name: "Family" })[0]);
     expect(await screen.findByTestId("family-empty")).toBeTruthy();
+  });
+
+  it("shows the sign-out icon in the app bar on every tab and asks before signing out", async () => {
+    const authMock = jest.requireMock("@react-native-firebase/auth") as { signOut: jest.Mock };
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    await renderTabs();
+    for (const tab of ["Today", "Medicines", "Alerts", "Family"]) {
+      await fireEvent.press(screen.getAllByRole("button", { name: tab })[0]);
+      expect(screen.getAllByTestId("app-header-signout").length).toBeGreaterThan(0);
+    }
+    await fireEvent.press(screen.getAllByTestId("app-header-signout")[0]);
+    expect(authMock.signOut).not.toHaveBeenCalled();
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
+    buttons.find((b) => b.text === "Sign out")?.onPress?.();
+    expect(authMock.signOut).toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 
   it("renders in dark mode", async () => {

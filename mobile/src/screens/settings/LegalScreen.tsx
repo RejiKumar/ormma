@@ -28,9 +28,6 @@ export function LegalScreen({ route }: Props) {
 
   return (
     <Screen belowHeader>
-      <Text variant="headline" accessibilityRole="header" testID="legal-title">
-        {doc.title}
-      </Text>
       <Text variant="caption" tone="muted">
         {t("settings.updatedOn", { date: doc.updated })}
       </Text>

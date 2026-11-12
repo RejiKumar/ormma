@@ -8,6 +8,7 @@ import { FormError } from "../../components/FormError";
 import { planLimitReason } from "../../family/planErrors";
 import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
+import { PhoneField } from "../../components/PhoneField";
 import { TextField } from "../../components/TextField";
 import { Text } from "../../design/Text";
 import { useTheme } from "../../design/ThemeProvider";
@@ -16,7 +17,7 @@ import { addParentId } from "../../family/parentIds";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
 import type { Language } from "../../../../shared/types";
 import i18n, { pickLanguage, SUPPORTED_LANGUAGES, type AppLanguage } from "../../i18n";
-import { DEFAULT_COUNTRY_CODE, isValidE164 } from "../../utils/phone";
+import { isValidIndiaMobile, toE164India } from "../../utils/phone";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "AddParent">;
 
@@ -35,7 +36,7 @@ export function AddParentScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState(DEFAULT_COUNTRY_CODE);
+  const [phone, setPhone] = useState("");
   const [language, setLanguage] = useState<AppLanguage>(() => pickLanguage(i18n.language));
   const [error, setError] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
@@ -47,13 +48,12 @@ export function AddParentScreen({ navigation }: Props) {
 
   const save = async () => {
     const trimmedName = name.trim();
-    const trimmedPhone = phone.trim();
     if (trimmedName.length === 0) {
       setError(t("screens.addParent.errors.nameRequired"));
       revealError();
       return;
     }
-    if (!isValidE164(trimmedPhone)) {
+    if (!isValidIndiaMobile(phone)) {
       setError(t("auth.errors.invalidPhone"));
       revealError();
       return;
@@ -63,7 +63,7 @@ export function AddParentScreen({ navigation }: Props) {
     try {
       const result = await createParent({
         name: trimmedName,
-        phone: trimmedPhone,
+        phone: toE164India(phone),
         language: toLanguageTag(language),
       });
       await addParentId(result.parentId);
@@ -94,7 +94,6 @@ export function AddParentScreen({ navigation }: Props) {
         />
       }
     >
-      <Text variant="headline">{t("screens.addParent.title")}</Text>
       <Text tone="muted">{t("screens.addParent.subtitle")}</Text>
       <TextField
         testID="add-name"
@@ -103,14 +102,11 @@ export function AddParentScreen({ navigation }: Props) {
         onChangeText={setName}
         autoCapitalize="words"
       />
-      <TextField
+      <PhoneField
         testID="add-phone"
         label={t("screens.addParent.phoneLabel")}
         value={phone}
-        onChangeText={setPhone}
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        autoCapitalize="none"
+        onChangeValue={setPhone}
       />
       <View style={{ gap: theme.spacing.xs }}>
         <Text variant="label">{t("screens.addParent.languageLabel")}</Text>

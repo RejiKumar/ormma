@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Icon } from "./Icon";
 import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 
@@ -10,13 +11,15 @@ export interface AppHeaderProps {
   extraParents?: number;
   /** True while an unread missed-dose or urgent alert exists: the status dot turns coral-toned. */
   alert: boolean;
+  /** When given, a sign-out icon is shown at the right end of the bar. */
+  onSignOut?: () => void;
 }
 
 /**
  * The app bar from the Family Companion prototype: the "Ormma" mark on the left and a pill
  * with the parent's name and a live status dot on the right (green while calm, alert-toned otherwise).
  */
-export function AppHeader({ parentName, extraParents = 0, alert }: AppHeaderProps) {
+export function AppHeader({ parentName, extraParents = 0, alert, onSignOut }: AppHeaderProps) {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -39,33 +42,47 @@ export function AppHeader({ parentName, extraParents = 0, alert }: AppHeaderProp
       <Text variant="brand" accessibilityRole="header" style={{ letterSpacing: -0.3 }}>
         {t("app.brand")}
       </Text>
-      {label ? (
-        <View
-          testID="app-header-pill"
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: theme.spacing.sm,
-            backgroundColor: c.primaryTint,
-            borderRadius: theme.radius.pill,
-            paddingVertical: theme.spacing.xs,
-            paddingHorizontal: theme.spacing.md,
-          }}
-        >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.sm }}>
+        {label ? (
           <View
-            testID="app-header-dot"
+            testID="app-header-pill"
             style={{
-              width: 6,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: dot,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: theme.spacing.sm,
+              backgroundColor: c.primaryTint,
+              borderRadius: theme.radius.pill,
+              paddingVertical: theme.spacing.xs,
+              paddingHorizontal: theme.spacing.md,
             }}
-          />
-          <Text variant="chip">
-            {label}
-          </Text>
-        </View>
-      ) : null}
+          >
+            <View
+              testID="app-header-dot"
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: dot,
+              }}
+            />
+            <Text variant="chip">
+              {label}
+            </Text>
+          </View>
+        ) : null}
+        {onSignOut ? (
+          <Pressable
+            testID="app-header-signout"
+            accessibilityRole="button"
+            accessibilityLabel={t("settings.signOut")}
+            onPress={onSignOut}
+            hitSlop={4}
+            style={{ width: 48, height: 48, alignItems: "center", justifyContent: "center", marginRight: -theme.spacing.sm }}
+          >
+            <Icon name="logout" color={c.inkMuted} size={22} />
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 }

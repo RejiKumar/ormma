@@ -87,7 +87,6 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
         ) : null
       }
     >
-      <Text variant="headline">{t("screens.parentDetails.title")}</Text>
       <Text tone="muted">{t("screens.parentDetails.subtitle")}</Text>
       {loading ? <LoadingState variant="lines" testID="details-loading" /> : null}
       {parent && !isOwner ? <Banner message={t("screens.parentDetails.readOnly")} testID="details-readonly" /> : null}

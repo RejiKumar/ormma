@@ -10,8 +10,8 @@ Output: `e2e/report/report.html` (screenshots embedded) and `results.json`.
 | ID   | Scenario | Expected |
 | ---- | -------- | -------- |
 | TC01 | Sign in after the intro | Sign in screen, phone field, Send code, medical-advice line |
-| TC02 | Phone field default | Starts with +91 |
-| TC03 | Too-short number | Neutral validation message, stays on Sign in |
+| TC02 | Phone field | Fixed +91 prefix, empty 10-digit field |
+| TC03 | Too-short number | "Enter a 10-digit mobile number.", stays on Sign in |
 | TC04 | Valid test number | Reaches Enter the code (new API key accepted) |
 | TC05 | Code screen | Shows the number and a resend control |
 | TC06 | Wrong code | "That code is not correct…" message |
