@@ -2,7 +2,9 @@
 
 import { getStorage } from "firebase-admin/storage";
 import Anthropic from "@anthropic-ai/sdk";
-import { scanPrescriptionImage } from "./scan";
+import { detectImageType, scanPrescriptionImage } from "./scan";
+
+const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0]);
 
 jest.mock("firebase-admin/storage");
 jest.mock("@anthropic-ai/sdk");
@@ -14,11 +16,11 @@ const goodJson = JSON.stringify({
   overallConfidence: 0.9,
 });
 
-function arrange(opts: { exists?: boolean; download?: "ok" | "throw"; reply?: any; apiError?: any }) {
+function arrange(opts: { image?: Buffer; exists?: boolean; download?: "ok" | "throw"; reply?: any; apiError?: any }) {
   const file = {
     exists: jest.fn().mockResolvedValue([opts.exists ?? true]),
     download:
-      opts.download === "throw" ? jest.fn().mockRejectedValue(new Error("x")) : jest.fn().mockResolvedValue([Buffer.from("img")]),
+      opts.download === "throw" ? jest.fn().mockRejectedValue(new Error("x")) : jest.fn().mockResolvedValue([opts.image ?? JPEG]),
   };
   (getStorage as jest.Mock).mockReturnValue({ bucket: () => ({ file: () => file }) });
   const create = opts.apiError
@@ -52,6 +54,8 @@ describe("scanPrescriptionImage", () => {
   it.each([
     ["not_found", () => arrange({ exists: false })],
     ["download", () => arrange({ download: "throw" })],
+    ["unsupported_image", () => arrange({ image: Buffer.from("not an image") })],
+    ["image_too_large", () => arrange({ image: Buffer.concat([JPEG, Buffer.alloc(5 * 1024 * 1024)]) })],
     ["api", () => arrange({ apiError: Object.assign(new Error("secret text"), { status: 401 }) })],
     ["empty", () => arrange({ reply: { content: [], stop_reason: "end_turn" } })],
     ["truncated", () => arrange({ reply: { content: [{ type: "text", text: goodJson.slice(0, 40) }], stop_reason: "max_tokens" } })],
@@ -73,5 +77,33 @@ describe("scanPrescriptionImage", () => {
     arrange({ apiError: Object.assign(new Error("secret text"), { status: 404 }) });
     await scanPrescriptionImage("b", "p", "k");
     expect(warn.mock.calls[0][1]).toEqual({ failure: "api", status: 404 });
+  });
+});
+
+describe("image type and API detail", () => {
+  it("declares the type the bytes really have", async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+    expect(detectImageType(png)).toBe("image/png");
+    expect(detectImageType(JPEG)).toBe("image/jpeg");
+    expect(detectImageType(Buffer.from("RIFFxxxxWEBPyy"))).toBe("image/webp");
+    expect(detectImageType(Buffer.from("hello"))).toBeNull();
+    const { create } = arrange({ image: png });
+    await scanPrescriptionImage("b", "p", "k");
+    expect(create.mock.calls[0][0].messages[0].content[0].source.media_type).toBe("image/png");
+  });
+
+  it("logs the API's error type and a capped message, nothing from the page", async () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    arrange({
+      apiError: Object.assign(new Error("x"), {
+        status: 400,
+        error: { error: { type: "invalid_request_error", message: "image exceeds 5 MB maximum".padEnd(400, "!") } },
+      }),
+    });
+    await scanPrescriptionImage("b", "p", "k");
+    const detail = warn.mock.calls[0][1];
+    expect(detail).toMatchObject({ failure: "api", status: 400, apiType: "invalid_request_error" });
+    expect(detail.apiMessage.length).toBe(160);
+    warn.mockRestore();
   });
 });

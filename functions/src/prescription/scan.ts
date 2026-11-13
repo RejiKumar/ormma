@@ -10,7 +10,7 @@ const SYSTEM = `You read prescription photos. Return ONLY JSON matching this sch
 {"doctor": string|null, "date": string|null, "medicines": [{"name": string, "doseText": string|null, "frequencyText": string|null, "times": string[]|null, "confidence": number, "illegible": boolean}], "overallConfidence": number}
 Rules: transcribe medicine names exactly as written. Do not correct or substitute. doseText copied as written; do not normalise or infer. If handwriting unclear put best guess with confidence < 0.5 and illegible true. Do not give advice.`;
 
-export type ScanFailure = "not_found" | "download" | "api" | "empty" | "truncated" | "invalid_json" | "invalid_shape";
+export type ScanFailure = "not_found" | "download" | "unsupported_image" | "image_too_large" | "api" | "empty" | "truncated" | "invalid_json" | "invalid_shape";
 
 export interface ScanResult {
   extracted: ReturnType<typeof parsePrescriptionJson> | null;
@@ -23,17 +23,43 @@ function toBase64(buf: Buffer): string {
   return buf.toString("base64");
 }
 
-/** Status code of an API error, when there is one. Nothing else from the error is logged. */
+/** Status code of an API error, when there is one. */
 function statusOf(error: unknown): number | undefined {
   const status = (error as { status?: unknown } | null)?.status;
   return typeof status === "number" ? status : undefined;
 }
 
-function failed(failure: ScanFailure, status?: number): ScanResult {
-  // Ids and stage only (hard rule 6): no health data, no model output.
-  console.warn("prescription: read failed", { failure, status });
+/**
+ * The API's own error type and a short message about the request (for example "image exceeds 5 MB").
+ * These describe the request, never the content read from the page; the text is capped.
+ */
+function apiDetail(error: unknown): { apiType?: string; apiMessage?: string } {
+  const body = (error as { error?: { error?: { type?: unknown; message?: unknown } } } | null)?.error?.error;
+  return {
+    apiType: typeof body?.type === "string" ? body.type.slice(0, 60) : undefined,
+    apiMessage: typeof body?.message === "string" ? body.message.slice(0, 160) : undefined,
+  };
+}
+
+function failed(failure: ScanFailure, status?: number, detail: object = {}): ScanResult {
+  // Ids and stage only (hard rule 6): no health data, no text read from the page.
+  console.warn("prescription: read failed", { failure, status, ...detail });
   return { extracted: null, ok: false, failure };
 }
+
+type ImageType = "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+
+/** The real format from the file's first bytes, so the declared type always matches the data. */
+export function detectImageType(buf: Buffer): ImageType | null {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "image/jpeg";
+  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png";
+  if (buf.length >= 12 && buf.toString("ascii", 0, 4) === "RIFF" && buf.toString("ascii", 8, 12) === "WEBP") return "image/webp";
+  if (buf.length >= 6 && buf.toString("ascii", 0, 3) === "GIF") return "image/gif";
+  return null;
+}
+
+/** The API accepts images up to 5 MB. */
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export async function scanPrescriptionImage(
   bucketName: string,
@@ -50,6 +76,10 @@ export async function scanPrescriptionImage(
     return failed("download");
   }
 
+  const mediaType = detectImageType(buffer);
+  if (!mediaType) return failed("unsupported_image");
+  if (buffer.length > MAX_IMAGE_BYTES) return failed("image_too_large");
+
   let message: Anthropic.Message;
   try {
     const client = new Anthropic({ apiKey, maxRetries: 0, timeout: 60_000 });
@@ -61,14 +91,14 @@ export async function scanPrescriptionImage(
         {
           role: "user",
           content: [
-            { type: "image", source: { type: "base64", media_type: "image/jpeg", data: toBase64(buffer) } },
+            { type: "image", source: { type: "base64", media_type: mediaType, data: toBase64(buffer) } },
             { type: "text", text: "Read this prescription." },
           ],
         },
       ],
     })) as Anthropic.Message;
   } catch (error) {
-    return failed("api", statusOf(error));
+    return failed("api", statusOf(error), apiDetail(error));
   }
 
   const parts: string[] = [];
