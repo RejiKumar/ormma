@@ -28,6 +28,21 @@ const isMember = async (db: ReturnType<typeof getDb>, parentId: string, uid: str
   return role === "owner" || role === "editor" ? role : null;
 };
 
+/**
+ * The Storage bucket to read from. In production Firebase provides it inside FIREBASE_CONFIG
+ * (storageBucket); the two plain variables are for the emulator and tests.
+ */
+export function resolveBucket(env: NodeJS.ProcessEnv = process.env): string | null {
+  const direct = env.FIREBASE_STORAGE_BUCKET || env.STORAGE_BUCKET;
+  if (direct) return direct;
+  try {
+    const bucket = (JSON.parse(env.FIREBASE_CONFIG ?? "{}") as { storageBucket?: unknown }).storageBucket;
+    return typeof bucket === "string" && bucket.length > 0 ? bucket : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The image must live in this parent's own folder: otherwise one parent's editor could read another's. */
 export function isOwnPrescriptionPath(parentId: string, storagePath: string): boolean {
   if (storagePath.length === 0 || storagePath.length > MAX_PATH) return false;
@@ -55,7 +70,7 @@ export const scanPrescriptionHandler = async (
   const role = await isMember(db, parentId, uid);
   if (!role) throw refuse("permission-denied", "Only an owner or editor can scan a prescription.");
 
-  const bucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.STORAGE_BUCKET;
+  const bucket = resolveBucket();
   if (!bucket) throw refuse("failed-precondition", "Storage is not configured.");
 
   const scan = await scanPrescriptionImage(bucket, storagePath, apiKey);

@@ -4,6 +4,7 @@ import { getDb } from "../db";
 import {
   confirmPrescriptionMedicineHandler,
   isOwnPrescriptionPath,
+  resolveBucket,
   scanPrescriptionHandler,
 } from "./index";
 import { createPrescriptionReview, scanPrescriptionImage } from "./scan";
@@ -156,5 +157,21 @@ describe("isOwnPrescriptionPath", () => {
     expect(isOwnPrescriptionPath("p1", "/prescriptions/p1/a.jpg")).toBe(false);
     expect(isOwnPrescriptionPath("p1", "prescriptions/p1\\a.jpg")).toBe(false);
     expect(isOwnPrescriptionPath("p1", "transcripts/p1/a.jpg")).toBe(false);
+  });
+});
+
+describe("resolveBucket", () => {
+  it("prefers the plain variables, then the bucket in FIREBASE_CONFIG", () => {
+    expect(resolveBucket({ FIREBASE_STORAGE_BUCKET: "a" } as never)).toBe("a");
+    expect(resolveBucket({ STORAGE_BUCKET: "b" } as never)).toBe("b");
+    expect(
+      resolveBucket({ FIREBASE_CONFIG: JSON.stringify({ projectId: "p", storageBucket: "p.firebasestorage.app" }) } as never),
+    ).toBe("p.firebasestorage.app");
+  });
+
+  it("is null when nothing names a bucket or the config is not JSON", () => {
+    expect(resolveBucket({} as never)).toBeNull();
+    expect(resolveBucket({ FIREBASE_CONFIG: "not json" } as never)).toBeNull();
+    expect(resolveBucket({ FIREBASE_CONFIG: "{}" } as never)).toBeNull();
   });
 });
