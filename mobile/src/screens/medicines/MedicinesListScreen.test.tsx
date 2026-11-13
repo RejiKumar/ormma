@@ -229,6 +229,16 @@ describe("MedicinesListScreen", () => {
     expect(screen.getByText("Twice daily · morning and afternoon, after food")).toBeTruthy();
     expect(screen.getByText("Small round white tablet in silver strip")).toBeTruthy();
     expect(screen.getByText("For Sugar")).toBeTruthy();
+    // The chips stay inside the card: they may not outgrow it, and their text shrinks and wraps.
+    for (const id of ["medicine-pill-m1", "medicine-purpose-m1"]) {
+      const chip = screen.getByTestId(id);
+      const flat = Object.assign({}, ...[chip.props.style].flat());
+      expect(flat.maxWidth).toBe("100%");
+      expect(flat.paddingVertical).toBeGreaterThanOrEqual(6);
+      expect(flat.paddingHorizontal).toBeGreaterThanOrEqual(12);
+    }
+    const pillText = screen.getByText("Small round white tablet in silver strip");
+    expect(Object.assign({}, ...[pillText.props.style].flat()).flexShrink).toBe(1);
     expect(screen.getByTestId("medicines-footer")).toHaveTextContent("Prescribed by Dr. Nair · refill due 2 Nov");
   });
 

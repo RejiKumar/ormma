@@ -94,7 +94,7 @@ export function MedicinesListScreen({ navigation }: Props) {
           {parents.length > 1 ? (
             <View style={{ gap: theme.spacing.xs }}>
               <Text variant="label">{t("screens.medicines.selectParent")}</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm, alignItems: "flex-start" }}>
                 {parents.map((parent) => {
                   const active = parent.id === selectedId;
                   return (
@@ -192,42 +192,46 @@ export function MedicinesListScreen({ navigation }: Props) {
                       </Text>
                     </View>
                   </View>
-                  <Text variant="small" tone="muted">
+                  <Text variant="small" tone="muted" style={{ paddingHorizontal: 2 }}>
                     {medicine.frequencyText.length > 0 ? medicine.frequencyText : medicine.times.join(", ")}
                   </Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm }}>
                     {medicine.pillDescription.length > 0 ? (
                       <View
+                        testID={`medicine-pill-${medicine.id}`}
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
                           gap: 6,
+                          maxWidth: "100%",
                           backgroundColor: theme.colors.background,
                           borderWidth: 1,
                           borderColor: theme.colors.border,
-                          borderRadius: theme.radius.pill,
-                          paddingHorizontal: theme.spacing.sm + 2,
-                          paddingVertical: 4,
+                          borderRadius: theme.radius.lg,
+                          paddingHorizontal: theme.spacing.md,
+                          paddingVertical: 6,
                         }}
                       >
                         <View style={{ width: 9, height: 9, borderRadius: 5, borderWidth: 1.5, borderColor: theme.colors.inkMuted }} />
-                        <Text variant="micro">
+                        <Text variant="micro" style={{ flexShrink: 1 }}>
                           {medicine.pillDescription}
                         </Text>
                       </View>
                     ) : null}
                     {medicine.purpose.length > 0 ? (
                       <View
+                        testID={`medicine-purpose-${medicine.id}`}
                         style={{
+                          maxWidth: "100%",
                           backgroundColor: theme.colors.background,
                           borderWidth: 1,
                           borderColor: theme.colors.border,
-                          borderRadius: theme.radius.pill,
-                          paddingHorizontal: theme.spacing.sm + 2,
-                          paddingVertical: 4,
+                          borderRadius: theme.radius.lg,
+                          paddingHorizontal: theme.spacing.md,
+                          paddingVertical: 6,
                         }}
                       >
-                        <Text variant="micro">
+                        <Text variant="micro" style={{ flexShrink: 1 }}>
                           {t("screens.medicines.forPurpose", { purpose: medicine.purpose })}
                         </Text>
                       </View>
