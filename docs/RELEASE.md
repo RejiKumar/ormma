@@ -180,6 +180,7 @@ Smoke-test the exact release build before uploading: install the `.aab` through 
 | Phone number | Yes | No | Account sign-in, calling the parent | The parent's number is stored in E.164 |
 | Name | Yes | No | Family display | Parent and member display names |
 | Health info (medicines, dose status, readings the parent reports) | Yes | No | App functionality | Not used for ads; not sold |
+| Photos (a scanned prescription page) | Yes, only while a review is open | Processed by an AI service provider on our behalf | App functionality | Uploaded when an owner or editor scans a prescription, read to list the medicines, deleted when the review ends; never used for ads |
 | Voice or audio | Not stored | Processed by Google Speech services | App functionality | Call audio is processed in memory and not recorded |
 | Device or app ids (FCM token) | Yes | No | Push notifications | |
 | Approximate activity (member last seen) | Yes | No | App functionality | One timestamp per member, no location |

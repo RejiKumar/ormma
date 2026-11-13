@@ -23,6 +23,10 @@ or suggest a dose, a time or a medicine.
   are kept only as needed to show the reply to the family.
 - **Emergency contacts:** a name, a type (neighbour or clinic) and a phone number that an owner chooses to
   add, with an optional short note, so family members can call them if a dose is missed.
+- **Prescription pages:** when an owner or editor scans a prescription, the page image is uploaded to our
+  servers and read by an AI service to list the medicines on it. You check every medicine on screen and
+  nothing is added until you confirm it. The image is deleted from our storage when you finish the review.
+  We do not keep the text read from it beyond the review.
 - **Family call log:** when a member taps "I called", we record who and when.
 - **Subscription:** if you subscribe, Google Play takes the payment. We keep the plan, the product, the end date
   and a one-way hash of the purchase token. We never see or keep card or bank details.
@@ -40,7 +44,8 @@ seeing information dated from that point on.
 ## Service providers
 
 Google (Firebase, Speech-to-Text, Text-to-Speech), Exotel (phone calls), Anthropic (to structure a reply
-into a status; calls are made from our servers and no phone number is sent) and Google Play (payments). Data is
+into a status and to read a scanned prescription page; requests are made from our servers and no phone number
+is sent) and Google Play (payments). Data is
 stored in Mumbai (asia-south1).
 
 ## Your choices

@@ -178,3 +178,4 @@ One line per non-obvious decision. Tags: [DECIDED] final; [PROPOSED Sn] default 
 168. [subscription-polish] New design token `scrim` for the bottom-sheet backdrop (light and dark).
 169. firebase.json builds the functions before every deploy (predeploy), because a deploy without npm run build uploaded a stale functions/lib.
 170. [keyboard] A text field scrolls itself into the visible part of its screen on focus and when the keyboard opens (Screen provides a scroll-into-view context that TextField calls), so the field being typed in is never hidden behind the keyboard, including when moving between fields.
+171. [privacy] The privacy policy, the Data safety table and the generated in-app and web legal pages now describe prescription scanning (page image uploaded, read by an AI service, confirmed by a person, deleted when the review ends). Needs the same legal review as the rest of the policy.

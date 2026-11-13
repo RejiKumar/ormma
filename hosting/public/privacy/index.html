@@ -44,6 +44,11 @@
 <li><strong>Emergency contacts:</strong> a name, a type (neighbour or clinic) and a phone number that an owner chooses to
  add, with an optional short note, so family members can call them if a dose is missed.
 </li>
+<li><strong>Prescription pages:</strong> when an owner or editor scans a prescription, the page image is uploaded to our
+ servers and read by an AI service to list the medicines on it. You check every medicine on screen and
+ nothing is added until you confirm it. The image is deleted from our storage when you finish the review.
+ We do not keep the text read from it beyond the review.
+</li>
 <li><strong>Family call log:</strong> when a member taps "I called", we record who and when.
 </li>
 <li><strong>Subscription:</strong> if you subscribe, Google Play takes the payment. We keep the plan, the product, the end date
@@ -55,9 +60,9 @@
 <h2>Who can see it</h2>
 <p>Only members of that parent's family circle. If consent is withdrawn, members other than the owner stop seeing information dated from that point on.</p>
 <h2>Service providers</h2>
-<p>Google (Firebase, Speech-to-Text, Text-to-Speech), Exotel (phone calls), Anthropic (to structure a reply into a status; calls are made from our servers and no phone number is sent) and Google Play (payments). Data is stored in Mumbai (asia-south1).</p>
+<p>Google (Firebase, Speech-to-Text, Text-to-Speech), Exotel (phone calls), Anthropic (to structure a reply into a status and to read a scanned prescription page; requests are made from our servers and no phone number is sent) and Google Play (payments). Data is stored in Mumbai (asia-south1).</p>
 <h2>Your choices</h2>
-<p>An owner can export a parent's data and delete a parent and its data from the Family tab. Deleting removes the parent, medicines, dose history, alerts, family call log and emergency contacts. For anything else, write to the contact address below. In Settings you can change your name, switch between light and dark appearance, and delete your account, which removes your profile, your place in every family and your plan record. You must delete the parents you own first. A Google Play subscription is cancelled in Google Play.</p>
+<p>An owner can export a parent's data and delete a parent and its data from the Family tab. Deleting removes the parent, medicines, dose history, alerts, family call log and emergency contacts. For anything else, write to the contact address below. In Settings you can change your name and delete your account, which removes your profile, your place in every family and your plan record. You must delete the parents you own first. A Google Play subscription is cancelled in Google Play.</p>
 <h2>Security</h2>
 <p>Data is encrypted in transit. Access is limited by role (owner, editor, viewer) and checked on every request. Secrets are kept in Secret Manager, never in the app.</p>
 <h2>Children</h2>
