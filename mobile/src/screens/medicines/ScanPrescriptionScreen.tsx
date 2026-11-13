@@ -103,6 +103,12 @@ export function ScanPrescriptionScreen({ navigation, route }: Props) {
     try {
       const read = await readPrescription(parentId, path);
       prescriptionIdRef.current = read.prescriptionId;
+      // The server could not read the page at all: say so, rather than claiming nothing was on it.
+      if (!read.hasExtract) {
+        await cleanUp(false);
+        setPhase("failed");
+        return;
+      }
       const items = read.medicineCount > 0 ? await loadReviewMedicines(parentId, read.prescriptionId) : [];
       if (items.length === 0) {
         await cleanUp(false);

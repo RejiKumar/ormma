@@ -214,6 +214,12 @@ describe("ScanPrescriptionScreen", () => {
   it.each([
     ["the page cannot be uploaded", () => storageMock.putFile.mockRejectedValue(new Error("offline")), "The page could not be uploaded. Check your connection.", "Try again"],
     ["the reading fails", () => callable("scanPrescription").mockRejectedValue({ code: "functions/internal" }), "The prescription could not be read.", "Try again"],
+    [
+      "the server could not read the page",
+      () => callable("scanPrescription").mockResolvedValue({ data: { prescriptionId: "rx1", status: "pending_review", hasExtract: false, medicineCount: 0 } }),
+      "The prescription could not be read.",
+      "Try again",
+    ],
     ["no medicine is found", () => readReturns(0), "No medicine was found on this page.", "Scan again"],
   ])("shows a neutral message when %s", async (_name, arrange, message, retry) => {
     scanReturnsPage();

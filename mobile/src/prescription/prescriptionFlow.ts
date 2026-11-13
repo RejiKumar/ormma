@@ -103,9 +103,13 @@ export type ReadFailure = "permission" | "failed";
 export async function readPrescription(
   parentId: string,
   storagePath: string,
-): Promise<{ prescriptionId: string; medicineCount: number }> {
+): Promise<{ prescriptionId: string; medicineCount: number; hasExtract: boolean }> {
   const result = await scanPrescription({ parentId, storagePath });
-  return { prescriptionId: result.prescriptionId, medicineCount: result.medicineCount ?? 0 };
+  return {
+    prescriptionId: result.prescriptionId,
+    medicineCount: result.medicineCount ?? 0,
+    hasExtract: result.hasExtract !== false,
+  };
 }
 
 /** Maps a callable failure to one of two calm messages. */
