@@ -2,7 +2,7 @@
 
 ## 1. Native build first
 
-- [ ] 1.1 Choose and add the ML Kit document scanner wrapper (or the local module fallback) and `@react-native-firebase/storage`, and prove the Android release build still works. Verify: a release APK installs on the phone, the scanner opens and returns an image, and `docs/DECISIONS.md` records the library.
+- [x] 1.1 Choose and add the ML Kit document scanner wrapper (or the local module fallback) and `@react-native-firebase/storage`, and prove the Android release build still works. Verify: a release APK installs on the phone, the scanner opens and returns an image, and `docs/DECISIONS.md` records the library.
 
 ## 2. Server
 
