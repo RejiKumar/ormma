@@ -340,6 +340,13 @@ describe("SubscriptionScreen", () => {
     expect(screen.getByTestId("subscription-fix-payment")).toBeTruthy();
   });
 
+  it("says Google Play is unavailable when it returns no priced product", async () => {
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => []) }));
+    expect(await screen.findByTestId("subscription-unavailable")).toBeTruthy();
+    expect(screen.queryByTestId("subscription-monthly")).toBeNull();
+    expect(screen.getByTestId("plan-comparison")).toBeTruthy();
+  });
+
   it("keeps the comparison and the status when Google Play cannot be reached, without prices or buy buttons", async () => {
     mockSubscription.plan = "family";
     mockSubscription.entitlement = { status: "active", productId: "ormma_family_monthly", expiresAtMs: inDays(20), trial: false, autoRenew: true } as never;

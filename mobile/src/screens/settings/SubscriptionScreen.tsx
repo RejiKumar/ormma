@@ -230,7 +230,8 @@ export function SubscriptionScreen() {
         </Text>
       </Card>
 
-      {playDown ? <Banner testID="subscription-unavailable" message={t("subscription.unavailable")} /> : null}
+      {/* Google returning no priced product (for example a build not installed from Play) is the same as it being unavailable. */}
+      {playDown || (products !== null && priced.length === 0) ? <Banner testID="subscription-unavailable" message={t("subscription.unavailable")} /> : null}
 
       {monthly ? planCard(monthly, false) : null}
       {yearly ? planCard(yearly, true) : null}
