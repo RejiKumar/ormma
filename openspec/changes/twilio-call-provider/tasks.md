@@ -2,17 +2,17 @@
 
 ## 0. Prerequisite
 
-- [ ] 0.1 Archive the `go-live-calls` change first (it is complete), so this change's modified requirements build on its text. Verify: `openspec list` no longer shows go-live-calls, and the main `call-activation` spec exists.
+- [x] 0.1 Archive the `go-live-calls` change first (it is complete), so this change's modified requirements build on its text. Verify: `openspec list` no longer shows go-live-calls, and the main `call-activation` spec exists.
 
 ## 1. Provider selection
 
-- [ ] 1.1 Add the Twilio configuration (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `TWILIO_PUBLIC_BASE_URL`), the `twilio` mode in `callActivation`, and `createCallProvider` returning the Twilio provider. Verify: unit tests for complete, incomplete (names only logged), other provider's settings only, and `log` and unset unchanged.
-- [ ] 1.2 Declare the Twilio secrets on every scheduled function that declares the Exotel secrets. Verify: a test or build check lists the functions and their secrets.
+- [x] 1.1 Add the Twilio configuration (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`, `TWILIO_PUBLIC_BASE_URL`), the `twilio` mode in `callActivation`, and `createCallProvider` returning the Twilio provider. Verify: unit tests for complete, incomplete (names only logged), other provider's settings only, and `log` and unset unchanged.
+- [x] 1.2 Declare the Twilio secrets on every scheduled function that declares the Exotel secrets. Verify: a test or build check lists the functions and their secrets.
 
 ## 2. Provider and signature
 
-- [ ] 2.1 Implement `TwilioCallProvider.startCall` against the Calls API. Verify: unit tests for the request built (fields, Basic auth, callbacks), the returned sid, a non-2xx response, a payload without a sid, and no number or token in logs.
-- [ ] 2.2 Implement signature validation and a TwiML builder. Verify: tests with Twilio's documented signature example, a changed parameter, a missing header, and constant-time comparison.
+- [x] 2.1 Implement `TwilioCallProvider.startCall` against the Calls API. Verify: unit tests for the request built (fields, Basic auth, callbacks), the returned sid, a non-2xx response, a payload without a sid, and no number or token in logs.
+- [x] 2.2 Implement signature validation and a TwiML builder. Verify: tests with Twilio's documented signature example, a changed parameter, a missing header, and constant-time comparison.
 
 ## 3. Neutral core
 

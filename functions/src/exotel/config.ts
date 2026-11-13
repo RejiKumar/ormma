@@ -1,6 +1,8 @@
 import { defineSecret } from "firebase-functions/params";
 import { LoggingCallProvider, type CallProvider } from "../callProvider";
 import { ExotelCallProvider } from "./exotelCallProvider";
+import { TWILIO_SECRETS, TwilioConfigError, twilioConfigFromEnv } from "../twilio/config";
+import { TwilioCallProvider } from "../twilio/twilioCallProvider";
 
 // Firebase secrets (Secret Manager). Values never live in source or git.
 export const EXOTEL_API_KEY = defineSecret("EXOTEL_API_KEY");
@@ -22,6 +24,9 @@ export const EXOTEL_SECRETS = [
 ];
 
 export const WEBHOOK_SECRETS = [EXOTEL_WEBHOOK_TOKEN];
+
+/** Every secret a call-related function may read: exactly one provider is active, but any may be chosen. */
+export const CALL_SECRETS = [...EXOTEL_SECRETS, ...TWILIO_SECRETS];
 
 export interface ExotelConfig {
   accountSid: string;
@@ -69,11 +74,11 @@ export function exotelConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Exote
 }
 
 /**
- * "exotel": real calls. "log": the test provider (`CALL_PROVIDER=log`, tests and emulators), calling
- * is on but nothing is dialled. "off": production without a complete Exotel set-up; every scheduled
- * function pauses quietly (go-live-calls: call-activation spec).
+ * "exotel" or "twilio": real calls through that one provider. "log": the test provider
+ * (`CALL_PROVIDER=log`, tests and emulators), calling is on but nothing is dialled. "off": production
+ * without a complete provider set-up; every scheduled function pauses quietly (call-activation spec).
  */
-export type CallMode = "exotel" | "log" | "off";
+export type CallMode = "exotel" | "twilio" | "log" | "off";
 
 export interface CallActivation {
   mode: CallMode;
@@ -93,16 +98,18 @@ export function callActivation(env: NodeJS.ProcessEnv = process.env): CallActiva
   const liveFromMs = Number.isFinite(liveFrom) ? liveFrom : null;
 
   if (env.CALL_PROVIDER === "log") return { mode: "log", liveFromMs };
-  if (env.CALL_PROVIDER !== "exotel") return { mode: "off", liveFromMs };
+  if (env.CALL_PROVIDER !== "exotel" && env.CALL_PROVIDER !== "twilio") return { mode: "off", liveFromMs };
+  const provider = env.CALL_PROVIDER;
   try {
-    exotelConfigFromEnv(env);
-    return { mode: "exotel", liveFromMs };
+    if (provider === "exotel") exotelConfigFromEnv(env);
+    else twilioConfigFromEnv(env);
+    return { mode: provider, liveFromMs };
   } catch (error) {
-    if (error instanceof ExotelConfigError) {
-      const names = error.missing.join(",");
+    if (error instanceof ExotelConfigError || error instanceof TwilioConfigError) {
+      const names = `${provider}:${error.missing.join(",")}`;
       if (names !== reportedMissing) {
         reportedMissing = names;
-        console.warn("callActivation: calling is off, exotel settings missing", { missing: error.missing });
+        console.warn(`callActivation: calling is off, ${provider} settings missing`, { missing: error.missing });
       }
       return { mode: "off", liveFromMs };
     }
@@ -122,6 +129,7 @@ export function createCallProvider(
 ): CallProvider | null {
   const { mode } = callActivation(env);
   if (mode === "exotel") return new ExotelCallProvider(exotelConfigFromEnv(env), fetchImpl);
+  if (mode === "twilio") return new TwilioCallProvider(twilioConfigFromEnv(env), fetchImpl);
   if (mode === "log") return new LoggingCallProvider();
   return null;
 }
