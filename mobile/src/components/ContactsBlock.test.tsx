@@ -19,6 +19,16 @@ describe("ContactsBlock", () => {
     expect(screen.getByText("2 min walk from home")).toBeTruthy();
   });
 
+  it("keeps a very long name inside the row: the name is cut off and the button just says Call", async () => {
+    const long = "Vishnu".repeat(40);
+    await renderApp(<ContactsBlock contacts={[{ label: long, kind: "neighbour", phone: "+919876500011" }]} />);
+    const button = screen.getByTestId("escalation-contact-0");
+    expect(button).toHaveProp("accessibilityLabel", `Call ${long}`);
+    expect(screen.getByText(long)).toHaveProp("numberOfLines", 2);
+    expect(screen.queryByText(`Call ${long}`)).toBeNull();
+    expect(screen.getByText("Call")).toBeTruthy();
+  });
+
   it("opens the dialer with the parent's number", async () => {
     const open = jest.spyOn(Linking, "openURL").mockResolvedValue();
     await renderApp(<ContactsBlock contacts={contacts} parent={{ name: "Amma", phone: "+919812345678" }} />);

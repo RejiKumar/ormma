@@ -68,9 +68,12 @@ export function ContactsBlock({
               {contact.label.trim().charAt(0).toUpperCase()}
             </Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text variant="bodyMedium">{contact.label}</Text>
-            <Text variant="small" tone="muted">
+          {/* minWidth 0 lets a very long name shrink and cut off instead of pushing the Call button away. */}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text variant="bodyMedium" numberOfLines={2} ellipsizeMode="tail">
+              {contact.label}
+            </Text>
+            <Text variant="small" tone="muted" numberOfLines={2} ellipsizeMode="tail">
               {contact.note}
             </Text>
           </View>
@@ -92,11 +95,13 @@ export function ContactsBlock({
               borderColor: theme.colors.primary,
               paddingHorizontal: theme.spacing.md,
               opacity: disabled ? 0.5 : 1,
+              flexShrink: 0,
             }}
           >
             <Icon name="phone" color={theme.colors.primary} size={16} />
-            <Text variant="chipStrong" tone="primary">
-              {t("escalation.contactCall", { label: contact.label })}
+            {/* The name is already shown beside the button; the full "Call <name>" stays the accessible name. */}
+            <Text variant="chipStrong" tone="primary" numberOfLines={1}>
+              {t("escalation.callShort")}
             </Text>
           </PressableScale>
         </View>

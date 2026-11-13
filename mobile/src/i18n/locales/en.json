@@ -404,6 +404,7 @@
     "alert": "Family alerted",
     "contactsTitle": "People who can check in",
     "contactCall": "Call {{label}}",
+    "callShort": "Call",
     "kindNeighbour": "Neighbour",
     "kindParent": "Parent",
     "kindClinic": "Clinic",
