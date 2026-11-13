@@ -334,6 +334,32 @@
         "invalidDate": "Use the date format YYYY-MM-DD.",
         "failed": "Could not save the details. Please try again."
       }
+    },
+    "scan": {
+      "title": "Scan prescription",
+      "action": "Scan prescription",
+      "opening": "Opening the scanner.",
+      "working": "Reading the prescription. This can take a few seconds.",
+      "reviewIntro": "These were read from the page exactly as written. Nothing is added until you confirm it.",
+      "checkThis": "Check this one",
+      "confirm": "Confirm",
+      "discard": "Discard",
+      "added": "Added",
+      "discarded": "Discarded",
+      "useToday": "Use today",
+      "confirmFailed": "Could not add this medicine. Please try again.",
+      "unavailable": "Scanning is not available on this phone. You can still add medicines by hand.",
+      "none": "No medicine was found on this page.",
+      "readFailed": "The prescription could not be read.",
+      "uploadFailed": "The page could not be uploaded. Check your connection.",
+      "noPermission": "Only the family owner or an editor can scan a prescription.",
+      "tryAgain": "Try again",
+      "scanAgain": "Scan again",
+      "enterByHand": "Enter by hand",
+      "leaveTitle": "Leave this prescription?",
+      "leaveBody": "Medicines you have not confirmed will not be added.",
+      "stay": "Stay",
+      "leave": "Leave"
     }
   },
   "digest": {

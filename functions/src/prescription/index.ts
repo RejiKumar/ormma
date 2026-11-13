@@ -143,7 +143,7 @@ export const confirmPrescriptionMedicineHandler = async (
   const rxRef = db.doc(`parents/${parentId}/prescriptions/${prescriptionId}`);
   const rxSnap = await rxRef.get();
   const rx = rxSnap.exists ? (rxSnap.data() as { status?: string } | undefined) : undefined;
-  if (!rx || rx.status === "discarded") {
+  if (!rx || rx.status === "discarded" || rx.status === "rejected") {
     throw refuse("failed-precondition", "This prescription is not available to confirm.");
   }
 

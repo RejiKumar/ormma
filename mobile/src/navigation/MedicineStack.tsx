@@ -5,11 +5,13 @@ import { useStackTransition } from "./transitions";
 import { AddMedicineScreen } from "../screens/medicines/AddMedicineScreen";
 import { EditMedicineScreen } from "../screens/medicines/EditMedicineScreen";
 import { MedicinesListScreen } from "../screens/medicines/MedicinesListScreen";
+import { ScanPrescriptionScreen } from "../screens/medicines/ScanPrescriptionScreen";
 
 export type MedicineStackParamList = {
   MedicinesList: undefined;
   AddMedicine: { parentId: string };
   EditMedicine: { parentId: string; medicine: Medicine };
+  ScanPrescription: { parentId: string };
 };
 
 const Stack = createNativeStackNavigator<MedicineStackParamList>();
@@ -30,6 +32,11 @@ export function MedicineStack() {
         name="EditMedicine"
         component={EditMedicineScreen}
         options={{ title: t("screens.medicines.editTitle") }}
+      />
+      <Stack.Screen
+        name="ScanPrescription"
+        component={ScanPrescriptionScreen}
+        options={{ title: t("screens.scan.title") }}
       />
     </Stack.Navigator>
   );

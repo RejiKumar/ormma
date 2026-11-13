@@ -171,6 +171,7 @@ describe("MedicinesListScreen", () => {
     expect(screen.getByText(/^Amlodipine/)).toBeTruthy();
     expect(screen.getByText("Inactive")).toBeTruthy();
     expect(screen.getByTestId("medicine-add")).toBeTruthy();
+    expect(screen.getByTestId("medicine-scan")).toHaveTextContent("Scan prescription");
   });
 
   it("shows the prototype layout: heading with active count, frequency, pill, purpose and the prescriber footer", async () => {
@@ -259,6 +260,7 @@ describe("MedicinesListScreen", () => {
 
     expect(await screen.findByText(/^Metformin/)).toBeTruthy();
     expect(screen.queryByTestId("medicine-add")).toBeNull();
+    expect(screen.queryByTestId("medicine-scan")).toBeNull();
     await fireEvent.press(screen.getByTestId("medicine-m1"));
     expect(screen.queryByText("Edit medicine")).toBeNull();
   });

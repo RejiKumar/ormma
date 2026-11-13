@@ -68,14 +68,22 @@ export function MedicinesListScreen({ navigation }: Props) {
             onPress={() => navigation.getParent()?.navigate("Family", { screen: "AddParent" })}
           />
         ) : canEdit && selected ? (
-          <Button
-            label={t("screens.medicines.add")}
-            icon="plus"
-            testID="medicine-add"
-            onPress={() =>
-              navigation.navigate("AddMedicine", { parentId: selected.id })
-            }
-          />
+          <View style={{ gap: theme.spacing.sm }}>
+            <Button
+              label={t("screens.medicines.add")}
+              icon="plus"
+              testID="medicine-add"
+              onPress={() =>
+                navigation.navigate("AddMedicine", { parentId: selected.id })
+              }
+            />
+            <Button
+              label={t("screens.scan.action")}
+              variant="secondary"
+              testID="medicine-scan"
+              onPress={() => navigation.navigate("ScanPrescription", { parentId: selected.id })}
+            />
+          </View>
         ) : null
       }
     >

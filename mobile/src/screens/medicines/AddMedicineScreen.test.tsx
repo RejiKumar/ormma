@@ -155,6 +155,14 @@ describe("AddMedicineScreen", () => {
     await renderAdd();
     expect(await screen.findByTestId("medicine-readonly")).toBeTruthy();
     expect(screen.queryByTestId("medicine-save")).toBeNull();
+    expect(screen.queryByTestId("medicine-scan")).toBeNull();
+  });
+
+  it("offers Scan prescription to an editor and opens the scan screen for that parent", async () => {
+    await feedParent("editor");
+    await renderAdd();
+    await fireEvent.press(await screen.findByTestId("medicine-scan"));
+    expect(navigation.navigate).toHaveBeenCalledWith("ScanPrescription", { parentId: "p1" });
   });
   it("opens prefilled from the last medicine except the name, with a note", async () => {
     await feedParent("editor", [

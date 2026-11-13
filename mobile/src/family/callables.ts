@@ -30,6 +30,30 @@ export function getCallStatus(): Promise<{ callsEnabled?: boolean } | undefined>
   return invoke("getCallStatus", {});
 }
 
+export interface ScanPrescriptionResult {
+  prescriptionId: string;
+  status: string;
+  hasExtract: boolean;
+  medicineCount?: number;
+}
+
+/** Reads an uploaded prescription page (server side, Sonnet) and saves it for review. Nothing is scheduled. */
+export function scanPrescription(payload: { parentId: string; storagePath: string }): Promise<ScanPrescriptionResult> {
+  return invoke("scanPrescription", payload);
+}
+
+export interface ConfirmPrescriptionMedicinePayload {
+  parentId: string;
+  prescriptionId: string;
+  medicine: { name: string; doseText: string; frequencyText: string; times: string[] };
+  startDate: string;
+}
+
+/** Creates one medicine a person has checked on screen. */
+export function confirmPrescriptionMedicine(payload: ConfirmPrescriptionMedicinePayload): Promise<{ medicineId: string }> {
+  return invoke("confirmPrescriptionMedicine", payload);
+}
+
 export function createParent(payload: CreateParentPayload): Promise<{ parentId: string }> {
   return invoke("createParent", payload);
 }

@@ -120,6 +120,14 @@ export function AddMedicineScreen({ navigation, route }: Props) {
       {parent && !canEdit ? (
         <Banner variant="info" message={t("screens.medicines.readOnly")} testID="medicine-readonly" />
       ) : null}
+      {canEdit && parent ? (
+        <Button
+          label={t("screens.scan.action")}
+          variant="secondary"
+          testID="medicine-scan"
+          onPress={() => navigation.navigate("ScanPrescription", { parentId: parent.id })}
+        />
+      ) : null}
       {prefilled && canEdit ? (
         <Banner
           variant="info"
