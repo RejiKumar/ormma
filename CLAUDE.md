@@ -41,4 +41,5 @@ All under `openspec/specs/<capability>/spec.md`:
 - ai-contracts, reply-structuring, prescription-reading, weekly-summary (old spec 06)
 - check-in-protocol-view, dose-receipts, evening-digest, family-circle, medicine-details (added by prototype-full-parity)
 - subscription, settings (added by monetization, at the user's request; not in the BRD)
+- call-activation (added by go-live-calls, at the user's request; not in the BRD)
 - prescription-capture (added by medicine-capture, at the user's request; not in the BRD)
