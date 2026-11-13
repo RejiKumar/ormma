@@ -183,14 +183,33 @@ async function handleGather(
   if (!callSid || !SID_PATTERN.test(callSid) || !parentId || !SID_PATTERN.test(parentId)) {
     return respond(400, { error: "invalid_callback" });
   }
+  return applyDigits(deps.db, { callSid, parentId, rawDigits: request.query.digits }, nowMs);
+}
 
-  const { digits, action } = normalizeDigits(request.query.digits);
+export interface DigitsInput {
+  callSid: string;
+  parentId: string;
+  /** The key the parent pressed, as the provider sent it. */
+  rawDigits: unknown;
+}
+
+/**
+ * Provider-neutral: applies a pressed key to the call session and its dose events, exactly once per
+ * call. Both Exotel and Twilio call this; each only parses its own request first.
+ */
+export async function applyDigits(
+  db: Firestore,
+  input: DigitsInput,
+  nowMs: number,
+): Promise<WebhookResponse> {
+  const { callSid, parentId } = input;
+  const { digits, action } = normalizeDigits(input.rawDigits);
   if (action === "empty") return respond(200, { ok: true, ignored: "empty_digits" });
 
-  const sessionRef = deps.db.doc(`parents/${parentId}/callSessions/${callSid}`);
-  const parentRef = deps.db.doc(`parents/${parentId}`);
+  const sessionRef = db.doc(`parents/${parentId}/callSessions/${callSid}`);
+  const parentRef = db.doc(`parents/${parentId}`);
 
-  return deps.db.runTransaction(async (tx) => {
+  return db.runTransaction(async (tx) => {
     const sessionSnap = await tx.get(sessionRef);
     if (!sessionSnap.exists) return respond(200, { ok: true, ignored: "unknown_session" });
     const session = sessionSnap.data() as CallSessionDoc;
@@ -207,7 +226,7 @@ async function handleGather(
     const policy = policyOf(parent);
     const grouped = session.doseEventIds.length > 1;
     const eventRefs = session.doseEventIds.map((id) =>
-      deps.db.doc(`parents/${parentId}/doseEvents/${id}`),
+      db.doc(`parents/${parentId}/doseEvents/${id}`),
     );
     const eventDocs = eventRefs.length > 0 ? await tx.getAll(...eventRefs) : [];
 
@@ -259,13 +278,24 @@ async function handleStatus(
 ): Promise<WebhookResponse> {
   const payload = parseStatusPayload(request.body);
   if (!payload) return respond(400, { error: "invalid_callback" });
+  return applyStatus(deps.db, payload, nowMs);
+}
 
-  const sessionRef = deps.db.doc(
+/**
+ * Provider-neutral: applies a call status to the call session, once per call. Both providers map their
+ * own callback onto a `StatusPayload` (a terminal status, or an "answered" event) and call this.
+ */
+export async function applyStatus(
+  db: Firestore,
+  payload: StatusPayload,
+  nowMs: number,
+): Promise<WebhookResponse> {
+  const sessionRef = db.doc(
     `parents/${payload.parentId}/callSessions/${payload.callSid}`,
   );
-  const parentRef = deps.db.doc(`parents/${payload.parentId}`);
+  const parentRef = db.doc(`parents/${payload.parentId}`);
 
-  return deps.db.runTransaction(async (tx) => {
+  return db.runTransaction(async (tx) => {
     const sessionSnap = await tx.get(sessionRef);
     if (!sessionSnap.exists) return respond(200, { ok: true, ignored: "unknown_session" });
     const session = sessionSnap.data() as CallSessionDoc;
@@ -293,7 +323,7 @@ async function handleStatus(
     if (session.dtmfInput === null) {
       const policy = policyOf(parent);
       const eventRefs = session.doseEventIds.map((id) =>
-        deps.db.doc(`parents/${payload.parentId}/doseEvents/${id}`),
+        db.doc(`parents/${payload.parentId}/doseEvents/${id}`),
       );
       const eventDocs = eventRefs.length > 0 ? await tx.getAll(...eventRefs) : [];
 

@@ -16,7 +16,7 @@
 
 ## 3. Neutral core
 
-- [ ] 3.1 Extract the provider-neutral digit and status logic from `exotelWebhook` so both providers call it, without changing Exotel behaviour. Verify: the existing Exotel unit and emulator tests pass unchanged.
+- [x] 3.1 Extract the provider-neutral digit and status logic from `exotelWebhook` so both providers call it, without changing Exotel behaviour. Verify: the existing Exotel unit and emulator tests pass unchanged.
 
 ## 4. Voice, status and recordings
 
