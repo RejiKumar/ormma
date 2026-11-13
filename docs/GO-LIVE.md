@@ -72,6 +72,12 @@ Do these in this order.
 8. **Remove the test access.** Firebase Auth: delete the test phone numbers. Project settings, your Android app: delete the debug SHA-1 and SHA-256 fingerprints (keep the upload key and the Play app-signing ones).
 9. **Onboard the first families.**
 
+## Using Twilio instead of Exotel
+
+If Exotel is not available to you, `CALL_PROVIDER=twilio` runs the same calls through Twilio. Phase 1 is
+unchanged. In phase 2, follow `docs/TWILIO-FLOW.md` in place of the Exotel steps (account, secrets, settings,
+deploy, test call). Note that Twilio calls India from a foreign number, so the parent sees an international caller id.
+
 ## Checks you can repeat any time
 
 - **Readiness:** `npm run check:go-live` (or `node scripts/check-go-live.mjs`). It checks the 12 secrets exist, the settings file, that the call functions are deployed and that the public endpoints answer and refuse a request without a token. It changes nothing and cannot read secret values, so a placeholder still shows as set: the test call in step 7 is what proves the Exotel values.

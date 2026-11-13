@@ -26,9 +26,9 @@
 
 ## 5. Docs and readiness
 
-- [ ] 5.1 Write `docs/TWILIO-FLOW.md`, update `docs/GO-LIVE.md` and make `scripts/check-go-live.mjs` check the Twilio secrets, the settings and the endpoints when `CALL_PROVIDER=twilio`. Verify: the script reports pass and fail correctly with and without the Twilio settings.
+- [x] 5.1 Write `docs/TWILIO-FLOW.md`, update `docs/GO-LIVE.md` and make `scripts/check-go-live.mjs` check the Twilio secrets, the settings and the endpoints when `CALL_PROVIDER=twilio`. Verify: the script reports pass and fail correctly with and without the Twilio settings.
 
 ## 6. Verification
 
-- [ ] 6.1 Run function unit tests, emulator tests, typecheck, lint and `openspec validate twilio-call-provider`. Verify: all pass.
+- [x] 6.1 Run function unit tests, emulator tests, typecheck, lint and `openspec validate twilio-call-provider`. Verify: all pass.
 - [ ] 6.2 With the user: a Twilio trial account, the user's own verified number, one real call. Verify: greeting, a spoken answer, a keypad answer, the dose state in the app, the recording gone at Twilio, and the function log free of numbers and content.
