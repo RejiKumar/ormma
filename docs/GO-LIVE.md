@@ -73,6 +73,7 @@ Do these in this order.
 
 ## Checks you can repeat any time
 
+- **Readiness:** `npm run check:go-live` (or `node scripts/check-go-live.mjs`). It checks the 12 secrets exist, the settings file, that the call functions are deployed and that the public endpoints answer and refuse a request without a token. It changes nothing and cannot read secret values, so a placeholder still shows as set: the test call in step 7 is what proves the Exotel values.
 - **Is calling on?** Open the app: the "calls will start soon" note on Today means it is off.
 - **Is anything running while off?** The logs show `calling is off` lines from the scheduled functions, and no other writes.
 - **Speech services:** `node functions/scripts/try-speech.mjs`.

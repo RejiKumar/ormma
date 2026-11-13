@@ -18,6 +18,7 @@
     "test:rules:mutations": "npm run prereqs && firebase emulators:exec --only firestore,storage --project demo-ormma \"node scripts/mutation-check-rules.mjs\"",
     "deploy:staging": "firebase deploy --only functions,firestore:rules,storage --project staging",
     "deploy:prod": "firebase deploy --only functions,firestore:rules,storage --project prod",
+    "check:go-live": "node scripts/check-go-live.mjs",
     "android:apk": "node scripts/android-build.mjs",
     "android:prepare": "node scripts/android-build.mjs --prepare"
   },
