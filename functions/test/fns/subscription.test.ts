@@ -34,6 +34,9 @@ function fakePlay(over: Partial<PlayPurchase> = {}): PlayClient & { acknowledged
     expiresAtMs: Date.now() + 30 * day,
     accountId: null,
     acknowledged: false,
+    trial: false,
+    autoRenew: true,
+    paymentIssue: null,
     ...over,
   };
   return {
@@ -82,6 +85,31 @@ describe("verifyPurchase", () => {
     expect(JSON.stringify(doc)).not.toContain(TOKEN);
     expect(log.mock.calls.flat().join(" ")).not.toContain(TOKEN);
     log.mockRestore();
+  });
+
+  it("records the trial, renewal and payment issue the Play response carries, and no token", async () => {
+    const owner = uid("phase");
+    const TOKEN = freshToken();
+    await verifyPurchaseHandler(
+      call(owner, { productId: "ormma_family_monthly", purchaseToken: TOKEN }),
+      fakePlay({ accountId: owner, trial: true, autoRenew: true, paymentIssue: null }),
+    );
+    let doc = (await db().doc(`subscriptions/${owner}`).get()).data();
+    expect(doc).toMatchObject({ status: "active", trial: true, autoRenew: true, paymentIssue: null });
+    expect(JSON.stringify(doc)).not.toContain(TOKEN);
+
+    const message = { subscriptionNotification: { notificationType: 6, purchaseToken: TOKEN } };
+    await playBillingEventsHandler(message, fakePlay({ trial: false, autoRenew: false, paymentIssue: "grace" }));
+    doc = (await db().doc(`subscriptions/${owner}`).get()).data();
+    expect(doc).toMatchObject({ status: "active", trial: false, autoRenew: false, paymentIssue: "grace" });
+
+    await playBillingEventsHandler(message, fakePlay({ status: "expired", trial: false, autoRenew: false, paymentIssue: "hold" }));
+    doc = (await db().doc(`subscriptions/${owner}`).get()).data();
+    expect(doc).toMatchObject({ status: "expired", paymentIssue: "hold" });
+
+    await playBillingEventsHandler({ subscriptionNotification: { notificationType: 12, purchaseToken: TOKEN } }, fakePlay());
+    doc = (await db().doc(`subscriptions/${owner}`).get()).data();
+    expect(doc).toMatchObject({ status: "refunded", trial: false, autoRenew: false, paymentIssue: null });
   });
 
   it("does not acknowledge twice and refuses a mismatching product or a pending purchase", async () => {

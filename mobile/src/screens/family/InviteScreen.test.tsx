@@ -9,7 +9,8 @@ type FunctionsMock = {
 };
 const fnsMock = jest.requireMock("@react-native-firebase/functions") as FunctionsMock;
 
-const navigation = { goBack: jest.fn(), navigate: jest.fn() } as never;
+const navigate = jest.fn();
+const navigation = { goBack: jest.fn(), navigate } as never;
 const route = {
   key: "invite",
   name: "Invite" as const,
@@ -89,5 +90,24 @@ describe("InviteScreen", () => {
     await fireEvent.press(screen.getByTestId("invite-create"));
     expect(await screen.findByText("Could not create the invite code. Please try again.")).toBeTruthy();
     expect(console.warn).toHaveBeenCalledWith("createInvite failed code=functions/internal");
+  });
+  it("opens the upgrade sheet when the free plan's member limit stops the invite", async () => {
+    callable("createInvite").mockRejectedValue({ code: "functions/resource-exhausted", details: { reason: "plan_member_limit" } });
+    await renderInvite();
+    await fireEvent.press(screen.getByTestId("invite-create"));
+    expect(await screen.findByTestId("upgrade-sheet")).toBeTruthy();
+    expect(screen.getByTestId("upgrade-sheet-message")).toHaveTextContent("The free plan includes two members per parent.");
+    expect(screen.getByTestId("invite-error")).toBeTruthy();
+    await fireEvent.press(screen.getByTestId("upgrade-see-plans"));
+    expect(navigate).toHaveBeenCalledWith("Subscription");
+    expect(screen.queryByTestId("upgrade-sheet")).toBeNull();
+  });
+
+  it("Not now closes the member-limit sheet", async () => {
+    callable("createInvite").mockRejectedValue({ code: "functions/resource-exhausted", details: { reason: "plan_member_limit" } });
+    await renderInvite();
+    await fireEvent.press(screen.getByTestId("invite-create"));
+    await fireEvent.press(await screen.findByTestId("upgrade-not-now"));
+    expect(screen.queryByTestId("upgrade-sheet")).toBeNull();
   });
 });

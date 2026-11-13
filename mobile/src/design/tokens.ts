@@ -22,6 +22,8 @@ export interface ThemeColors {
   surfaceAlt: string;
   /** Decorative hairlines only. Never carries meaning on its own. */
   border: string;
+  /** Dims the screen behind a bottom sheet. */
+  scrim: string;
   ink: string;
   inkMuted: string;
   /** Muted grey for graphics that are not text (dashed borders). */
@@ -52,6 +54,7 @@ export const lightColors: ThemeColors = {
   /** Neutral chip: a pale mint. */
   surfaceAlt: "#E1EEEC",
   border: "#D3E4E1",
+  scrim: "#00000066",
   ink: "#0B2522",
   /** Muted text. Reaches 4.5:1 on every light surface, chip included. */
   inkMuted: "#44605C",
@@ -85,6 +88,7 @@ export const darkColors: ThemeColors = {
   surface: "#10262A",
   surfaceAlt: "#183439",
   border: "#27474C",
+  scrim: "#000000A6",
   ink: "#E7F6F3",
   inkMuted: "#9FBEBA",
   mutedGraphic: "#7A9C98",

@@ -199,6 +199,7 @@ The app sells one subscription, Ormma Family, monthly and yearly. Prices below a
    - Product ID `ormma_family_monthly`, name "Ormma Family monthly", one base plan: monthly auto-renewing, price ₹299.
    - Product ID `ormma_family_yearly`, name "Ormma Family yearly", one base plan: yearly auto-renewing, price ₹2,999.
    - The ids must match `PRODUCT_IDS` in `mobile/src/billing/billing.ts` and `functions/src/subscription/play.ts` exactly. Activate both base plans.
+   - **Free trial (optional, `subscription-polish`).** On each base plan: Add offer → **Free trial** → 7 days, eligibility "New customer acquisition" (Google then shows it only to accounts that have never had the subscription). Give the offer the **offer tag `trial`** (the server reads this tag to mark a purchase as a trial). Activate the offer. The app shows a trial only when Google Play returns one, so leaving this out simply means no trial wording.
 3. **Service account for verification.**
    - Google Cloud console (the project linked to Play) → IAM → Service accounts → create `ormma-play-verifier` (no roles needed in Cloud).
    - Enable the **Google Play Android Developer API** in that Cloud project.
@@ -214,6 +215,7 @@ The app sells one subscription, Ormma Family, monthly and yearly. Prices below a
    - Play Console → Setup → License testing: add the tester Google accounts.
    - Upload a build to the Internal testing track and install it from the Play link (purchases do not work from a sideloaded debug build or the emulator).
    - Buy monthly with a licence tester account (it renews every few minutes in test mode). Check that `subscriptions/{uid}` appears, the Settings plan row shows Ormma Family, and a second parent can be added.
+   - With a trial offer active, the buy button says "Start free trial" and the card says "7 days free, then ₹299.00 per month". After buying, the Plan screen says "Free trial until <date>"; after the first renewal it says "Renews on <date>". Cancel and it says "Cancelled. Ormma Family stays active until <date>."
    - Cancel in Play and confirm the plan stays until the end date; refund a test order and confirm the plan ends at once; reinstall and use Restore purchases.
 7. **Legal pages.** Publish `docs/PRIVACY-POLICY.md` and `docs/TERMS.md` as web pages (after legal review), then put the two URLs into `mobile/src/legal/legalConfig.ts` and into Play Console (Privacy policy URL; and the Terms link in the store listing description). Run `node scripts/build-legal.mjs` after any edit to those documents so the in-app text matches.
 8. **Cost check.** Replace the assumed ₹5 to ₹10 per call with Exotel's rate card in `docs/PRELAUNCH-CHECKLIST.md` and confirm the free limits still make sense.

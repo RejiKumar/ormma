@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, ScrollView, View } from "react-native";
 import { Button } from "../../components/Button";
+import { UpgradeSheet } from "../../components/UpgradeSheet";
 import { FormError } from "../../components/FormError";
 import { planLimitReason } from "../../family/planErrors";
 import { Icon } from "../../components/Icon";
@@ -141,14 +142,15 @@ export function AddParentScreen({ navigation }: Props) {
         </View>
       </View>
       {error ? <FormError message={error} testID="add-error" /> : null}
-      {planLimit ? (
-        <Button
-          variant="secondary"
-          label={t("subscription.seePlans")}
-          testID="add-see-plans"
-          onPress={() => navigation.navigate("Subscription")}
-        />
-      ) : null}
+      <UpgradeSheet
+        visible={planLimit}
+        message={t("subscription.limitParent")}
+        onSeePlans={() => {
+          setPlanLimit(false);
+          navigation.navigate("Subscription");
+        }}
+        onClose={() => setPlanLimit(false)}
+      />
     </Screen>
   );
 }

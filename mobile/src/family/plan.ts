@@ -3,10 +3,16 @@
 export type PlanName = "free" | "family";
 export type SubscriptionStatus = "active" | "cancelled" | "expired" | "refunded";
 
+export type PaymentIssue = "grace" | "hold";
+
 export interface Entitlement {
   status: SubscriptionStatus;
   productId: string;
   expiresAtMs: number;
+  /** Written by the server from Google Play; absent on older entitlements. */
+  trial?: boolean;
+  autoRenew?: boolean;
+  paymentIssue?: PaymentIssue | null;
 }
 
 /** After a subscription ends the paid plan still shows for this long. */

@@ -2,11 +2,22 @@
 export const PRODUCT_IDS = ["ormma_family_monthly", "ormma_family_yearly"] as const;
 export type ProductId = (typeof PRODUCT_IDS)[number];
 
+/** The free period Google Play returns for this account, for example 7 days. */
+export interface TrialLength {
+  amount: number;
+  unit: "day" | "week" | "month";
+}
+
 export interface BillingProduct {
   productId: ProductId;
   /** The price exactly as Google Play returns it, for example "₹299.00". */
   displayPrice: string;
   offerToken: string | null;
+  /** Present only when Google Play returned a free-trial offer for this account. */
+  trial?: TrialLength | null;
+  /** The recurring price in micro-units and its currency, from Play, for the best-value saving. */
+  priceMicros?: number | null;
+  currencyCode?: string | null;
 }
 
 export interface BillingPurchase {

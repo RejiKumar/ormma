@@ -159,7 +159,7 @@ describe("SubscriptionScreen", () => {
     await renderPlans(fakeBilling());
     expect(await screen.findByText("Subscribe · ₹299.00 per month")).toBeTruthy();
     expect(screen.getByText("Subscribe · ₹2,999.00 per year")).toBeTruthy();
-    expect(screen.getByText("Free plan")).toBeTruthy();
+    expect(screen.getByText("What each plan includes")).toBeTruthy();
     expect(screen.getByText(/^Missed-dose alerts, urgent alerts/)).toBeTruthy();
   });
 
@@ -233,5 +233,121 @@ describe("SubscriptionScreen", () => {
     mockSubscription.entitlement = { status: "active", productId: "ormma_family_monthly", expiresAtMs: Date.now() + 20 * 86_400_000 };
     await renderPlans(fakeBilling());
     expect(await screen.findByTestId("subscription-status")).toHaveTextContent(/^Ormma Family is active until /);
+  });
+  const trialMonthly: BillingProduct = {
+    ...monthly,
+    trial: { amount: 7, unit: "day" },
+    priceMicros: 299_000_000,
+    currencyCode: "INR",
+  };
+  const plainMonthly: BillingProduct = { ...monthly, priceMicros: 299_000_000, currencyCode: "INR" };
+  const plainYearly: BillingProduct = { ...yearly, priceMicros: 2_999_000_000, currencyCode: "INR" };
+  const inDays = (n: number) => Date.now() + n * 86_400_000;
+
+  it("compares Free and Ormma Family on parents, members and call times", async () => {
+    await renderPlans(fakeBilling());
+    expect(await screen.findByTestId("plan-comparison")).toBeTruthy();
+    for (const text of ["Parents", "Members per parent", "Check-in call times per day", "First 2", "Every dose time"]) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
+    expect(screen.getByText(/^Missed-dose alerts, urgent alerts/)).toBeTruthy();
+  });
+
+  it("shows the terms above the buttons: price, renewal and cancel anytime", async () => {
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => [plainMonthly, plainYearly]) }));
+    expect(await screen.findByTestId("terms-monthly")).toHaveTextContent(
+      "₹299.00 per month. Renews each month until you cancel. Cancel anytime in Google Play.",
+    );
+    expect(screen.getByTestId("terms-yearly")).toHaveTextContent(
+      "₹2,999.00 per year. Renews each year until you cancel. Cancel anytime in Google Play.",
+    );
+  });
+
+  it("marks yearly as best value with the saving computed from the Play prices", async () => {
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => [plainMonthly, plainYearly]) }));
+    expect(await screen.findByTestId("best-value")).toHaveTextContent("Best value");
+    expect(screen.getByTestId("best-value-line")).toHaveTextContent("About ₹250 per month. Saves 16% compared with paying monthly.");
+  });
+
+  it("shows no best value when the prices have no saving or no currency", async () => {
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => [monthly, yearly]) }));
+    await screen.findByTestId("plan-yearly");
+    expect(screen.queryByTestId("best-value")).toBeNull();
+  });
+
+  it("shows the trial only when Play returned one, with the price after it, and a start-trial button", async () => {
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => [trialMonthly, plainYearly]) }));
+    expect(await screen.findByTestId("terms-monthly")).toHaveTextContent(
+      "7 days free, then ₹299.00 per month. Renews each month until you cancel. Cancel anytime in Google Play.",
+    );
+    expect(screen.getByTestId("subscription-monthly")).toHaveTextContent("Start free trial");
+    // Yearly had no trial offer: plain price and plain button.
+    expect(screen.getByTestId("terms-yearly")).not.toHaveTextContent("free");
+    expect(screen.getByTestId("subscription-yearly")).toHaveTextContent("Subscribe · ₹2,999.00 per year");
+  });
+
+  it("buys the trial offer with the offer token Play returned", async () => {
+    const billing = fakeBilling({ getProducts: jest.fn(async () => [{ ...trialMonthly, offerToken: "trial-token" }, plainYearly]) });
+    await renderPlans(billing);
+    await fireEvent.press(await screen.findByTestId("subscription-monthly"));
+    await waitFor(() => expect(billing.purchase).toHaveBeenCalled());
+    expect((billing.purchase as jest.Mock).mock.calls[0][0].offerToken).toBe("trial-token");
+  });
+
+  it.each([
+    ["a trial", { status: "active", trial: true, autoRenew: true }, "Free trial until "],
+    ["a renewing plan", { status: "active", trial: false, autoRenew: true }, "Renews on "],
+    ["a cancelled plan", { status: "cancelled", trial: false, autoRenew: false }, "Cancelled. Ormma Family stays active until "],
+    ["an older entitlement", { status: "active" }, "Ormma Family is active until "],
+  ])("shows the status for %s", async (_name, fields, text) => {
+    mockSubscription.plan = "family";
+    mockSubscription.entitlement = { productId: "ormma_family_monthly", expiresAtMs: inDays(20), ...fields } as never;
+    await renderPlans(fakeBilling());
+    expect(await screen.findByTestId("subscription-status")).toHaveTextContent(new RegExp(`^${text}`));
+    expect(screen.queryByTestId("subscription-fix-payment")).toBeNull();
+  });
+
+  it("says there is a payment problem and opens Google Play to fix it", async () => {
+    const open = jest.spyOn(Linking, "openURL").mockResolvedValue();
+    mockSubscription.plan = "family";
+    mockSubscription.entitlement = {
+      status: "active",
+      productId: "ormma_family_monthly",
+      expiresAtMs: inDays(2),
+      trial: false,
+      autoRenew: true,
+      paymentIssue: "grace",
+    } as never;
+    await renderPlans(fakeBilling());
+    expect(await screen.findByTestId("subscription-status")).toHaveTextContent(
+      "There is a problem with your payment. Update it in Google Play to keep Ormma Family.",
+    );
+    await fireEvent.press(screen.getByTestId("subscription-fix-payment"));
+    expect(open).toHaveBeenCalledWith(expect.stringContaining("play.google.com"));
+    open.mockRestore();
+  });
+
+  it("shows a hold as paused with the fix button even when the plan is free", async () => {
+    mockSubscription.plan = "free";
+    mockSubscription.entitlement = {
+      status: "expired",
+      productId: "ormma_family_monthly",
+      expiresAtMs: inDays(1),
+      paymentIssue: "hold",
+    } as never;
+    await renderPlans(fakeBilling());
+    expect(await screen.findByTestId("subscription-status")).toHaveTextContent(/^Ormma Family is paused because of a problem with your payment/);
+    expect(screen.getByTestId("subscription-fix-payment")).toBeTruthy();
+  });
+
+  it("keeps the comparison and the status when Google Play cannot be reached, without prices or buy buttons", async () => {
+    mockSubscription.plan = "family";
+    mockSubscription.entitlement = { status: "active", productId: "ormma_family_monthly", expiresAtMs: inDays(20), trial: false, autoRenew: true } as never;
+    await renderPlans(fakeBilling({ getProducts: jest.fn(async () => Promise.reject(new Error("down"))) }));
+    expect(await screen.findByTestId("subscription-unavailable")).toBeTruthy();
+    expect(screen.getByTestId("plan-comparison")).toBeTruthy();
+    expect(screen.getByTestId("subscription-status")).toHaveTextContent(/^Renews on /);
+    expect(screen.queryByTestId("subscription-monthly")).toBeNull();
+    expect(screen.queryByTestId("subscription-yearly")).toBeNull();
   });
 });

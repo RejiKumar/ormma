@@ -16,7 +16,9 @@ export async function readEntitlement(uid: string): Promise<EntitlementLike | nu
 }
 
 export function entitlementDoc(
-  fields: Pick<SubscriptionDoc, "status" | "productId" | "tokenHash"> & { expiresAtMs: number },
+  fields: Pick<SubscriptionDoc, "status" | "productId" | "tokenHash" | "trial" | "autoRenew" | "paymentIssue"> & {
+    expiresAtMs: number;
+  },
 ): SubscriptionDoc {
   return {
     status: fields.status,
@@ -24,5 +26,9 @@ export function entitlementDoc(
     expiresAt: Timestamp.fromMillis(fields.expiresAtMs),
     tokenHash: fields.tokenHash,
     updatedAt: Timestamp.now(),
+    // Never the token or order details: only what the Subscription screen needs to say.
+    trial: fields.trial ?? false,
+    autoRenew: fields.autoRenew ?? false,
+    paymentIssue: fields.paymentIssue ?? null,
   };
 }

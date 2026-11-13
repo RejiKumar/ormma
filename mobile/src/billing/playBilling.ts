@@ -1,5 +1,6 @@
 import * as IAP from "expo-iap";
 import { PRODUCT_IDS, PURCHASE_CANCELLED, type Billing, type BillingProduct, type BillingPurchase, type ProductId } from "./billing";
+import { chooseOffer, type OfferLike } from "./offers";
 
 const isProductId = (id: string): id is ProductId => (PRODUCT_IDS as readonly string[]).includes(id);
 
@@ -22,8 +23,16 @@ export const playBilling: Billing = {
     for (const item of items ?? []) {
       // A product without a price from Google Play cannot be offered.
       if (item.type !== "subs" || !isProductId(item.id) || !item.displayPrice?.trim()) continue;
-      const offer = (item.subscriptionOffers ?? []).find((o) => o.offerTokenAndroid);
-      products.push({ productId: item.id, displayPrice: item.displayPrice, offerToken: offer?.offerTokenAndroid ?? null });
+      const chosen = chooseOffer((item.subscriptionOffers ?? []) as unknown as OfferLike[]);
+      products.push({
+        productId: item.id,
+        // The recurring price of the offer being bought, as Play formats it.
+        displayPrice: chosen?.formattedPrice ?? item.displayPrice,
+        offerToken: chosen?.offerToken ?? null,
+        trial: chosen?.trial ?? null,
+        priceMicros: chosen?.priceMicros ?? null,
+        currencyCode: chosen?.currencyCode ?? null,
+      });
     }
     return products;
   },

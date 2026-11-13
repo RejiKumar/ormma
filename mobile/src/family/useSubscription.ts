@@ -19,7 +19,15 @@ export function toEntitlement(data: Record<string, unknown> | undefined): Entitl
   const expiresAtMs = timestampMs(data.expiresAt);
   const status = data.status;
   if (expiresAtMs === null || !STATUSES.includes(status as SubscriptionStatus)) return null;
-  return { status: status as SubscriptionStatus, productId: String(data.productId ?? ""), expiresAtMs };
+  const issue = data.paymentIssue === "grace" || data.paymentIssue === "hold" ? data.paymentIssue : null;
+  return {
+    status: status as SubscriptionStatus,
+    productId: String(data.productId ?? ""),
+    expiresAtMs,
+    ...(typeof data.trial === "boolean" ? { trial: data.trial } : {}),
+    ...(typeof data.autoRenew === "boolean" ? { autoRenew: data.autoRenew } : {}),
+    ...(data.paymentIssue !== undefined ? { paymentIssue: issue } : {}),
+  };
 }
 
 export function useSubscription(): UseSubscriptionResult {

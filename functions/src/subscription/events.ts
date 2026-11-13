@@ -41,6 +41,9 @@ export async function playBillingEventsHandler(
         productId: current.productId,
         tokenHash: current.tokenHash,
         expiresAtMs: current.expiresAt.toMillis(),
+        trial: false,
+        autoRenew: false,
+        paymentIssue: null,
       }),
     );
     console.log(`playBillingEvents ok uid=${doc.id} status=refunded`);
@@ -55,6 +58,9 @@ export async function playBillingEventsHandler(
       productId: purchase.productId,
       tokenHash: current.tokenHash,
       expiresAtMs: purchase.expiresAtMs,
+      trial: purchase.trial,
+      autoRenew: purchase.autoRenew,
+      paymentIssue: purchase.paymentIssue,
     }),
   );
   console.log(`playBillingEvents ok uid=${doc.id} status=${purchase.status}`);

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pressable, Share, View } from "react-native";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { UpgradeSheet } from "../../components/UpgradeSheet";
 import { FormError } from "../../components/FormError";
 import { planLimitReason } from "../../family/planErrors";
 import { Icon } from "../../components/Icon";
@@ -27,7 +28,7 @@ const ROLE_DESC_KEY = {
 } as const;
 
 /** Owner-only: pick a role, create a 7-day invite code, then show it with the instructions. */
-export function InviteScreen({ route }: Props) {
+export function InviteScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const { parentId, parentName } = route.params;
@@ -133,14 +134,15 @@ export function InviteScreen({ route }: Props) {
             </View>
           </View>
           {error ? <FormError message={error} testID="invite-error" /> : null}
-          {planLimit ? (
-            <Button
-              variant="secondary"
-              label={t("subscription.seePlans")}
-              testID="invite-see-plans"
-              onPress={() => navigation.navigate("Subscription")}
-            />
-          ) : null}
+          <UpgradeSheet
+            visible={planLimit}
+            message={t("subscription.limitMember")}
+            onSeePlans={() => {
+              setPlanLimit(false);
+              navigation.navigate("Subscription");
+            }}
+            onClose={() => setPlanLimit(false)}
+          />
         </>
       )}
     </Screen>

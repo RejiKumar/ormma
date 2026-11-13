@@ -121,4 +121,52 @@ describe("AddParentScreen", () => {
     await screen.findByTestId("add-error");
     expect(await readParentIds()).toEqual([]);
   });
+  const limitError = { code: "functions/resource-exhausted", details: { reason: "plan_parent_limit" } };
+
+  it("opens the upgrade sheet when the free plan's parent limit stops the save, and keeps the form", async () => {
+    callable("createParent").mockRejectedValue(limitError);
+    await renderAddParent();
+    await typeName("Amma");
+    await typePhone("+919876543210");
+    await pressSave();
+    expect(await screen.findByTestId("upgrade-sheet")).toBeTruthy();
+    expect(screen.getByTestId("upgrade-sheet-message")).toHaveTextContent("The free plan includes one parent.");
+    expect(screen.getByText("Ormma Family includes up to 3 parents, 6 members per parent and check-in calls for every dose time.")).toBeTruthy();
+    // The inline message stays and nothing else is blocked.
+    expect(screen.getByTestId("add-error")).toHaveTextContent("The free plan includes one parent.");
+    expect(screen.getByTestId("add-name").props.value).toBe("Amma");
+  });
+
+  it("See plans opens the Subscription screen and closes the sheet", async () => {
+    callable("createParent").mockRejectedValue(limitError);
+    await renderAddParent();
+    await typeName("Amma");
+    await typePhone("+919876543210");
+    await pressSave();
+    await fireEvent.press(await screen.findByTestId("upgrade-see-plans"));
+    expect(navigation.navigate).toHaveBeenCalledWith("Subscription");
+    expect(screen.queryByTestId("upgrade-sheet")).toBeNull();
+  });
+
+  it("Not now closes the sheet and changes nothing else", async () => {
+    callable("createParent").mockRejectedValue(limitError);
+    await renderAddParent();
+    await typeName("Amma");
+    await typePhone("+919876543210");
+    await pressSave();
+    await fireEvent.press(await screen.findByTestId("upgrade-not-now"));
+    expect(screen.queryByTestId("upgrade-sheet")).toBeNull();
+    expect(navigation.navigate).not.toHaveBeenCalled();
+    expect(screen.getByTestId("add-name").props.value).toBe("Amma");
+  });
+
+  it("does not open the sheet for an ordinary failure", async () => {
+    callable("createParent").mockRejectedValue({ code: "functions/internal" });
+    await renderAddParent();
+    await typeName("Amma");
+    await typePhone("+919876543210");
+    await pressSave();
+    await screen.findByTestId("add-error");
+    expect(screen.queryByTestId("upgrade-sheet")).toBeNull();
+  });
 });

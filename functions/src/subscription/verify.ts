@@ -64,6 +64,9 @@ export async function verifyPurchaseHandler(
       productId: purchase.productId,
       tokenHash: hash,
       expiresAtMs: purchase.expiresAtMs,
+      trial: purchase.trial,
+      autoRenew: purchase.autoRenew,
+      paymentIssue: purchase.paymentIssue,
     }),
   );
   console.log(`verifyPurchase ok uid=${uid} status=${purchase.status}`);

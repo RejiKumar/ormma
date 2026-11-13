@@ -107,6 +107,14 @@ describe("subscriptions path rule (entitlement is server-written only)", () => {
     await assertFails(setDoc(doc(asUser(env, EDITOR), `subscriptions/${EDITOR}`), entitlement));
   });
 
+  it("a client cannot write the trial, renewal or payment fields either", async () => {
+    await put(env, [[`subscriptions/${OWNER}`, entitlement]]);
+    const ref = doc(asUser(env, OWNER), `subscriptions/${OWNER}`);
+    await assertFails(updateDoc(ref, { trial: true, autoRenew: true, paymentIssue: null }));
+    await assertFails(setDoc(ref, { ...entitlement, trial: true, autoRenew: true, paymentIssue: "grace" }));
+    await assertSucceeds(getDoc(ref));
+  });
+
   it("a user document cannot carry subscription data", async () => {
     const data = { displayName: "A", phone: "+919800000009", fcmTokens: [], createdAt: at(0) };
     await assertFails(setDoc(doc(asUser(env, EDITOR), `users/${EDITOR}`), { ...data, subscription: entitlement }));

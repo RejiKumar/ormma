@@ -267,7 +267,14 @@ export interface SubscriptionDoc {
   /** SHA-256 of the Google Play purchase token. The token itself is never stored. */
   tokenHash: string;
   updatedAt: Timestamp;
+  /** Written by Cloud Functions from the Play response. Absent on older entitlements. */
+  trial?: boolean;
+  /** The subscription will renew at the end of the period. */
+  autoRenew?: boolean;
+  /** A payment problem: "grace" still has access, "hold" does not. Null when there is none. */
+  paymentIssue?: SubscriptionPaymentIssue | null;
 }
+export type SubscriptionPaymentIssue = "grace" | "hold";
 
 // ---------- invites/{code} (server-only) ----------
 export interface InviteDoc {
