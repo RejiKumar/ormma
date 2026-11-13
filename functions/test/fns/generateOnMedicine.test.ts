@@ -1,8 +1,10 @@
 import { initializeApp, getApps } from "firebase-admin/app";
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import type { CallActivation } from "../../src/exotel/config";
-import { generateDoseEventsHandler } from "../../src/schedule/generate";
+import { generateForMedicines, toPlannable } from "../../src/schedule/generate";
 import { generateOnMedicineChangeHandler } from "../../src/schedule/generateOnMedicine";
+import { missedDoseCheckerHandler } from "../../src/schedule/missedDose";
+import type { PushSender } from "../../src/alerts/fcm";
 import { localEventIdSuffix, zonedTimeToMs } from "../../src/schedule/time";
 
 // Runs against the Firestore emulator (npm run test:fns). No real service is called.
@@ -14,8 +16,8 @@ const db = () => getFirestore();
 const IST = "Asia/Kolkata";
 const ON: CallActivation = { mode: "log", liveFromMs: null };
 const OFF: CallActivation = { mode: "off", liveFromMs: null };
-// 19:27 IST on 2026-11-13, the moment of the real test.
-const NOW = zonedTimeToMs("2026-11-13", "19:27", IST)!;
+// 19:27 IST on 2027-03-15, the moment of the real test.
+const NOW = zonedTimeToMs("2027-03-15", "19:27", IST)!;
 
 let seq = 0;
 const unique = (prefix: string): string => `${prefix}_${(seq += 1)}${Math.random().toString(36).slice(2, 8)}`;
@@ -24,7 +26,7 @@ const baseMedicine = {
   name: "Vitamin",
   doseText: "1",
   times: ["20:18"],
-  startDate: "2026-11-13",
+  startDate: "2027-03-15",
   endDate: null as string | null,
   active: true,
   source: "manual" as const,
@@ -83,7 +85,7 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
 
     const all = await events(parentId);
     expect(all).toHaveLength(1);
-    expect(all[0]).toMatchObject({ id: eventId(medicineId, "2026-11-13", "20:18"), medicineId, status: "pending", attempts: 0 });
+    expect(all[0]).toMatchObject({ id: eventId(medicineId, "2027-03-15", "20:18"), medicineId, status: "pending", attempts: 0 });
   });
 
   it("the same write twice leaves one event, untouched", async () => {
@@ -93,7 +95,7 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
     await run(parentId, medicineId, undefined, after);
 
     // The dispatcher has since worked on the event.
-    const id = eventId(medicineId, "2026-11-13", "20:18");
+    const id = eventId(medicineId, "2027-03-15", "20:18");
     await db().doc(`parents/${parentId}/doseEvents/${id}`).update({ status: "calling", attempts: 1, lastCallSid: "CA123" });
 
     const again = await run(parentId, medicineId, undefined, after);
@@ -108,7 +110,7 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
     const medicineId = unique("med");
     const before = await saveMedicine(parentId, medicineId);
     await run(parentId, medicineId, undefined, before);
-    const first = eventId(medicineId, "2026-11-13", "20:18");
+    const first = eventId(medicineId, "2027-03-15", "20:18");
     await db().doc(`parents/${parentId}/doseEvents/${first}`).update({ status: "taken" });
 
     const after = await saveMedicine(parentId, medicineId, { times: ["20:18", "21:30"] });
@@ -116,7 +118,7 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
     expect(outcome).toMatchObject({ status: "generated", result: { created: 1, existing: 1 } });
 
     const all = await events(parentId);
-    expect(all.map((e) => e.id).sort()).toEqual([first, eventId(medicineId, "2026-11-13", "21:30")].sort());
+    expect(all.map((e) => e.id).sort()).toEqual([first, eventId(medicineId, "2027-03-15", "21:30")].sort());
     expect(all.find((e) => e.id === first)?.status).toBe("taken");
   });
 
@@ -143,15 +145,15 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
     await run(parentId, medicineId, undefined, after);
 
     const all = await events(parentId);
-    expect(all.map((e) => e.id)).toEqual([eventId(medicineId, "2026-11-14", "09:00")]);
+    expect(all.map((e) => e.id)).toEqual([eventId(medicineId, "2027-03-16", "09:00")]);
   });
 
   it("a medicine that starts tomorrow, or has ended, gets nothing today", async () => {
     const parentId = await seedParent();
     const later = unique("med");
     const ended = unique("med");
-    const laterDoc = await saveMedicine(parentId, later, { startDate: "2026-11-20", times: ["20:18"] });
-    const endedDoc = await saveMedicine(parentId, ended, { endDate: "2026-11-12", times: ["20:18"] });
+    const laterDoc = await saveMedicine(parentId, later, { startDate: "2027-03-22", times: ["20:18"] });
+    const endedDoc = await saveMedicine(parentId, ended, { endDate: "2027-03-14", times: ["20:18"] });
     await run(parentId, later, undefined, laterDoc);
     await run(parentId, ended, undefined, endedDoc);
     expect(await events(parentId)).toHaveLength(0);
@@ -195,22 +197,25 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
     expect(await events(parentId)).toHaveLength(0);
   });
 
-  it("the daily run after the trigger creates nothing new, and the trigger after the daily run creates nothing new", async () => {
+  it("the daily run's own step after the trigger creates nothing new, and the trigger after it creates nothing new", async () => {
+    // The daily run is generateForMedicines applied to every parent's medicines. It is called for one parent
+    // here so this test cannot touch the other suites' data in the shared emulator.
+    const dailyStep = (parentId: string, medicineId: string, doc: Medicine) =>
+      generateForMedicines(db().doc(`parents/${parentId}`), IST, [toPlannable(medicineId, doc as never)], NOW);
+
     const parentId = await seedParent();
     const medicineId = unique("med");
     const after = await saveMedicine(parentId, medicineId);
     await run(parentId, medicineId, undefined, after);
     const before = await events(parentId);
 
-    const daily = await generateDoseEventsHandler({ nowMs: NOW, activation: ON });
-    expect(daily.failed).toBe(0);
-    const afterDaily = await events(parentId);
-    expect(afterDaily.map((e) => e.id).sort()).toEqual(before.map((e) => e.id).sort());
+    expect(await dailyStep(parentId, medicineId, after)).toMatchObject({ created: 0, existing: 1, failed: 0 });
+    expect((await events(parentId)).map((e) => e.id).sort()).toEqual(before.map((e) => e.id).sort());
 
     const other = await seedParent();
     const m2 = unique("med");
     const doc2 = await saveMedicine(other, m2);
-    await generateDoseEventsHandler({ nowMs: NOW, activation: ON });
+    expect(await dailyStep(other, m2, doc2)).toMatchObject({ created: 1, existing: 0 });
     expect(await run(other, m2, undefined, doc2)).toMatchObject({ result: { created: 0, existing: 1 } });
     expect(await events(other)).toHaveLength(1);
   });
@@ -225,5 +230,65 @@ describe("generateOnMedicineChangeHandler (emulator)", () => {
     expect(logged).not.toMatch(/SECRETNAME|SECRETDOSE|Amma|919812345678|20:18/);
     expect(logged).toContain(medicineId);
     info.mockRestore();
+  });
+});
+
+describe("an event left behind by an edit is not a missed dose (emulator)", () => {
+  const sender = (): PushSender => ({ sendMulticast: jest.fn().mockResolvedValue({ successCount: 0, failureCount: 0, invalidTokens: [] }) });
+  // 23:30 IST: well past a 20:18 or 21:30 dose and the 60 minute missed window.
+  const LATE = zonedTimeToMs("2027-03-15", "23:30", IST)!;
+
+  async function seedPendingEvent(parentId: string, medicineId: string, time: string): Promise<string> {
+    const id = eventId(medicineId, "2027-03-15", time);
+    await db().doc(`parents/${parentId}/doseEvents/${id}`).set({
+      medicineId,
+      scheduledFor: Timestamp.fromMillis(zonedTimeToMs("2027-03-15", time, IST)!),
+      status: "pending",
+      attempts: 0,
+      lastCallSid: null,
+      missedAt: null,
+      resolvedAt: null,
+      resolvedByUid: null,
+      resolvedBy: null,
+      alertSent: false,
+      groupConfirmed: false,
+      confirmationNote: null,
+      lastCallAt: null,
+      reminderAt: null,
+      lastDispatchFailure: false,
+    });
+    return id;
+  }
+  const statusOf = async (parentId: string, id: string) => (await db().doc(`parents/${parentId}/doseEvents/${id}`).get()).data()?.status;
+  const alertsOf = async (parentId: string) => (await db().collection(`parents/${parentId}/alerts`).get()).size;
+
+  it("does not alert for a time that was removed, but still alerts for a time that is listed", async () => {
+    const parentId = await seedParent();
+    const medicineId = unique("med");
+    await saveMedicine(parentId, medicineId, { times: ["20:18"] }); // 21:30 was removed
+    const removed = await seedPendingEvent(parentId, medicineId, "21:30");
+    const listed = await seedPendingEvent(parentId, medicineId, "20:18");
+
+    await missedDoseCheckerHandler({ nowMs: LATE, sender: sender(), activation: ON });
+
+    expect(await statusOf(parentId, removed)).toBe("pending");
+    expect(await statusOf(parentId, listed)).toBe("missed");
+    expect(await alertsOf(parentId)).toBe(1);
+  });
+
+  it("does not alert for a deactivated or unconfirmed medicine", async () => {
+    const parentId = await seedParent();
+    const off = unique("med");
+    const unconfirmed = unique("med");
+    await saveMedicine(parentId, off, { active: false });
+    await saveMedicine(parentId, unconfirmed, { confirmedByHuman: false });
+    const a = await seedPendingEvent(parentId, off, "20:18");
+    const b = await seedPendingEvent(parentId, unconfirmed, "20:18");
+
+    await missedDoseCheckerHandler({ nowMs: LATE, sender: sender(), activation: ON });
+
+    expect(await statusOf(parentId, a)).toBe("pending");
+    expect(await statusOf(parentId, b)).toBe("pending");
+    expect(await alertsOf(parentId)).toBe(0);
   });
 });

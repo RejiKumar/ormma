@@ -13,10 +13,10 @@
 
 ## 3. Checks and docs
 
-- [ ] 3.1 Check that a pending event left behind by a removed time or a deactivated medicine does not raise a missed-dose alert after the dispatcher skips it. Verify: a test through the missed-dose checker; if it would alert, fix it there and say so in the decisions file.
-- [ ] 3.2 Update `docs/DECISIONS.md` and the note in the release docs that same-day medicines no longer wait for 00:30. Verify: the docs read correctly.
+- [x] 3.1 Check that a pending event left behind by a removed time or a deactivated medicine does not raise a missed-dose alert after the dispatcher skips it. Verify: a test through the missed-dose checker; if it would alert, fix it there and say so in the decisions file.
+- [x] 3.2 Update `docs/DECISIONS.md` and the note in the release docs that same-day medicines no longer wait for 00:30. Verify: the docs read correctly.
 
 ## 4. Verification
 
-- [ ] 4.1 Run function unit tests, emulator tests, typecheck, lint and `openspec validate generate-on-medicine-change`. Verify: all pass.
+- [x] 4.1 Run function unit tests, emulator tests, typecheck, lint and `openspec validate generate-on-medicine-change`. Verify: all pass.
 - [ ] 4.2 On the phone after deploying: add a medicine with a dose a few minutes ahead and watch the log. Verify: the event is created within seconds with no Cloud Scheduler run, and the call is placed at the dose time.

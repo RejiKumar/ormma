@@ -78,6 +78,10 @@ If Exotel is not available to you, `CALL_PROVIDER=twilio` runs the same calls th
 unchanged. In phase 2, follow `docs/TWILIO-FLOW.md` in place of the Exotel steps (account, secrets, settings,
 deploy, test call). Note that Twilio calls India from a foreign number, so the parent sees an international caller id.
 
+## Medicines added during the day
+
+A medicine's dose events are created as soon as it is saved or its schedule changes (the `generateOnMedicineChange` function), so a dose added at 14:00 for 15:00 is called at 15:00 without waiting for the 00:30 run. The 00:30 run still runs as a safety net. A dose time that has already passed today gets no event for today.
+
 ## Checks you can repeat any time
 
 - **Readiness:** `npm run check:go-live` (or `node scripts/check-go-live.mjs`). It checks the 12 secrets exist, the settings file, that the call functions are deployed and that the public endpoints answer and refuse a request without a token. It changes nothing and cannot read secret values, so a placeholder still shows as set: the test call in step 7 is what proves the Exotel values.

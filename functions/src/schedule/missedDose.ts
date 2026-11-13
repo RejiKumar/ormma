@@ -1,11 +1,12 @@
 import { Timestamp } from "firebase-admin/firestore";
-import type { CallPolicy, ParentDoc } from "../../../shared/types";
+import type { CallPolicy, MedicineDoc, ParentDoc } from "../../../shared/types";
 import { notifyAlert, writeAlert } from "../alerts/createAlert";
 import type { PushSender } from "../alerts/fcm";
 import { buildMissedDoseMessage, type MissedDoseVariant } from "../alerts/templates";
 import { getDb } from "../db";
 import { callActivation, callsEnabled, type CallActivation } from "../exotel/config";
 import { DEFAULT_CALL_POLICY, toDoseEventState } from "./dispatch";
+import { medicineNoLongerCalls, type GateMedicine } from "./medicineGate";
 import { applyTransition, type DoseEventState } from "./stateMachine";
 
 // Minute missed-dose checker. Pure planning is separated from the transaction so the once-only and
@@ -172,7 +173,38 @@ export async function missedDoseCheckerHandler(options: MissedOptions): Promise<
     if (snap.exists) parents.set(parentId, parentInfoOf(snap.data() as ParentDoc));
   }
 
-  const groups = planMissedGroups(events, parents, nowMs);
+  // A dose whose medicine no longer asks for a call at that time (deactivated, unconfirmed, or the time
+  // was removed) was skipped by the dispatcher, so it can never be a missed dose. Without this, an event
+  // left behind by an edit would alert the family about a dose that no longer exists.
+  const medicines = new Map<string, Map<string, GateMedicine>>();
+  for (const parentId of parents.keys()) {
+    const snap = await db.collection(`parents/${parentId}/medicines`).get();
+    medicines.set(
+      parentId,
+      new Map(
+        snap.docs.map((doc) => {
+          const medicine = doc.data() as MedicineDoc;
+          return [
+            doc.id,
+            {
+              active: medicine.active === true,
+              confirmedByHuman: medicine.confirmedByHuman === true,
+              times: Array.isArray(medicine.times) ? medicine.times : [],
+            },
+          ] as const;
+        }),
+      ),
+    );
+  }
+  const stillCalling = events.filter((event) => {
+    const parent = parents.get(event.parentId);
+    if (!parent) return true;
+    const scheduled = (event.data.scheduledFor as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0;
+    const medicine = medicines.get(event.parentId)?.get(String(event.data.medicineId ?? ""));
+    return !medicineNoLongerCalls(medicine, scheduled, parent.timeZone);
+  });
+
+  const groups = planMissedGroups(stillCalling, parents, nowMs);
   summary.groups = groups.length;
 
   for (const group of groups) {
