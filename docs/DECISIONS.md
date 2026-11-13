@@ -176,3 +176,4 @@ One line per non-obvious decision. Tags: [DECIDED] final; [PROPOSED Sn] default 
 166. [subscription-polish] A limit stopping an action opens a short upgrade sheet (See plans, Not now) from AddParent and Invite; the inline message stays. `InviteScreen` was calling `navigation.navigate` without taking `navigation` from its props (it compiled because the DOM types declare a global `navigation`); fixed.
 167. [subscription-polish] Account hold still maps to the expired status (free plan once the period date passes), as before; the screen now says there is a payment problem and offers Fix in Google Play. Whether a hold should keep the 7-day grace is left open.
 168. [subscription-polish] New design token `scrim` for the bottom-sheet backdrop (light and dark).
+169. firebase.json builds the functions before every deploy (predeploy), because a deploy without npm run build uploaded a stale functions/lib.
