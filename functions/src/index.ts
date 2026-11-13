@@ -33,6 +33,7 @@ import { verifyPurchaseHandler, type VerifyPurchasePayload } from "./subscriptio
 import {
   VOICE_AUDIO_SECRETS,
   VOICE_SECRETS,
+  createAudioLoader,
   createPromptAudioService,
   createSttClient,
   STT_SECRETS,
@@ -146,7 +147,8 @@ export const voiceAudio = onRequest({ secrets: VOICE_AUDIO_SECRETS }, async (req
     const result = await voiceAudioHandler(
       { method: request.method, query: request.query as Record<string, unknown> },
       {
-        audio: createPromptAudioService(),
+        // Serving a cached MP3 needs no Text-to-Speech key (see createAudioLoader).
+        audio: createAudioLoader(),
         token: process.env.VOICE_PROMPT_TOKEN ?? "",
       },
     );

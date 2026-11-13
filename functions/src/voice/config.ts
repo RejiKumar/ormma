@@ -18,6 +18,23 @@ export function createSttClient(env: NodeJS.ProcessEnv = process.env): GoogleStt
   return apiKey ? new GoogleSttClient(apiKey) : null;
 }
 
+/**
+ * Read-only access to the cached prompt audio, for the audio endpoint. Serving a stored MP3 needs no
+ * Text-to-Speech key, so this never returns null: the endpoint must not depend on a secret it does not use.
+ * (voiceAudio once answered 503 "tts_unconfigured" to every request because it was built without the key.)
+ */
+export function createAudioLoader(): PromptAudioService {
+  ensureAdminApp();
+  return new PromptAudioService(
+    {
+      synthesize: () => {
+        throw new Error("tts_not_available");
+      },
+    },
+    new StorageAudioStore(),
+  );
+}
+
 /** Null when TTS is not configured, so the endpoint can answer with a code instead of crashing. */
 export function createPromptAudioService(
   env: NodeJS.ProcessEnv = process.env,
