@@ -4,9 +4,10 @@ export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 export const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Length caps of the optional display fields (the rules enforce the same). */
-export const MAX_FREQUENCY = 80;
-export const MAX_PILL = 80;
-export const MAX_PURPOSE = 40;
+export const MAX_TEXT = 1000;
+export const MAX_FREQUENCY = MAX_TEXT;
+export const MAX_PILL = MAX_TEXT;
+export const MAX_PURPOSE = MAX_TEXT;
 
 export interface MedicineDraft {
   name: string;
@@ -28,6 +29,41 @@ export const MEDICINE_ERROR_KEY = {
   invalidDate: "screens.medicines.errors.invalidDate",
   textTooLong: "screens.medicines.errors.textTooLong",
 } as const;
+
+/** The empty form for a new medicine, starting today. */
+export function emptyDraft(todayKey: string): MedicineDraft {
+  return { name: "", doseText: "", times: [""], startDate: todayKey, frequencyText: "", pillDescription: "", purpose: "" };
+}
+
+/**
+ * Prefill for the next medicine: everything except the name, copied from the medicine created most
+ * recently for the parent. These are the family's own earlier entries, never generated. A past start
+ * date is not carried over (today is used). Null when the parent has no medicine yet.
+ */
+export function prefillFromLastMedicine(
+  medicines: ReadonlyArray<{
+    createdAtMs: number;
+    doseText: string;
+    times: string[];
+    startDate: string;
+    frequencyText: string;
+    pillDescription: string;
+    purpose: string;
+  }>,
+  todayKey: string,
+): MedicineDraft | null {
+  if (medicines.length === 0) return null;
+  const last = medicines.reduce((best, next) => (next.createdAtMs > best.createdAtMs ? next : best));
+  return {
+    name: "",
+    doseText: last.doseText,
+    times: last.times.length > 0 ? [...last.times] : [""],
+    startDate: last.startDate > todayKey ? last.startDate : todayKey,
+    frequencyText: last.frequencyText,
+    pillDescription: last.pillDescription,
+    purpose: last.purpose,
+  };
+}
 
 /** Trimmed, non-empty times in the order entered. */
 export function cleanedTimes(draft: MedicineDraft): string[] {

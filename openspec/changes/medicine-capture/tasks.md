@@ -6,17 +6,17 @@
 
 ## 2. Server
 
-- [ ] 2.1 Make `scanPrescription` and `confirmPrescriptionMedicine` throw typed `HttpsError` codes. Verify: unit and emulator tests for signed out, viewer, malformed and failed-precondition.
-- [ ] 2.2 Restrict scan to `prescriptions/{parentId}/` paths without `..`. Verify: tests for another parent's path, a `..` path and an own path.
-- [ ] 2.3 Make confirm require a valid time and start date, check the prescription belongs to the parent, and stop defaulting. Verify: tests for no time, bad time, no start date, wrong parent and a complete call.
+- [x] 2.1 Make `scanPrescription` and `confirmPrescriptionMedicine` throw typed `HttpsError` codes. Verify: unit and emulator tests for signed out, viewer, malformed and failed-precondition.
+- [x] 2.2 Restrict scan to `prescriptions/{parentId}/` paths without `..`. Verify: tests for another parent's path, a `..` path and an own path.
+- [x] 2.3 Make confirm require a valid time and start date, check the prescription belongs to the parent, and stop defaulting. Verify: tests for no time, bad time, no start date, wrong parent and a complete call.
 
 ## 3. Limits
 
-- [ ] 3.1 Raise `frequencyText`, `pillDescription` and `purpose` to 1000 characters in `firestore.rules`, the form constant and the validation. Verify: emulator rules tests at 1000, at 1001, 41 characters now allowed, a viewer denied; form tests at the limit.
+- [x] 3.1 Raise `frequencyText`, `pillDescription` and `purpose` to 1000 characters in `firestore.rules`, the form constant and the validation. Verify: emulator rules tests at 1000, at 1001, 41 characters now allowed, a viewer denied; form tests at the limit.
 
 ## 4. Prefill
 
-- [ ] 4.1 Prefill Add medicine from the last medicine of the parent, without the name, with the note and Clear. Verify: tests for second medicine, Clear, first medicine, old start date and not saved on leaving.
+- [x] 4.1 Prefill Add medicine from the last medicine of the parent, without the name, with the note and Clear. Verify: tests for second medicine, Clear, first medicine, old start date and not saved on leaving.
 
 ## 5. Scan and review
 

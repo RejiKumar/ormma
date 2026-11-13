@@ -32,9 +32,10 @@ const medicine: Medicine = {
   confirmedByHuman: true,
   prescriptionId: null,
   createdBy: "u1",
-    frequencyText: "",
-    pillDescription: "",
-    purpose: "",
+  frequencyText: "",
+  createdAtMs: 0,
+  pillDescription: "",
+  purpose: "",
 };
 
 const navigation = { goBack: jest.fn(), navigate: jest.fn() };

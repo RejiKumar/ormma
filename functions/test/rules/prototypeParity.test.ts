@@ -103,10 +103,21 @@ describe("medicine display fields", () => {
     );
   });
 
+  it("text exactly at the 1000 limit and past the former 40 and 80 limits is allowed", async () => {
+    await assertSucceeds(setDoc(medicineRef(EDITOR), withFields({ frequencyText: "x".repeat(1000) })));
+    await assertSucceeds(setDoc(medicineRef(EDITOR), withFields({ pillDescription: "x".repeat(1000) })));
+    await assertSucceeds(setDoc(medicineRef(EDITOR), withFields({ purpose: "x".repeat(41) })));
+    await assertSucceeds(setDoc(medicineRef(EDITOR), withFields({ frequencyText: "x".repeat(81) })));
+  });
+
+  it("a viewer is still denied a long text", async () => {
+    await assertFails(setDoc(medicineRef(VIEWER), withFields({ purpose: "x".repeat(41) })));
+  });
+
   it("too long text or a wrong type is denied", async () => {
-    await assertFails(setDoc(medicineRef(EDITOR), withFields({ frequencyText: "x".repeat(81) })));
-    await assertFails(setDoc(medicineRef(EDITOR), withFields({ pillDescription: "x".repeat(81) })));
-    await assertFails(setDoc(medicineRef(EDITOR), withFields({ purpose: "x".repeat(41) })));
+    await assertFails(setDoc(medicineRef(EDITOR), withFields({ frequencyText: "x".repeat(1001) })));
+    await assertFails(setDoc(medicineRef(EDITOR), withFields({ pillDescription: "x".repeat(1001) })));
+    await assertFails(setDoc(medicineRef(EDITOR), withFields({ purpose: "x".repeat(1001) })));
     await assertFails(setDoc(medicineRef(EDITOR), withFields({ purpose: 3 })));
   });
 

@@ -67,6 +67,7 @@ describe("useMedicines", () => {
         frequencyText: "",
         pillDescription: "",
         purpose: "",
+        createdAtMs: 0,
             },
           },
           {
@@ -85,6 +86,7 @@ describe("useMedicines", () => {
         frequencyText: "",
         pillDescription: "",
         purpose: "",
+        createdAtMs: 0,
             },
           },
         ]),
@@ -107,6 +109,7 @@ describe("useMedicines", () => {
         frequencyText: "",
         pillDescription: "",
         purpose: "",
+        createdAtMs: 0,
       },
       {
         id: "m2",
@@ -123,6 +126,7 @@ describe("useMedicines", () => {
         frequencyText: "",
         pillDescription: "",
         purpose: "",
+        createdAtMs: 0,
       },
     ]);
   });

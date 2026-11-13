@@ -160,6 +160,8 @@
       "inactive": "Inactive",
       "add": "Add medicine",
       "addTitle": "Add a medicine",
+      "prefillNote": "Filled from the last medicine. Check before saving.",
+      "prefillClear": "Clear",
       "editTitle": "Edit medicine",
       "nameLabel": "Medicine name",
       "doseLabel": "Dose",

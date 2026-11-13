@@ -39,16 +39,36 @@ const renderAdd = async () =>
 let memberRole = "editor";
 
 /** Store and deliver the parent snapshot once the hook subscribes. */
-async function feedParent(role = "editor") {
+async function feedParent(role = "editor", existing: Array<Record<string, unknown>> = []) {
   memberRole = role;
   await AsyncStorage.setItem("ormma.parentIds", JSON.stringify(["p1"]));
   fsMock.onSnapshot.mockImplementation(
-    (_q: unknown, next: (s: unknown) => void) => {
-      next(parentsSnap());
+    (q: { path?: string }, next: (s: unknown) => void) => {
+      if (String(q?.path ?? "").endsWith("/medicines")) {
+        next({
+          docs: existing.map((data, index) => ({
+            id: `m${index}`,
+            data: () => ({ ...data, createdAt: { toMillis: () => (data.createdMs as number) ?? 0 } }),
+          })),
+        });
+      } else {
+        next(parentsSnap());
+      }
       return jest.fn();
     },
   );
 }
+
+const lastMedicine = {
+  name: "Dolo 650",
+  doseText: "500mg",
+  times: ["08:00", "20:00"],
+  startDate: "2020-01-01",
+  frequencyText: "Twice daily",
+  pillDescription: "Small white round",
+  purpose: "Sugar",
+  createdMs: 2000,
+};
 
 describe("AddMedicineScreen", () => {
   beforeEach(async () => {
@@ -135,5 +155,39 @@ describe("AddMedicineScreen", () => {
     await renderAdd();
     expect(await screen.findByTestId("medicine-readonly")).toBeTruthy();
     expect(screen.queryByTestId("medicine-save")).toBeNull();
+  });
+  it("opens prefilled from the last medicine except the name, with a note", async () => {
+    await feedParent("editor", [
+      { ...lastMedicine, name: "Older", doseText: "1 tablet", purpose: "BP", createdMs: 1000 },
+      lastMedicine,
+    ]);
+    await renderAdd();
+    expect(await screen.findByTestId("medicine-prefill-note")).toBeTruthy();
+    expect(screen.getByText("Filled from the last medicine. Check before saving.")).toBeTruthy();
+    expect(screen.getByTestId("medicine-name").props.value).toBe("");
+    expect(screen.getByTestId("medicine-dose").props.value).toBe("500mg");
+    expect(screen.getByTestId("medicine-time-0").props.value).toBe("08:00");
+    expect(screen.getByTestId("medicine-time-1").props.value).toBe("20:00");
+    expect(screen.getByTestId("medicine-purpose").props.value).toBe("Sugar");
+    // A start date in the past is not copied.
+    expect(screen.getByTestId("medicine-start").props.value).not.toBe("2020-01-01");
+    expect(fsMock.setDoc).not.toHaveBeenCalled();
+  });
+
+  it("Clear empties the copied fields and removes the note", async () => {
+    await feedParent("editor", [lastMedicine]);
+    await renderAdd();
+    await fireEvent.press(await screen.findByText("Clear"));
+    expect(screen.queryByTestId("medicine-prefill-note")).toBeNull();
+    expect(screen.getByTestId("medicine-dose").props.value).toBe("");
+    expect(screen.getByTestId("medicine-purpose").props.value).toBe("");
+  });
+
+  it("opens empty with no note for the first medicine", async () => {
+    await feedParent("editor", []);
+    await renderAdd();
+    await waitFor(() => expect(screen.getByTestId("medicine-name")).toBeTruthy());
+    expect(screen.queryByTestId("medicine-prefill-note")).toBeNull();
+    expect(screen.getByTestId("medicine-dose").props.value).toBe("");
   });
 });

@@ -21,6 +21,8 @@ export interface Medicine {
   frequencyText: string;
   pillDescription: string;
   purpose: string;
+  /** Creation time in milliseconds (0 when unknown), used to find the last medicine added. */
+  createdAtMs: number;
 }
 
 export interface UseMedicinesResult {
@@ -31,6 +33,11 @@ export interface UseMedicinesResult {
 
 function str(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
+}
+
+function millis(value: unknown): number {
+  const maybe = value as { toMillis?: () => number } | null | undefined;
+  return typeof maybe?.toMillis === "function" ? maybe.toMillis() : 0;
 }
 
 function strOrNull(value: unknown): string | null {
@@ -55,21 +62,23 @@ function toMedicine(id: string, data: Record<string, unknown> | undefined): Medi
     frequencyText: str(data?.frequencyText),
     pillDescription: str(data?.pillDescription),
     purpose: str(data?.purpose),
+    createdAtMs: millis(data?.createdAt),
   };
 }
 
 export function useMedicines(parentId: string | null): UseMedicinesResult {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [loading, setLoading] = useState(parentId !== null);
+  // The parent whose first snapshot (or error) has arrived. Loading is derived from it, so it is
+  // already true in the very render in which a new parent appears.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const loading = parentId !== null && loadedFor !== parentId;
 
   useEffect(() => {
     if (!parentId) {
       setMedicines([]);
-      setLoading(false);
       return;
     }
     let cancelled = false;
-    setLoading(true);
     const db = getFirestore();
     const medicinesQuery = query(collection(db, "parents", parentId, "medicines"), orderBy("name", "asc"));
     const unsubscribe = onSnapshot(
@@ -77,13 +86,13 @@ export function useMedicines(parentId: string | null): UseMedicinesResult {
       (snapshot) => {
         if (cancelled) return;
         setMedicines(snapshot.docs.map((d) => toMedicine(d.id, d.data())));
-        setLoading(false);
+        setLoadedFor(parentId);
       },
       (error) => {
         // Ids and statuses only in logs (hard rule 6).
         const code = (error as { code?: string } | null)?.code ?? "unknown";
         console.warn(`medicines snapshot failed code=${code}`);
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoadedFor(parentId);
       },
     );
     return () => {
