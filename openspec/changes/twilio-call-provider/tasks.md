@@ -20,9 +20,9 @@
 
 ## 4. Voice, status and recordings
 
-- [ ] 4.1 Build `twilioVoice` for the greeting, question, gather, record, closing and consent steps using the existing prompt and audio services. Verify: unit tests for the TwiML of each step, language and consent rules, keypad and spoken paths, and the not-usable repeat.
-- [ ] 4.2 Build `twilioStatus` with the status mapping. Verify: emulator tests for answered, no-answer, busy, failed, repeated and late callbacks.
-- [ ] 4.3 Make the reply download use Basic auth only for Twilio's host, retry once, and delete the recording at Twilio afterwards. Verify: tests for the auth scope, the retry, deletion on usable and unusable replies, a failed deletion, and nothing stored or logged.
+- [x] 4.1 Build `twilioVoice` for the greeting, question, gather, record, closing and consent steps using the existing prompt and audio services. Verify: unit tests for the TwiML of each step, language and consent rules, keypad and spoken paths, and the not-usable repeat.
+- [x] 4.2 Build `twilioStatus` with the status mapping. Verify: emulator tests for answered, no-answer, busy, failed, repeated and late callbacks.
+- [x] 4.3 Make the reply download use Basic auth only for Twilio's host, retry once, and delete the recording at Twilio afterwards. Verify: tests for the auth scope, the retry, deletion on usable and unusable replies, a failed deletion, and nothing stored or logged.
 
 ## 5. Docs and readiness
 

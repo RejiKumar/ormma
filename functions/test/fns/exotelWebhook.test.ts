@@ -296,6 +296,19 @@ describe("exotelWebhookHandler status callbacks (emulator)", () => {
     expect(session?.endedAt).toBeTruthy();
   });
 
+  it("records a call answered by voice as completed (a spoken reply is as good as a key)", async () => {
+    const parentId = await seedParent();
+    await seedEvent(parentId, "evt_status_spoken", { status: "taken" });
+    await seedSession(parentId, "CA_status_spoken", ["evt_status_spoken"], { status: "answered", voiceReplyState: "applied" });
+
+    await call(status(parentId, "CA_status_spoken", "completed"));
+
+    expect((await eventData(parentId, "evt_status_spoken"))?.status).toBe("taken");
+    const session = await sessionData(parentId, "CA_status_spoken");
+    expect(session?.status).toBe("completed");
+    expect(session?.endedAt).toBeTruthy();
+  });
+
   it("marks a dropped script failed and returns unanswered events to pending", async () => {
     const parentId = await seedParent();
     await seedEvent(parentId, "evt_dropped");

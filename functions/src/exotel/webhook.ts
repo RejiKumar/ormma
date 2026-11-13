@@ -313,14 +313,14 @@ export async function applyStatus(
 
     const parentSnap = await tx.get(parentRef);
     const parent = parentSnap.data() as ParentDoc | undefined;
-    const outcome = classifyTerminalStatus(
-      payload.status,
-      session.status === "answered",
-      session.dtmfInput !== null,
-    );
+    // A parent who answered by voice (the spoken reply was applied) handled the call as much as one who
+    // pressed a key: the call completed, and no dose is returned to pending.
+    const spoken = (session as CallSessionDoc & { voiceReplyState?: string }).voiceReplyState === "applied";
+    const handled = session.dtmfInput !== null || spoken;
+    const outcome = classifyTerminalStatus(payload.status, session.status === "answered", handled);
     if (outcome === null) return respond(200, { ok: true, ignored: "unknown_status" });
 
-    if (session.dtmfInput === null) {
+    if (!handled) {
       const policy = policyOf(parent);
       const eventRefs = session.doseEventIds.map((id) =>
         db.doc(`parents/${payload.parentId}/doseEvents/${id}`),

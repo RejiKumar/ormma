@@ -5,6 +5,9 @@ import { getDb } from "./db";
 import { AdminPushSender } from "./alerts/fcm";
 import { CALL_SECRETS, WEBHOOK_SECRETS, createCallProvider } from "./exotel/config";
 import { exotelWebhookHandler } from "./exotel/webhook";
+import { TWILIO_CALLBACK_SECRETS } from "./twilio/config";
+import { twilioStatusHandler } from "./twilio/status";
+import { twilioCallbackConfigFromEnv, twilioVoiceHandler, type TwilioHttpRequest } from "./twilio/voice";
 import { getCallStatusHandler } from "./callStatus";
 import { createParentHandler, listMyParentsHandler } from "./family";
 import { getDoseEscalationHandler, logFamilyCallHandler, touchPresenceHandler } from "./companion";
@@ -200,5 +203,58 @@ export const exotelWebhook = onRequest({ secrets: WEBHOOK_SECRETS }, async (requ
     response.status(500).json({ error: "internal" });
   }
 });
+const QUIET_HANGUP = '<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>';
+const twilioRequest = (request: import("firebase-functions/v2/https").Request): TwilioHttpRequest => ({
+  method: request.method,
+  query: request.query as Record<string, unknown>,
+  body: request.body,
+  originalUrl: request.originalUrl,
+  signature: request.get("X-Twilio-Signature") ?? null,
+});
+
+// The Twilio call script: Twilio fetches one TwiML step at a time (check-in calls placed with
+// CALL_PROVIDER=twilio). Requests without a valid Twilio signature are refused before any read.
+export const twilioVoice = onRequest(
+  { secrets: [...TWILIO_CALLBACK_SECRETS, ...VOICE_SECRETS, ...STT_SECRETS, ...AI_SECRETS], timeoutSeconds: 30 },
+  async (request, response) => {
+    try {
+      const db = getDb();
+      const result = await twilioVoiceHandler(twilioRequest(request), {
+        db,
+        config: twilioCallbackConfigFromEnv(),
+        prompt: {
+          db,
+          audio: createPromptAudioService(),
+          token: process.env.VOICE_PROMPT_TOKEN ?? "",
+          audioBaseUrl: process.env.VOICE_AUDIO_BASE_URL ?? "",
+        },
+        reply: { db, stt: createSttClient(), model: createReplyModelClient(), sender: new AdminPushSender() },
+      });
+      response.status(result.status);
+      for (const [name, value] of Object.entries(result.headers)) response.set(name, value);
+      response.send(result.body);
+    } catch (error) {
+      const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+      console.error("twilioVoice: handler failed", { code });
+      // Never let Twilio read out its own error message to the parent: end the call quietly.
+      response.status(200).type("text/xml").send(QUIET_HANGUP);
+    }
+  },
+);
+
+// Twilio's call status callback (answered, completed, busy, no-answer, failed, canceled).
+export const twilioStatus = onRequest({ secrets: TWILIO_CALLBACK_SECRETS }, async (request, response) => {
+  try {
+    const result = await twilioStatusHandler(twilioRequest(request), { db: getDb(), config: twilioCallbackConfigFromEnv() });
+    response.status(result.status);
+    for (const [name, value] of Object.entries(result.headers)) response.set(name, value);
+    response.send(result.body);
+  } catch (error) {
+    const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+    console.error("twilioStatus: handler failed", { code });
+    response.status(500).json({ error: "internal" });
+  }
+});
+
 export { scanPrescription, confirmPrescriptionMedicine };
 export { exportParentData, deleteParent };
