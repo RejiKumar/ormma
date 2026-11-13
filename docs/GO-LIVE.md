@@ -30,6 +30,7 @@ Do these in this order.
 
 1. **Exotel account.** KYC and DLT finished, a virtual number (ExoPhone) assigned.
 2. **Build the call flow** in the Exotel dashboard as described in `docs/EXOTEL-FLOW.md`.
+2b. **Anthropic credit.** Claude Console shows an organization balance; at $0.00 the API refuses every request (status 400), so prescription reading, spoken-reply structuring and the weekly summary all fail. Add funds and turn on auto-reload, and check under Keys that `ANTHROPIC_API_KEY` belongs to the same organization.
 3. **Set the secrets** (each command asks for the value; it never goes in git or the app):
    ```bash
    firebase functions:secrets:set EXOTEL_ACCOUNT_SID --project ormma-prod
