@@ -28,4 +28,4 @@
 ## 6. Verification
 
 - [x] 6.1 Run the app tests, function tests, emulator function and rules tests, typecheck, lint and `openspec validate medicine-capture`. Verify: all pass.
-- [ ] 6.2 Build the release APK and AAB and try the flow on the phone: scan a real prescription, review, confirm one and discard one, add a second medicine and see the prefill, and enter a long text. Verify: screenshots and a short checklist, with any defect fixed or logged.
+- [x] 6.2 Build the release APK and AAB and try the flow on the phone: scan a real prescription, review, confirm one and discard one, add a second medicine and see the prefill, and enter a long text. Verify: screenshots and a short checklist, with any defect fixed or logged.
