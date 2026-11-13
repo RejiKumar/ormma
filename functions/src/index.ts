@@ -1,5 +1,6 @@
 ﻿import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall, onRequest, type CallableRequest } from "firebase-functions/v2/https";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getDb } from "./db";
 import { AdminPushSender } from "./alerts/fcm";
@@ -21,6 +22,7 @@ import { eveningDigestHandler } from "./schedule/eveningDigest";
 import { createInviteHandler, redeemInviteHandler, type CreateInvitePayload } from "./invites";
 import { dispatchDueCallsHandler } from "./schedule/dispatch";
 import { generateDoseEventsHandler } from "./schedule/generate";
+import { generateOnMedicineChangeHandler } from "./schedule/generateOnMedicine";
 import { missedDoseCheckerHandler } from "./schedule/missedDose";
 import { confirmPrescriptionMedicine, scanPrescription } from "./prescription";
 import { deleteParent, exportParentData } from "./data/exportDelete";
@@ -257,6 +259,27 @@ export const twilioStatus = onRequest({ secrets: TWILIO_CALLBACK_SECRETS }, asyn
     response.status(500).json({ error: "internal" });
   }
 });
+
+// Creates a medicine's dose events the moment it is saved or its schedule changes, so a dose added during
+// the day is called without waiting for the 00:30 run (which stays as the safety net). Idempotent: an
+// existing event is never overwritten. It needs the call secrets because "is calling on" depends on them.
+export const generateOnMedicineChange = onDocumentWritten(
+  { document: "parents/{parentId}/medicines/{medicineId}", region: "asia-south1", secrets: CALL_SECRETS },
+  async (event) => {
+    try {
+      await generateOnMedicineChangeHandler({
+        parentId: event.params.parentId,
+        medicineId: event.params.medicineId,
+        before: event.data?.before.data(),
+        after: event.data?.after.data(),
+      });
+    } catch (error) {
+      // The daily run is the safety net, so a failure here only delays the events until 00:30.
+      const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+      console.error("generateOnMedicineChange: failed", { parentId: event.params.parentId, medicineId: event.params.medicineId, code });
+    }
+  },
+);
 
 export { scanPrescription, confirmPrescriptionMedicine };
 export { exportParentData, deleteParent };

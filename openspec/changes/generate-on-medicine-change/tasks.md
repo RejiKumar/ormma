@@ -2,14 +2,14 @@
 
 ## 1. Shared generation
 
-- [ ] 1.1 Extract the per-parent planning and create-if-absent step of `generateDoseEventsHandler` into a function that takes a list of medicines, and have the daily run use it. Verify: the existing generation unit and emulator tests pass unchanged.
+- [x] 1.1 Extract the per-parent planning and create-if-absent step of `generateDoseEventsHandler` into a function that takes a list of medicines, and have the daily run use it. Verify: the existing generation unit and emulator tests pass unchanged.
 
 ## 2. The trigger
 
-- [ ] 2.1 Add a pure check for which medicine changes matter (created, or `times`, `startDate`, `endDate`, `active` or `confirmedByHuman` changed; not deleted). Verify: unit tests for each field, a display-only edit, a deletion and a create.
-- [ ] 2.2 Add the handler that re-reads the medicine and parent, checks eligibility and the call gate, plans that medicine only and creates the missing events. Verify: emulator tests for a new medicine, the same write twice, a second time added, a time removed, deactivation, a past time today, calling off, an inactive parent and a display-only edit.
-- [ ] 2.3 Wire the trigger in `functions/src/index.ts` (Firestore write trigger, asia-south1, the call secrets). Verify: typecheck, lint and a test that the function declares the call secrets.
-- [ ] 2.4 Prove the trigger and the daily run do not clash. Verify: an emulator test where the daily run executes after the trigger and creates nothing new, and the reverse.
+- [x] 2.1 Add a pure check for which medicine changes matter (created, or `times`, `startDate`, `endDate`, `active` or `confirmedByHuman` changed; not deleted). Verify: unit tests for each field, a display-only edit, a deletion and a create.
+- [x] 2.2 Add the handler that re-reads the medicine and parent, checks eligibility and the call gate, plans that medicine only and creates the missing events. Verify: emulator tests for a new medicine, the same write twice, a second time added, a time removed, deactivation, a past time today, calling off, an inactive parent and a display-only edit.
+- [x] 2.3 Wire the trigger in `functions/src/index.ts` (Firestore write trigger, asia-south1, the call secrets). Verify: typecheck, lint and a test that the function declares the call secrets.
+- [x] 2.4 Prove the trigger and the daily run do not clash. Verify: an emulator test where the daily run executes after the trigger and creates nothing new, and the reverse.
 
 ## 3. Checks and docs
 

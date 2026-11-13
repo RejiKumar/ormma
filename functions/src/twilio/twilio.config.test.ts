@@ -95,6 +95,6 @@ describe("secrets on the call-related functions", () => {
   it("every function that read the Exotel secrets reads the call secrets, so Twilio settings reach them", () => {
     const index = readFileSync(join(__dirname, "..", "index.ts"), "utf8");
     expect(index).not.toMatch(/secrets: EXOTEL_SECRETS/);
-    expect(index.match(/secrets: CALL_SECRETS/g)?.length).toBe(5);
+    expect(index.match(/secrets: CALL_SECRETS/g)?.length).toBe(6);
   });
 });

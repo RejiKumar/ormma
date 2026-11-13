@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp, type DocumentReference } from "firebase-admin/firestore";
 import type { MedicineDoc, ParentDoc } from "../../../shared/types";
 import { getDb } from "../db";
 import { callActivation, callsEnabled, type CallActivation } from "../exotel/config";
@@ -82,6 +82,76 @@ const isAlreadyExists = (error: unknown): boolean => {
 const timeZoneOf = (parent: ParentDoc | undefined): string =>
   parent?.timezone && typeof parent.timezone === "string" ? parent.timezone : FALLBACK_TIME_ZONE;
 
+/** The planning view of a stored medicine. */
+export function toPlannable(id: string, medicine: MedicineDoc): PlannableMedicine {
+  return {
+    id,
+    active: medicine.active === true,
+    confirmedByHuman: medicine.confirmedByHuman === true,
+    times: Array.isArray(medicine.times) ? medicine.times : [],
+    startDate: String(medicine.startDate ?? ""),
+    endDate: medicine.endDate ?? null,
+  };
+}
+
+export interface CreateResult {
+  planned: number;
+  created: number;
+  existing: number;
+  failed: number;
+}
+
+/**
+ * Plans the events of these medicines for the next 24 hours in the parent's time zone and creates the
+ * missing ones as pending. `create` never overwrites, so an event that exists keeps its id, status,
+ * attempts and resolution fields: repeating this, or running it beside another run, is harmless. Shared
+ * by the daily run (all of a parent's medicines) and the trigger that runs when one medicine changes.
+ */
+export async function generateForMedicines(
+  parentRef: DocumentReference,
+  timeZone: string,
+  medicines: PlannableMedicine[],
+  nowMs: number,
+): Promise<CreateResult> {
+  const result: CreateResult = { planned: 0, created: 0, existing: 0, failed: 0 };
+  const planned = planDoseEvents(medicines, nowMs, nowMs + GENERATION_HORIZON_MS, timeZone);
+  result.planned = planned.length;
+
+  for (const event of planned) {
+    const payload = {
+      medicineId: event.medicineId,
+      scheduledFor: Timestamp.fromMillis(event.scheduledFor),
+      status: "pending" as const,
+      attempts: 0,
+      lastCallSid: null,
+      missedAt: null,
+      resolvedAt: null,
+      resolvedByUid: null,
+      resolvedBy: null,
+      alertSent: false,
+      groupConfirmed: false,
+      confirmationNote: null,
+      lastCallAt: null,
+      reminderAt: null,
+      lastDispatchFailure: false,
+    };
+
+    try {
+      await parentRef.collection("doseEvents").doc(event.id).create(payload);
+      result.created += 1;
+    } catch (error) {
+      if (isAlreadyExists(error)) {
+        result.existing += 1;
+      } else {
+        result.failed += 1;
+        const code = (error as { code?: unknown } | null)?.code ?? "unknown";
+        console.error("generateDoseEvents: create failed", { parentId: parentRef.id, eventId: event.id, code });
+      }
+    }
+  }
+  return result;
+}
+
 /**
  * Daily generation run. Reads active parents and their active medicines, plans the next 24 hours in
  * each parent's timezone and creates events with `create` so an existing id is never overwritten.
@@ -90,7 +160,6 @@ export async function generateDoseEventsHandler(
   options: { nowMs?: number; activation?: CallActivation } = {},
 ): Promise<GenerationSummary> {
   const nowMs = options.nowMs ?? Date.now();
-  const windowEnd = nowMs + GENERATION_HORIZON_MS;
   const db = getDb();
   const summary: GenerationSummary = { parents: 0, planned: 0, created: 0, existing: 0, failed: 0 };
 
@@ -107,57 +176,16 @@ export async function generateDoseEventsHandler(
     const timeZone = timeZoneOf(parentDoc.data() as ParentDoc);
 
     const medicinesSnap = await parentDoc.ref.collection("medicines").where("active", "==", true).get();
-    const medicines: PlannableMedicine[] = medicinesSnap.docs
+    const medicines = medicinesSnap.docs
       .map((doc) => ({ id: doc.id, ...(doc.data() as MedicineDoc) }))
       .filter((medicine) => medicine.confirmedByHuman)
-      .map((medicine) => ({
-        id: medicine.id,
-        active: medicine.active === true,
-        confirmedByHuman: medicine.confirmedByHuman === true,
-        times: Array.isArray(medicine.times) ? medicine.times : [],
-        startDate: String(medicine.startDate ?? ""),
-        endDate: medicine.endDate ?? null,
-      }));
+      .map((medicine) => toPlannable(medicine.id, medicine));
 
-    const planned = planDoseEvents(medicines, nowMs, windowEnd, timeZone);
-    summary.planned += planned.length;
-
-    for (const event of planned) {
-      const payload = {
-        medicineId: event.medicineId,
-        scheduledFor: Timestamp.fromMillis(event.scheduledFor),
-        status: "pending" as const,
-        attempts: 0,
-        lastCallSid: null,
-        missedAt: null,
-        resolvedAt: null,
-        resolvedByUid: null,
-        resolvedBy: null,
-        alertSent: false,
-        groupConfirmed: false,
-        confirmationNote: null,
-        lastCallAt: null,
-        reminderAt: null,
-        lastDispatchFailure: false,
-      };
-
-      try {
-        await parentDoc.ref.collection("doseEvents").doc(event.id).create(payload);
-        summary.created += 1;
-      } catch (error) {
-        if (isAlreadyExists(error)) {
-          summary.existing += 1;
-        } else {
-          summary.failed += 1;
-          const code = (error as { code?: unknown } | null)?.code ?? "unknown";
-          console.error("generateDoseEvents: create failed", {
-            parentId: parentDoc.id,
-            eventId: event.id,
-            code,
-          });
-        }
-      }
-    }
+    const result = await generateForMedicines(parentDoc.ref, timeZone, medicines, nowMs);
+    summary.planned += result.planned;
+    summary.created += result.created;
+    summary.existing += result.existing;
+    summary.failed += result.failed;
   }
 
   console.info("generateDoseEvents: run complete", {
