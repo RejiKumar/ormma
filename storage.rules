@@ -6,6 +6,8 @@ service firebase.storage {
   match /b/{bucket}/o {
 
     // Owner or editor of the parent, read from the Firestore member document (cross-service rule).
+    // Needs the Firebase Rules Firestore Service Agent role on the Cloud Storage service account;
+    // `firebase deploy --only storage` offers to grant it when the rules change.
     function canEdit(parentId) {
       return request.auth != null
         && firestore.exists(/databases/(default)/documents/parents/$(parentId)/members/$(request.auth.uid))
