@@ -9,6 +9,7 @@ import { Text } from "../design/Text";
 import { useTheme } from "../design/ThemeProvider";
 import { fontFamilyFor } from "../design/fonts";
 import { Icon } from "./Icon";
+import { useScrollFocusedIntoView } from "./Screen";
 
 export interface TextFieldProps {
   /** Visible label and accessible name. Pass text from the i18n catalogue. */
@@ -55,6 +56,7 @@ export function TextField({
   const { theme } = useTheme();
   const c = theme.colors;
   const [focused, setFocused] = useState(false);
+  const revealOnFocus = useScrollFocusedIntoView();
   const borderColor = error && !focused ? c.ink : focused ? c.focus : c.border;
 
   return (
@@ -92,7 +94,11 @@ export function TextField({
           editable={editable}
           returnKeyType={returnKeyType}
           onSubmitEditing={onSubmitEditing}
-          onFocus={() => setFocused(true)}
+          onFocus={() => {
+            setFocused(true);
+            // Move between fields while the keyboard stays open: keep the one being typed in visible.
+            revealOnFocus?.();
+          }}
           onBlur={() => setFocused(false)}
           testID={testID}
           style={{

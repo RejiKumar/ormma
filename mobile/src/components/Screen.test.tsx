@@ -1,8 +1,10 @@
-import { screen } from "@testing-library/react-native";
-import { Text, View } from "react-native";
+import { act, fireEvent, screen } from "@testing-library/react-native";
+import { createRef } from "react";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { renderApp } from "../test-utils";
 import { Icon } from "./Icon";
 import { Screen } from "./Screen";
+import { TextField } from "./TextField";
 
 describe("Screen", () => {
   it("shows its content and the medical disclaimer", async () => {
@@ -62,5 +64,51 @@ describe("Icon", () => {
     ).toBe(true);
     expect(screen.getByTestId("named").props.accessibilityLabel).toBe("Done");
     expect(screen.getByTestId("named").props.accessible).toBe(true);
+  });
+  describe("keeps the field being typed in visible", () => {
+    const scrollRef = createRef<React.ComponentRef<typeof ScrollView>>();
+
+    /** The scroll area spans y 100..600; the focused input is placed at the given window y. */
+    const arrange = async (inputY: number) => {
+      const scrollTo = jest.fn();
+      await renderApp(
+        <Screen scrollRef={scrollRef}>
+          <TextField testID="field" label="Name" value="" onChangeText={() => undefined} />
+        </Screen>,
+      );
+      const scroller = scrollRef.current as unknown as { measureInWindow: unknown; scrollTo: unknown };
+      scroller.measureInWindow = (cb: (x: number, y: number, w: number, h: number) => void) => cb(0, 100, 400, 500);
+      scroller.scrollTo = scrollTo;
+      jest.spyOn(TextInput.State, "currentlyFocusedInput").mockReturnValue({
+        measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(0, inputY, 300, 50),
+      } as never);
+      return scrollTo;
+    };
+
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => {
+      jest.useRealTimers();
+      jest.restoreAllMocks();
+    });
+
+    it("scrolls down when the focused field is below the visible area", async () => {
+      const scrollTo = await arrange(700);
+      await fireEvent(screen.getByTestId("field"), "focus");
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+      // The field's bottom (750) must end up inside the area (bottom 600 less the margin of 24).
+      expect(scrollTo.mock.calls[0][0].y).toBeGreaterThan(150);
+    });
+
+    it("does not scroll when the field is already visible", async () => {
+      const scrollTo = await arrange(300);
+      await fireEvent(screen.getByTestId("field"), "focus");
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
   });
 });

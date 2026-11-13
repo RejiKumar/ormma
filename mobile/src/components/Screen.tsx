@@ -1,9 +1,18 @@
 import type { ReactNode, RefObject } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions, Keyboard, ScrollView, View } from "react-native";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Dimensions, Keyboard, ScrollView, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../design/ThemeProvider";
 import { DisclaimerFooter } from "./DisclaimerFooter";
+
+/**
+ * Lets a text field ask its screen to scroll it into view when it gets focus, so the field being typed
+ * in is never hidden behind the keyboard. Outside a Screen it does nothing.
+ */
+const ScrollIntoViewContext = createContext<(() => void) | null>(null);
+export const useScrollFocusedIntoView = () => useContext(ScrollIntoViewContext);
+
+type ScrollViewInstance = React.ComponentRef<typeof ScrollView>;
 
 export interface ScreenProps {
   children: ReactNode;
@@ -45,6 +54,8 @@ export function Screen({
   // itself by exactly the overlap with the keyboard. The primary action therefore stays visible
   // and the scroll area shrinks to the part above the keyboard.
   const rootRef = useRef<React.ComponentRef<typeof View>>(null);
+  const innerScrollRef = useRef<ScrollViewInstance | null>(null);
+  const scrollOffset = useRef(0);
   const rootBottom = useRef(0);
   const [keyboardPadding, setKeyboardPadding] = useState(0);
 
@@ -68,23 +79,59 @@ export function Screen({
     });
   }, [applyKeyboardMetrics]);
 
+  // Scrolls the focused input into the visible part of the scroll area (above the keyboard). Waits a
+  // moment so the keyboard padding has been applied and the input has its final position.
+  const revealFocused = useCallback(() => {
+    setTimeout(() => {
+      const input = TextInput.State?.currentlyFocusedInput?.();
+      const scroller = innerScrollRef.current;
+      if (!input || !scroller) return;
+      const margin = theme.spacing.lg;
+      scroller.measureInWindow((_sx, sy, _sw, sh) => {
+        input.measureInWindow((_ix, iy, _iw, ih) => {
+          const visibleTop = sy + margin;
+          const visibleBottom = sy + sh - margin;
+          if (iy + ih > visibleBottom) {
+            scroller.scrollTo({ y: scrollOffset.current + (iy + ih - visibleBottom), animated: true });
+          } else if (iy < visibleTop) {
+            scroller.scrollTo({ y: Math.max(0, scrollOffset.current - (visibleTop - iy)), animated: true });
+          }
+        });
+      });
+    }, 150);
+  }, [theme.spacing.lg]);
+
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (event) => {
       const bottom = rootBottom.current || Dimensions.get("window").height;
       setKeyboardPadding(
         Math.max(0, bottom - event.endCoordinates.screenY) + theme.spacing.sm,
       );
+      revealFocused();
     });
     const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardPadding(0));
     return () => {
       show.remove();
       hide.remove();
     };
-  }, [theme.spacing.sm]);
+  }, [theme.spacing.sm, revealFocused]);
+
+  const setScroller = useCallback(
+    (node: ScrollViewInstance | null) => {
+      innerScrollRef.current = node;
+      if (scrollRef) (scrollRef as { current: ScrollViewInstance | null }).current = node;
+    },
+    [scrollRef],
+  );
+  const revealContext = useMemo(() => revealFocused, [revealFocused]);
 
   const content = scroll ? (
     <ScrollView
-      ref={scrollRef}
+      ref={setScroller}
+      onScroll={(event) => {
+        scrollOffset.current = event.nativeEvent.contentOffset.y;
+      }}
+      scrollEventThrottle={16}
       testID="screen-scroll"
       style={{ flex: 1 }}
       contentContainerStyle={{ padding: theme.spacing.lg, gap: theme.spacing.lg, flexGrow: 1 }}
@@ -98,6 +145,7 @@ export function Screen({
   );
 
   return (
+    <ScrollIntoViewContext.Provider value={revealContext}>
     <View
       testID="screen"
       ref={rootRef}
@@ -125,5 +173,6 @@ export function Screen({
         <DisclaimerFooter />
       </View>
     </View>
+    </ScrollIntoViewContext.Provider>
   );
 }

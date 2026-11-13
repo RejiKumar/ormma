@@ -177,3 +177,4 @@ One line per non-obvious decision. Tags: [DECIDED] final; [PROPOSED Sn] default 
 167. [subscription-polish] Account hold still maps to the expired status (free plan once the period date passes), as before; the screen now says there is a payment problem and offers Fix in Google Play. Whether a hold should keep the 7-day grace is left open.
 168. [subscription-polish] New design token `scrim` for the bottom-sheet backdrop (light and dark).
 169. firebase.json builds the functions before every deploy (predeploy), because a deploy without npm run build uploaded a stale functions/lib.
+170. [keyboard] A text field scrolls itself into the visible part of its screen on focus and when the keyboard opens (Screen provides a scroll-into-view context that TextField calls), so the field being typed in is never hidden behind the keyboard, including when moving between fields.
