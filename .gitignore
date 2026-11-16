@@ -63,3 +63,7 @@ e2e/appium.log
 
 # Local speech test output (functions/scripts/try-speech.mjs)
 functions/speech-test/
+
+# Service account keys: never commit
+PLAY_SERVICE_ACCOUNT_JSON.json
+*-service-account*.json
