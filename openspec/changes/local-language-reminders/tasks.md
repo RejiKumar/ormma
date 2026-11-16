@@ -2,7 +2,7 @@
 
 ## 1. Language setting and catalogues
 
-- [ ] 1.1 Add the App language setting (the four languages in their own scripts, Phone language, remembered). Verify: app tests for follow the phone, override, restart and an unsupported phone language.
+- [x] 1.1 Add the App language setting (the four languages in their own scripts, Phone language, remembered). Verify: app tests for follow the phone, override, restart and an unsupported phone language.
 - [ ] 1.2 Draft the Malayalam, Tamil and Hindi catalogues for every English key, and add the completeness test (no missing key, no unexplained identical-to-English value). Verify: the test fails when a key is removed and passes when complete.
 - [ ] 1.3 Run the wording and design guards over every language. Verify: they pass for all four catalogues.
 - [ ] 1.4 Check layout and fonts in each script on the phone for the main screens. Verify: screenshots with no clipped or broken text.

@@ -16,6 +16,7 @@ import { useTheme } from "../../design/ThemeProvider";
 import { deleteMyAccount, setMyDisplayName } from "../../family/callables";
 import { useSubscription } from "../../family/useSubscription";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
+import { AppLanguageCard } from "./AppLanguageCard";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "Settings">;
 
@@ -140,6 +141,11 @@ export function SettingsScreen({ navigation }: Props) {
         <Button variant="quiet" label={t("settings.deleteAccount")} testID="settings-delete" onPress={onDelete} />
         {deleteMessage ? <Banner testID="settings-delete-message" message={deleteMessage} /> : null}
       </Card>
+
+      <Text variant="section" accessibilityRole="header">
+        {t("settings.languageTitle")}
+      </Text>
+      <AppLanguageCard />
 
       <Card style={{ gap: theme.spacing.sm }}>
         <ListItem

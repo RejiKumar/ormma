@@ -10,6 +10,7 @@ import { themes } from "./src/design/tokens";
 import { useAppFonts } from "./src/design/useAppFonts";
 import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
+import { AppLanguageProvider, useAppLanguage } from "./src/i18n/AppLanguageProvider";
 import { navigationRef } from "./src/navigation/navigationRef";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { PushRegistrar } from "./src/push/PushRegistrar";
@@ -39,11 +40,12 @@ function useNavigationTheme() {
 
 function Root() {
   const { name, ready } = useTheme();
+  const { ready: languageReady } = useAppLanguage();
   const navigationTheme = useNavigationTheme();
   const fontsReady = useAppFonts();
   // Hold the splash colour (the light background) until fonts and the saved theme are both ready, so a
   // dark-theme user does not see the light theme flash before the dark one is applied.
-  if (!fontsReady || !ready) return <View style={{ flex: 1, backgroundColor: themes.light.colors.background }} />;
+  if (!fontsReady || !ready || !languageReady) return <View style={{ flex: 1, backgroundColor: themes.light.colors.background }} />;
   return (
     <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       <AuthProvider>
@@ -60,7 +62,9 @@ export default function App() {
     <I18nextProvider i18n={i18n}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <Root />
+          <AppLanguageProvider>
+            <Root />
+          </AppLanguageProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </I18nextProvider>

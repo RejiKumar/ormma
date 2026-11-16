@@ -5,6 +5,7 @@ import { I18nextProvider } from "react-i18next";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, type ThemePreference } from "./design/ThemeProvider";
 import i18n, { initI18n, type AppLanguage } from "./i18n";
+import { AppLanguageProvider } from "./i18n/AppLanguageProvider";
 
 export interface RenderOptions {
   theme?: ThemePreference;
@@ -16,10 +17,12 @@ const metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-const wrap = (ui: ReactElement, theme: ThemePreference) => (
+const wrap = (ui: ReactElement, theme: ThemePreference, language: AppLanguage = "en") => (
   <I18nextProvider i18n={i18n}>
     <SafeAreaProvider initialMetrics={metrics}>
-      <ThemeProvider initialPreference={theme}>{ui}</ThemeProvider>
+      <ThemeProvider initialPreference={theme}>
+        <AppLanguageProvider initial={language}>{ui}</AppLanguageProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   </I18nextProvider>
 );
@@ -34,8 +37,8 @@ export async function renderApp(
 ) {
   initI18n(language);
   await i18n.changeLanguage(language);
-  const result = await render(wrap(ui, theme));
+  const result = await render(wrap(ui, theme, language));
   return Object.assign(result, {
-    rerenderApp: (next: ReactElement) => result.rerender(wrap(next, theme)),
+    rerenderApp: (next: ReactElement) => result.rerender(wrap(next, theme, language)),
   });
 }

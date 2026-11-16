@@ -51,6 +51,8 @@ describe("SettingsScreen", () => {
     await waitFor(() => expect(screen.getByTestId("settings-name").props.value).toBe("Rahul"));
     expect(screen.getByText("Free plan")).toBeTruthy();
     expect(screen.queryByText("Appearance")).toBeNull();
+    expect(screen.getByText("App language")).toBeTruthy();
+    expect(screen.getByTestId("app-language-card")).toBeTruthy();
     expect(screen.getByText("Privacy policy")).toBeTruthy();
     expect(screen.getByText("Terms and conditions")).toBeTruthy();
   });
