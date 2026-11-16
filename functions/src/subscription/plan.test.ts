@@ -32,9 +32,19 @@ describe("planFor", () => {
     expect(planFor({ status: "expired", expiresAtMs: END }, END - DAY)).toBe("free");
   });
 
+  it("has no daily call limit on any plan, so five dose times on Free are all allowed", () => {
+    const five = ["07:00", "10:00", "13:00", "17:00", "21:00"].map((c) => at("2026-11-05", c));
+    expect(allowedCallTimes(five, IST, limitsFor(null, END).callTimesPerDay).size).toBe(5);
+    expect(limitsFor({ status: "active", expiresAtMs: END + DAY }, END).callTimesPerDay).toBe(Number.POSITIVE_INFINITY);
+  });
+
   it("exposes the limits table", () => {
     expect(limitsFor(null, END)).toEqual(PLAN_LIMITS.free);
-    expect(PLAN_LIMITS.free).toEqual({ parents: 1, membersPerParent: 2, callTimesPerDay: 2 });
+    expect(PLAN_LIMITS.free).toEqual({
+      parents: 1,
+      membersPerParent: 2,
+      callTimesPerDay: Number.POSITIVE_INFINITY,
+    });
     expect(PLAN_LIMITS.family.parents).toBe(3);
     expect(PLAN_LIMITS.family.membersPerParent).toBe(6);
   });

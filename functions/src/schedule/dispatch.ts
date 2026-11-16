@@ -1,4 +1,4 @@
-import { Timestamp, type Firestore } from "firebase-admin/firestore";
+import { FieldValue, Timestamp, type Firestore } from "firebase-admin/firestore";
 import { flagSkippedEvents, gateKey, planSkippedEvents } from "../subscription/callGate";
 import type {
   CallPolicy,
@@ -287,6 +287,8 @@ async function claimGroup(
           attempts: result.state.attempts,
           lastCallAt: Timestamp.fromMillis(nowMs),
           lastDispatchFailure: false,
+          // A flag left by the old Free call-time limit must not hide a dose that is now being called.
+          ...(doc.data()?.callSkipped === "plan" ? { callSkipped: FieldValue.delete() } : {}),
         },
         { merge: true },
       );

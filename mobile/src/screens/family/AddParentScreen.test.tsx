@@ -131,7 +131,7 @@ describe("AddParentScreen", () => {
     await pressSave();
     expect(await screen.findByTestId("upgrade-sheet")).toBeTruthy();
     expect(screen.getByTestId("upgrade-sheet-message")).toHaveTextContent("The free plan includes one parent.");
-    expect(screen.getByText("Ormma Family includes up to 3 parents, 6 members per parent and check-in calls for every dose time.")).toBeTruthy();
+    expect(screen.getByText("Ormma Family includes up to 3 parents and 6 members per parent.")).toBeTruthy();
     // The inline message stays and nothing else is blocked.
     expect(screen.getByTestId("add-error")).toHaveTextContent("The free plan includes one parent.");
     expect(screen.getByTestId("add-name").props.value).toBe("Amma");

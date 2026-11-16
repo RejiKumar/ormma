@@ -82,6 +82,10 @@ deploy, test call). Note that Twilio calls India from a foreign number, so the p
 
 A medicine's dose events are created as soon as it is saved or its schedule changes (the `generateOnMedicineChange` function), so a dose added at 14:00 for 15:00 is called at 15:00 without waiting for the 00:30 run. The 00:30 run still runs as a safety net. A dose time that has already passed today gets no event for today.
 
+## Plans and calls
+
+Every dose time is called on every plan, Free included. The Free plan limits parents (1) and members per parent (2) only. A parent that is paused because the owner is over the parent limit gets no calls and no missed-dose alerts, and says so on its screens. After deploying functions, check with several dose times on the test parent that each one is called (the dispatcher log shows one call per dose time).
+
 ## Checks you can repeat any time
 
 - **Readiness:** `npm run check:go-live` (or `node scripts/check-go-live.mjs`). It checks the 12 secrets exist, the settings file, that the call functions are deployed and that the public endpoints answer and refuse a request without a token. It changes nothing and cannot read secret values, so a placeholder still shows as set: the test call in step 7 is what proves the Exotel values.

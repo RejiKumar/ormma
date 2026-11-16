@@ -34,7 +34,7 @@ describe.each([
   const all = strings(catalogue as Record<string, unknown>);
 
   it("has strings to check", () => {
-    expect(all.length).toBe(437);
+    expect(all.length).toBe(433);
   });
 
   it("names no AI model and uses no pressure wording", () => {

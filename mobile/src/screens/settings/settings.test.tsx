@@ -166,7 +166,7 @@ describe("SubscriptionScreen", () => {
     expect(await screen.findByText("Subscribe · ₹299.00 per month")).toBeTruthy();
     expect(screen.getByText("Subscribe · ₹2,999.00 per year")).toBeTruthy();
     expect(screen.getByText("What each plan includes")).toBeTruthy();
-    expect(screen.getByText(/^Missed-dose alerts, urgent alerts/)).toBeTruthy();
+    expect(screen.getByText(/^Check-in calls for every dose time, missed-dose alerts, urgent alerts/)).toBeTruthy();
   });
 
   it("does not offer a plan when Google Play returns no price for it", async () => {
@@ -250,13 +250,14 @@ describe("SubscriptionScreen", () => {
   const plainYearly: BillingProduct = { ...yearly, priceMicros: 2_999_000_000, currencyCode: "INR" };
   const inDays = (n: number) => Date.now() + n * 86_400_000;
 
-  it("compares Free and Ormma Family on parents, members and call times", async () => {
+  it("compares Free and Ormma Family on parents and members only, with no call-time limit on Free", async () => {
     await renderPlans(fakeBilling());
     expect(await screen.findByTestId("plan-comparison")).toBeTruthy();
-    for (const text of ["Parents", "Members per parent", "Check-in call times per day", "First 2", "Every dose time"]) {
+    for (const text of ["Parents", "Members per parent"]) {
       expect(screen.getByText(text)).toBeTruthy();
     }
-    expect(screen.getByText(/^Missed-dose alerts, urgent alerts/)).toBeTruthy();
+    for (const text of ["Check-in call times per day", "First 2"]) expect(screen.queryByText(text)).toBeNull();
+    expect(screen.getByText(/^Check-in calls for every dose time, missed-dose alerts, urgent alerts/)).toBeTruthy();
   });
 
   it("shows the terms above the buttons: price, renewal and cancel anytime", async () => {

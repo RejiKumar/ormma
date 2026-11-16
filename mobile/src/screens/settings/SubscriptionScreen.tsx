@@ -135,7 +135,6 @@ export function SubscriptionScreen() {
   const rows: Array<[string, string, string]> = [
     [t("subscription.rowParents"), "1", "3"],
     [t("subscription.rowMembers"), "2", "6"],
-    [t("subscription.rowCalls"), t("subscription.callsFree"), t("subscription.callsFamily")],
   ];
 
   const planCard = (product: BillingProduct, isYearly: boolean) => {

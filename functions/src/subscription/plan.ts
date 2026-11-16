@@ -13,7 +13,8 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
-  free: { parents: 1, membersPerParent: 2, callTimesPerDay: 2 },
+  // Every dose time is called on every plan: the plans differ in parents and members only.
+  free: { parents: 1, membersPerParent: 2, callTimesPerDay: Number.POSITIVE_INFINITY },
   family: { parents: 3, membersPerParent: 6, callTimesPerDay: Number.POSITIVE_INFINITY },
 };
 

@@ -358,27 +358,42 @@ describe("plan gate in the dispatcher (emulator)", () => {
     return { parent, owner };
   }
 
-  it("calls the first two dose times of a free parent's day and flags the third without calling it", async () => {
+  it("calls every dose time of a free parent's day and flags none", async () => {
     const { parent } = await seedDay("free");
     const provider = fakeProvider();
     await run(at(dayDate, "21:00"), provider);
     const times = callsFor(provider, parent).map((c) => c[0].scheduledFor).sort();
-    expect(times).toEqual([at(dayDate, "08:00"), at(dayDate, "13:00")]);
-    const evening = await db().doc(`parents/${parent}/doseEvents/evt_2100`).get();
-    expect(evening.data()).toMatchObject({ callSkipped: "plan", status: "pending" });
-    const morning = await db().doc(`parents/${parent}/doseEvents/evt_0800`).get();
-    expect(morning.data()?.callSkipped).toBeUndefined();
+    expect(times).toEqual(dayTimesClock.map((clock) => at(dayDate, clock)));
+    for (const id of ["evt_0800", "evt_1300", "evt_2100"]) {
+      expect((await db().doc(`parents/${parent}/doseEvents/${id}`).get()).data()?.callSkipped).toBeUndefined();
+    }
   });
 
-  it("keeps the third time skipped even when the first two are already resolved (the first two stay first)", async () => {
-    const { parent } = await seedDay("free");
-    for (const id of ["evt_0800", "evt_1300"]) {
-      await db().doc(`parents/${parent}/doseEvents/${id}`).update({ status: "taken" });
-    }
+  it("calls five dose times on a free parent", async () => {
+    const parent = await seedParent();
+    const clocks = ["07:00", "10:00", "13:00", "17:00", "21:00"];
+    const med = await seedMedicine(parent, { times: clocks });
+    for (const clock of clocks) await seedEvent(parent, `evt_${clock.replace(":", "")}`, med, at(dayDate, clock));
     const provider = fakeProvider();
     await run(at(dayDate, "21:00"), provider);
-    expect(callsFor(provider, parent)).toHaveLength(0);
-    expect((await db().doc(`parents/${parent}/doseEvents/evt_2100`).get()).data()?.callSkipped).toBe("plan");
+    expect(callsFor(provider, parent)).toHaveLength(5);
+  });
+
+  it("clears a stale plan flag when the dose is called, and reports it missed if unanswered", async () => {
+    const parent = await seedParent();
+    const med = await seedMedicine(parent, { times: ["21:00"] });
+    await seedEvent(parent, "evt_stale", med, at(dayDate, "21:00"), { callSkipped: "plan" });
+    await seedMember(parent);
+    const provider = fakeProvider();
+    await run(at(dayDate, "21:00"), provider);
+    expect(callsFor(provider, parent)).toHaveLength(1);
+    const called = (await db().doc(`parents/${parent}/doseEvents/evt_stale`).get()).data();
+    expect(called?.callSkipped).toBeUndefined();
+    expect(called?.status).toBe("calling");
+    await db().doc(`parents/${parent}/doseEvents/evt_stale`).update({ status: "no_answer", attempts: 3 });
+    await missedDoseCheckerHandler({ nowMs: at(dayDate, "23:00"), sender: fakeSender(), limit: 5000 });
+    expect((await db().doc(`parents/${parent}/doseEvents/evt_stale`).get()).data()?.status).toBe("missed");
+    expect((await db().collection(`parents/${parent}/alerts`).get()).size).toBe(1);
   });
 
   it("calls every dose time for a paid owner", async () => {
@@ -406,19 +421,22 @@ describe("plan gate in the dispatcher (emulator)", () => {
     expect((await db().doc(`parents/${older}/doseEvents/evt_p`).get()).data()?.callSkipped).toBeUndefined();
   });
 
-  it("is idempotent while flagged and starts calling once the owner subscribes", async () => {
-    const { parent, owner } = await seedDay("free");
-    for (const id of ["evt_0800", "evt_1300"]) {
-      await db().doc(`parents/${parent}/doseEvents/${id}`).update({ status: "taken" });
-    }
+  it("keeps a paused parent skipped and idempotent, and starts calling it once the owner subscribes", async () => {
+    const owner = unique("ownery");
+    await seedParent({ createdBy: owner, createdAt: Timestamp.fromMillis(Date.now() - 10_000) });
+    const paused = await seedParent({ createdBy: owner, createdAt: Timestamp.fromMillis(Date.now()) });
+    const med = await seedMedicine(paused, { times: ["21:00"] });
+    const when = at(dayDate, "21:00");
+    await seedEvent(paused, "evt_p", med, when);
     const provider = fakeProvider();
-    const now = at(dayDate, "21:00");
-    await run(now, provider);
-    await run(now, provider);
-    expect(callsFor(provider, parent)).toHaveLength(0);
+    await run(when, provider);
+    await run(when, provider);
+    expect(callsFor(provider, paused)).toHaveLength(0);
+    expect((await db().doc(`parents/${paused}/doseEvents/evt_p`).get()).data()?.callSkipped).toBe("plan");
     await grantPaid(owner);
-    await run(now, provider);
-    expect(callsFor(provider, parent)).toHaveLength(1);
+    await run(when, provider);
+    expect(callsFor(provider, paused)).toHaveLength(1);
+    expect((await db().doc(`parents/${paused}/doseEvents/evt_p`).get()).data()?.callSkipped).toBeUndefined();
   });
 });
 

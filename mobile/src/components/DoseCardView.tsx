@@ -107,7 +107,7 @@ export function DoseCardView({
         </View>
         {card.skippedByPlan && card.pending ? (
           <Text variant="small" tone="muted" testID={`${testID}-plan-note`}>
-            {t("subscription.noCallOnPlan")}
+            {t("subscription.pausedOnPlan")}
           </Text>
         ) : null}
         {card.medicines.length > 0 ? (

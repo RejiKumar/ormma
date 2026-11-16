@@ -84,6 +84,16 @@ describe("DoseCardView", () => {
     expect(onMarkTaken).toHaveBeenCalledTimes(1);
   });
 
+  it("says check-in calls are paused only when the parent is paused on the plan", async () => {
+    await render([ev("c", ist(21), "pending", { callSkipped: true })]);
+    expect(screen.getByTestId("card-plan-note")).toHaveTextContent("Check-in calls are paused for this parent on the current plan.");
+  });
+
+  it("shows no plan note for an ordinary scheduled dose", async () => {
+    await render([ev("c", ist(21), "pending")]);
+    expect(screen.queryByTestId("card-plan-note")).toBeNull();
+  });
+
   it("hides Mark as taken from a viewer", async () => {
     await render([ev("c", ist(21), "pending")], { canMarkTaken: false });
     expect(screen.queryByTestId("card-mark")).toBeNull();
