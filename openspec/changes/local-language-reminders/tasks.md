@@ -19,5 +19,5 @@
 ## 4. Review and verification
 
 - [ ] 4.1 Have each language reviewed by a fluent speaker before it becomes the default. Verify: the review is recorded in `docs/DECISIONS.md`.
-- [ ] 4.2 Run function and app tests, the emulator and rules suites, typecheck, lint and `openspec validate local-language-reminders`. Verify: all pass.
+- [x] 4.2 Run function and app tests, the emulator and rules suites, typecheck, lint and `openspec validate local-language-reminders`. Verify: all pass.
 - [ ] 4.3 On the phone: switch the language and read the main screens, receive one push in Malayalam, and receive a call in Malayalam. Verify: screenshots, the push text and the call heard.
