@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react-native";
 import { renderApp } from "../test-utils";
+import i18n from "../i18n";
 import { MedicinesScreen } from "./TabPlaceholders";
 
 const DISCLAIMER = "This app does not provide medical advice.";
@@ -18,9 +19,9 @@ describe.each([["Medicines", MedicinesScreen, "No medicines yet"]] as const)(
       expect(screen.queryAllByRole("button")).toHaveLength(0);
     });
 
-    it("keeps the English text when the language is ml, ta or hi (no reviewed translation yet)", async () => {
+    it("still shows the medical disclaimer when the language is ml, ta or hi", async () => {
       await renderApp(<Component />, { language: "ml" });
-      expect(screen.getByText(title)).toBeTruthy();
+      expect(screen.getByText(i18n.t("disclaimer.medical"))).toBeTruthy();
     });
   },
 );

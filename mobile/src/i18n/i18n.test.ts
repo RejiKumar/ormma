@@ -30,9 +30,15 @@ describe("i18n", () => {
   it.each(["ml", "ta", "hi"] as const)(
     "falls back to English for a missing %s key",
     async (lng) => {
-      await i18n.changeLanguage(lng);
-      expect(i18n.language).toBe(lng);
-      expect(i18n.t("status.missed")).toBe("Missed");
+      const full = i18n.getResourceBundle(lng, "translation");
+      i18n.removeResourceBundle(lng, "translation");
+      try {
+        await i18n.changeLanguage(lng);
+        expect(i18n.language).toBe(lng);
+        expect(i18n.t("status.missed")).toBe("Missed");
+      } finally {
+        i18n.addResourceBundle(lng, "translation", full, true, true);
+      }
     },
   );
 
@@ -40,7 +46,7 @@ describe("i18n", () => {
     i18n.addResourceBundle("ml", "translation", { status: { missed: "TEST-ML" } }, true, true);
     await i18n.changeLanguage("ml");
     expect(i18n.t("status.missed")).toBe("TEST-ML");
-    expect(i18n.t("status.taken")).toBe("Taken"); // other keys still fall back
+    expect(i18n.t("status.taken")).toBe(ml.status.taken); // other keys keep their own translation
     i18n.removeResourceBundle("ml", "translation");
     i18n.addResourceBundle("ml", "translation", ml, true, true);
   });
@@ -54,6 +60,58 @@ describe("i18n", () => {
     ] as const) {
       const extra = keys(cat as Record<string, unknown>).filter((k) => !enKeys.has(k));
       expect({ name, extra }).toEqual({ name, extra: [] });
+    }
+  });
+
+  // Values that are the same in every language on purpose: the product name, a placeholder-only value, and
+  // each language's own name (written in its own script, as the language picker requires).
+  const SAME_ON_PURPOSE = new Set([
+    "app.name",
+    "app.brand",
+    "languages.en",
+    "languages.ml",
+    "languages.ta",
+    "languages.hi",
+    "settings.planFamily",
+    "subscription.paidTitle",
+    "subscription.compareFamily",
+    "screens.family.historyOrmma",
+    "screens.family.historyFamilyWhen",
+    "screens.family.historyDate",
+  ]);
+
+  function flatten(obj: Record<string, unknown>, prefix = ""): Record<string, string> {
+    return Object.fromEntries(
+      Object.entries(obj).flatMap(([k, v]) =>
+        v && typeof v === "object"
+          ? Object.entries(flatten(v as Record<string, unknown>, `${prefix}${k}.`))
+          : [[`${prefix}${k}`, String(v)]],
+      ),
+    );
+  }
+
+  it.each([
+    ["ml", ml],
+    ["ta", ta],
+    ["hi", hi],
+  ] as const)("the %s catalogue has every English key, the same placeholders, and a real translation", (name, cat) => {
+    const english = flatten(en);
+    const own = flatten(cat as Record<string, unknown>);
+    const placeholders = (s: string) => (s.match(/\{\{\w+\}\}/g) ?? []).sort();
+    const missing = Object.keys(english).filter((k) => !(k in own));
+    const wrongPlaceholders = Object.keys(own).filter((k) => english[k] && placeholders(own[k]).join() !== placeholders(english[k]).join());
+    const untranslated = Object.keys(own).filter((k) => own[k] === english[k] && !SAME_ON_PURPOSE.has(k));
+    expect({ name, missing, wrongPlaceholders, untranslated }).toEqual({
+      name,
+      missing: [],
+      wrongPlaceholders: [],
+      untranslated: [],
+    });
+  });
+
+  it("writes each language's own name in its own script in every catalogue", () => {
+    for (const cat of [en, ml, ta, hi]) {
+      expect(cat.languages).toEqual({ en: "English", ml: "മലയാളം", ta: "தமிழ்", hi: "हिन्दी" });
     }
   });
 

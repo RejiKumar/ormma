@@ -15,10 +15,11 @@ describe("DisclaimerFooter", () => {
     expect(i18n.t("disclaimer.medical")).toBe(DISCLAIMER);
   });
 
-  it("keeps the English text when the language is ml, ta or hi until a reviewed translation exists", async () => {
+  it("shows the disclaimer in the person's language for ml, ta and hi", async () => {
     for (const language of ["ml", "ta", "hi"] as const) {
       const view = await renderApp(<DisclaimerFooter />, { language });
-      expect(screen.getByText(DISCLAIMER)).toBeTruthy();
+      expect(screen.getByText(i18n.t("disclaimer.medical"))).toBeTruthy();
+      expect(i18n.t("disclaimer.medical")).not.toBe(DISCLAIMER);
       await view.unmount();
     }
   });
