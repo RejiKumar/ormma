@@ -6,6 +6,26 @@ cannot change after the first upload to Play.
 
 Do the sections in order. Items marked **[you]** need your accounts or secrets; I cannot do them.
 
+**Current build:** 1.0.1, `versionCode` 2 (`release/ormma-1.0.1-vc2.aab`). The short upload path is
+[PLAY-UPLOAD.md](PLAY-UPLOAD.md); what to check before Production is section 9 and
+[PRELAUNCH-CHECKLIST.md](PRELAUNCH-CHECKLIST.md); the go-live order is [GO-LIVE.md](GO-LIVE.md).
+
+## Links
+
+- Play Console: <https://play.google.com/console>
+- Firebase console (`ormma-prod`): <https://console.firebase.google.com/project/ormma-prod/overview>
+- Authentication: <https://console.firebase.google.com/project/ormma-prod/authentication/providers>
+- Project settings (fingerprints, `google-services.json`): <https://console.firebase.google.com/project/ormma-prod/settings/general>
+- Firestore data: <https://console.firebase.google.com/project/ormma-prod/firestore>
+- Cloud Functions (logs): <https://console.cloud.google.com/functions/list?project=ormma-prod>
+- Cloud Scheduler: <https://console.cloud.google.com/cloudscheduler?project=ormma-prod>
+- Secret Manager: <https://console.cloud.google.com/security/secret-manager?project=ormma-prod>
+- Pub/Sub topics: <https://console.cloud.google.com/cloudpubsub/topic/list?project=ormma-prod>
+- Google Cloud billing: <https://console.cloud.google.com/billing>
+- Testing Google Play Billing: <https://developer.android.com/google/play/billing/test>
+- bundletool (install an `.aab` locally): <https://github.com/google/bundletool/releases>
+- Repository: <https://github.com/RejiKumar/ormma>
+
 ---
 
 ## 1. Firebase project (`ormma-prod`) **[you]**
@@ -94,7 +114,7 @@ Write down the deployed URLs for the webhook and `voiceAudio`, then finish `EXOT
 ## 5. App configuration
 
 Already done in the repo (`mobile/app.json` and `mobile/plugins`): package `com.ormma.app`,
-`versionCode` 1, `allowBackup` off, `POST_NOTIFICATIONS` added, `SYSTEM_ALERT_WINDOW` and storage
+`versionCode` 2 (version 1.0.1; raise it for every upload with `node scripts/bump-version.mjs`), `allowBackup` off, `POST_NOTIFICATIONS` added, `SYSTEM_ALERT_WINDOW` and storage
 permissions removed, release signing wired to your upload key.
 
 Still **[you]**: replace `mobile/google-services.json` with the real file from section 1, and make sure
@@ -142,7 +162,21 @@ cd mobile\android
 
 Output: `mobile/android/app/build/outputs/bundle/release/app-release.aab`. A release build without a
 configured upload key fails on purpose; it never falls back to the debug key. Raise `versionCode` in
-`mobile/app.json` for every upload.
+`mobile/app.json` for every upload (`node scripts/bump-version.mjs`).
+
+The shortcut on this machine is `.\scripts\release-build.ps1` (the `.aab`, production Firebase config,
+upload key) and `.\scripts\release-apk.ps1` (a small arm64 APK for a sideload test, same key). Both swap
+in `mobile\google-services.prod.json` for the build and put the test file back afterwards.
+
+**Check the version before you upload.** The `android/` folder is generated from `mobile/app.json` by
+`expo prebuild`. If you raised `versionCode` and did not prebuild, the bundle still carries the old number
+and Play rejects it ("version code already used"). Either run the prebuild above, or confirm that
+`mobile/android/app/build.gradle` shows the new `versionCode` and `versionName` before building. Play shows
+the version it read on the release page; stop there if it is not the one you expect.
+
+A sideloaded APK cannot be installed over a copy that was signed with a different key (the debug key,
+for example): Android refuses with "signatures do not match". Uninstall the old copy first, which signs you
+out; your data stays in Firebase.
 
 Smoke-test the exact release build before uploading: install the `.aab` through `bundletool`, or build
 `:app:assembleRelease` and install the APK on a real phone and sign in with a real SMS.
@@ -219,7 +253,14 @@ The app sells one subscription, Ormma Family, monthly and yearly. Prices below a
    - With a trial offer active, the buy button says "Start free trial" and the card says "7 days free, then ₹299.00 per month". After buying, the Plan screen says "Free trial until <date>"; after the first renewal it says "Renews on <date>". Cancel and it says "Cancelled. Ormma Family stays active until <date>."
    - Cancel in Play and confirm the plan stays until the end date; refund a test order and confirm the plan ends at once; reinstall and use Restore purchases.
 7. **Legal pages.** Publish `docs/PRIVACY-POLICY.md` and `docs/TERMS.md` as web pages (after legal review), then put the two URLs into `mobile/src/legal/legalConfig.ts` and into Play Console (Privacy policy URL; and the Terms link in the store listing description). Run `node scripts/build-legal.mjs` after any edit to those documents so the in-app text matches.
-8. **Cost check.** Replace the assumed ₹5 to ₹10 per call with Exotel's rate card in `docs/PRELAUNCH-CHECKLIST.md` and confirm the free limits still make sense.
+8. **Cost check.** Replace the assumed ₹5 to ₹10 per call with Exotel's rate card in `docs/PRELAUNCH-CHECKLIST.md`. The Free plan now calls every dose time (decision 187), so the cost of a Free family is every dose time of every day; the paid plan differs only in parents (3) and members (6). Decide whether that is sustainable, or whether Family needs another benefit.
+
+## 8c. Languages, calls and pushes (1.0.1)
+
+- The app follows the phone's language (Malayalam, Tamil, Hindi, English) and Settings, App language overrides it. The choice is stored on the phone, and the app also writes it to `users/{uid}.language` so the server can write each member's pushes and the 8 PM digest in their language. **Deploy `firestore:rules` before the app build reaches users**, because the rules now allow that field (`firebase deploy --only firestore:rules --project ormma-prod`), then deploy functions.
+- The parent's call language is separate: Family tab, the parent's card, Parent details, Language for calls (owner only). The next call uses it.
+- The text of the Terms and Privacy pages is English in every language.
+- The Malayalam, Tamil and Hindi wording (app, pushes, call script) is machine-drafted. Have a fluent speaker of each language read it before you promote beyond Internal testing, and record who reviewed it in `docs/DECISIONS.md`.
 
 ## 9. Before you press Production
 
@@ -227,6 +268,9 @@ The app sells one subscription, Ormma Family, monthly and yearly. Prices below a
 - [ ] Rules and functions deployed to `ormma-prod`, secrets set, `CALL_PROVIDER=exotel` and `CALLS_LIVE_FROM` set (`docs/GO-LIVE.md`)
 - [ ] One real call placed and answered; a missed-dose alert and push notification received
 - [ ] Release build installed from Play internal testing on a real phone and signed in by real SMS
+- [ ] The Play purchase test of section 8b done on that phone (trial wording, buy, cancel, refund, restore)
+- [ ] A call in Malayalam (or Tamil or Hindi) answered and a missed-dose push received in the same language
+- [ ] Malayalam, Tamil and Hindi wording reviewed by a fluent speaker of each
 - [ ] Consent flow, export and delete tried with a real owner account
 - [ ] Privacy policy URL live; Data safety and Health apps forms submitted
 - [ ] Upload key and passwords backed up in two places

@@ -86,6 +86,10 @@ A medicine's dose events are created as soon as it is saved or its schedule chan
 
 Every dose time is called on every plan, Free included. The Free plan limits parents (1) and members per parent (2) only. A parent that is paused because the owner is over the parent limit gets no calls and no missed-dose alerts, and says so on its screens. After deploying functions, check with several dose times on the test parent that each one is called (the dispatcher log shows one call per dose time).
 
+## Languages
+
+Deploy order for the language release (1.0.1): `firebase deploy --only firestore:rules --project ormma-prod` first (the rules allow the new `users.language` field), then `firebase deploy --only functions --project ormma-prod`, then ship the app build. Set the parent's call language in Parent details (owner only; the next call uses it). Check one call and one missed-dose push in that language. The Malayalam, Tamil and Hindi wording is unreviewed until a fluent speaker has read it. Links: [Play upload sheet](PLAY-UPLOAD.md), [Firebase console](https://console.firebase.google.com/project/ormma-prod/overview), [Functions logs](https://console.cloud.google.com/functions/list?project=ormma-prod).
+
 ## Checks you can repeat any time
 
 - **Readiness:** `npm run check:go-live` (or `node scripts/check-go-live.mjs`). It checks the 12 secrets exist, the settings file, that the call functions are deployed and that the public endpoints answer and refuse a request without a token. It changes nothing and cannot read secret values, so a placeholder still shows as set: the test call in step 7 is what proves the Exotel values.
