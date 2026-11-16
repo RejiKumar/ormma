@@ -13,6 +13,9 @@ import { Text } from "../../design/Text";
 import { useParents } from "../../family/useParents";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
 import { LoadingState } from "../../components/LoadingState";
+import { pickLanguage, type AppLanguage } from "../../i18n";
+import type { Language } from "../../../../shared/types";
+import { CallLanguagePicker } from "./CallLanguagePicker";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "ParentDetails">;
 
@@ -30,6 +33,7 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
   const [city, setCity] = useState("");
   const [prescriber, setPrescriber] = useState("");
   const [refillDue, setRefillDue] = useState("");
+  const [language, setLanguage] = useState<AppLanguage>("en");
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
@@ -40,6 +44,7 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
     setCity(parent.city);
     setPrescriber(parent.prescriber);
     setRefillDue(parent.refillDue ?? "");
+    setLanguage(pickLanguage(parent.language));
     setLoaded(true);
   }, [parent, loaded]);
 
@@ -60,6 +65,9 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
         city: city.trim(),
         prescriber: prescriber.trim(),
         refillDue: due.length > 0 ? due : null,
+        // The next call uses the new language. Sent only when it changed, so saving the other details
+        // never rewrites it.
+        ...(language !== pickLanguage(parent.language) ? { language: `${language}-IN` as Language } : {}),
       });
       navigation.goBack();
     } catch (err) {
@@ -117,6 +125,7 @@ export function ParentDetailsScreen({ navigation, route }: Props) {
         maxLength={10}
         editable={isOwner}
       />
+      <CallLanguagePicker value={language} onChange={setLanguage} editable={isOwner} />
       {error ? <FormError message={error} testID="details-error" /> : null}
     </Screen>
   );

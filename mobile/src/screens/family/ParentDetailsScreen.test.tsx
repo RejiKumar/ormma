@@ -66,6 +66,37 @@ describe("ParentDetailsScreen", () => {
     expect(fsMock.updateDoc).not.toHaveBeenCalled();
   });
 
+  it("shows the language the parent is called in, in its own script, and marks it", async () => {
+    await renderScreen();
+    expect(screen.getByText("മലയാളം")).toBeTruthy();
+    expect(screen.getByTestId("lang-ml").props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId("lang-hi").props.accessibilityState.selected).toBe(false);
+  });
+
+  it("lets the owner change the call language and saves it as a tag with the other details", async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByTestId("lang-ta"));
+    await fireEvent.press(screen.getByTestId("details-save"));
+    await waitFor(() => expect(fsMock.updateDoc).toHaveBeenCalled());
+    expect(fsMock.updateDoc.mock.calls[0][1]).toMatchObject({ language: "ta-IN", city: "Thrissur" });
+  });
+
+  it("does not send the language when it was not changed", async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByTestId("details-save"));
+    await waitFor(() => expect(fsMock.updateDoc).toHaveBeenCalled());
+    expect(fsMock.updateDoc.mock.calls[0][1]).not.toHaveProperty("language");
+  });
+
+  it("shows the language to an editor but does not let them change it", async () => {
+    mockParents.parents = [{ ...base, role: "editor" }];
+    await renderScreen();
+    expect(screen.getByTestId("lang-ml").props.accessibilityState.selected).toBe(true);
+    expect(screen.getByTestId("lang-hi").props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(screen.getByTestId("lang-hi"));
+    expect(screen.getByTestId("lang-ml").props.accessibilityState.selected).toBe(true);
+  });
+
   it("is read-only for an editor", async () => {
     mockParents.parents = [{ ...base, role: "editor" }];
     await renderScreen();

@@ -2,32 +2,24 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { ComponentRef } from "react";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { Button } from "../../components/Button";
 import { UpgradeSheet } from "../../components/UpgradeSheet";
 import { FormError } from "../../components/FormError";
 import { planLimitReason } from "../../family/planErrors";
-import { Icon } from "../../components/Icon";
 import { Screen } from "../../components/Screen";
 import { PhoneField } from "../../components/PhoneField";
 import { TextField } from "../../components/TextField";
 import { Text } from "../../design/Text";
-import { useTheme } from "../../design/ThemeProvider";
 import { createParent } from "../../family/callables";
 import { addParentId } from "../../family/parentIds";
 import type { FamilyStackParamList } from "../../navigation/FamilyStack";
 import type { Language } from "../../../../shared/types";
-import i18n, { pickLanguage, SUPPORTED_LANGUAGES, type AppLanguage } from "../../i18n";
+import i18n, { pickLanguage, type AppLanguage } from "../../i18n";
+import { CallLanguagePicker } from "./CallLanguagePicker";
 import { isValidIndiaMobile, toE164India } from "../../utils/phone";
 
 type Props = NativeStackScreenProps<FamilyStackParamList, "AddParent">;
-
-const LANGUAGE_KEY = {
-  en: "languages.en",
-  ml: "languages.ml",
-  ta: "languages.ta",
-  hi: "languages.hi",
-} as const;
 
 /** "en" â†’ "en-IN", the shared Language tag the callable validates. */
 const toLanguageTag = (code: AppLanguage): Language => `${code}-IN`;
@@ -35,7 +27,6 @@ const toLanguageTag = (code: AppLanguage): Language => `${code}-IN`;
 /** Add a parent: name, E.164 phone, language in its own script â†’ createParent. */
 export function AddParentScreen({ navigation }: Props) {
   const { t } = useTranslation();
-  const { theme } = useTheme();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [language, setLanguage] = useState<AppLanguage>(() => pickLanguage(i18n.language));
@@ -109,38 +100,7 @@ export function AddParentScreen({ navigation }: Props) {
         value={phone}
         onChangeValue={setPhone}
       />
-      <View style={{ gap: theme.spacing.xs }}>
-        <Text variant="label">{t("screens.addParent.languageLabel")}</Text>
-        <View style={{ gap: theme.spacing.sm }}>
-          {SUPPORTED_LANGUAGES.map((code) => {
-            const selected = language === code;
-            return (
-              <Pressable
-                key={code}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-                accessibilityLabel={t(LANGUAGE_KEY[code])}
-                testID={`lang-${code}`}
-                onPress={() => setLanguage(code)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: theme.spacing.md,
-                  minHeight: 48,
-                  borderRadius: theme.radius.lg,
-                  borderWidth: 1.5,
-                  borderColor: selected ? theme.colors.primary : theme.colors.border,
-                  backgroundColor: theme.colors.surface,
-                  paddingHorizontal: theme.spacing.lg,
-                }}
-              >
-                <View style={{ width: 20 }}>{selected ? <Icon name="check" color={theme.colors.primary} size={20} /> : null}</View>
-                <Text variant="body">{t(LANGUAGE_KEY[code])}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      <CallLanguagePicker value={language} onChange={setLanguage} />
       {error ? <FormError message={error} testID="add-error" /> : null}
       <UpgradeSheet
         visible={planLimit}

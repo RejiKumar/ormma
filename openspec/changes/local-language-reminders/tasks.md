@@ -14,7 +14,7 @@
 
 ## 3. Parent call language
 
-- [ ] 3.1 Show and change the parent's call language in Parent details (owner only), with the rule and tests. Verify: app and rules tests; the next call uses the new language.
+- [x] 3.1 Show and change the parent's call language in Parent details (owner only), with the rule and tests. Verify: app and rules tests; the next call uses the new language.
 
 ## 4. Review and verification
 
