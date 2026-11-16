@@ -55,6 +55,10 @@ describe("SettingsScreen", () => {
     expect(screen.getByTestId("app-language-card")).toBeTruthy();
     expect(screen.getByText("Privacy policy")).toBeTruthy();
     expect(screen.getByText("Terms and conditions")).toBeTruthy();
+    // The App language choice: Phone language and the four languages in their own scripts.
+    expect(screen.getByText("App language")).toBeTruthy();
+    expect(screen.getByTestId("app-language-card")).toBeTruthy();
+    expect(screen.getByText("Phone language")).toBeTruthy();
   });
 
   it("saves a changed display name through the server and confirms it", async () => {
