@@ -51,11 +51,11 @@ The app SHALL show a free trial only when Google Play returns a trial offer for 
 - **THEN** the screen shows the plain price and no trial wording
 
 ### Requirement: Plan comparison and best value
-The screen SHALL compare Free and Ormma Family on parents, members per parent and check-in call times per day, and SHALL state that alerts and the Call buttons are included on every plan. When both Play prices are in the same currency and the yearly plan costs less than twelve months, the yearly plan SHALL carry a "Best value" mark with its monthly equivalent and the saving, both computed from the Play prices. Before the Subscribe buttons the screen SHALL state each plan's price, that it renews until cancelled, and "Cancel anytime in Google Play".
+The screen SHALL compare Free and Ormma Family on parents and members per parent, and SHALL state that check-in calls for every dose time, alerts and the Call buttons are included on every plan. When both Play prices are in the same currency and the yearly plan costs less than twelve months, the yearly plan SHALL carry a "Best value" mark with its monthly equivalent and the saving, both computed from the Play prices. Before the Subscribe buttons the screen SHALL state each plan's price, that it renews until cancelled, and "Cancel anytime in Google Play".
 
 #### Scenario: Comparison
 - **WHEN** the screen opens
-- **THEN** Free shows 1 parent, 2 members per parent and 2 call times per day, and Ormma Family shows 3 parents, 6 members per parent and no daily call limit
+- **THEN** Free shows 1 parent and 2 members per parent, Ormma Family shows 3 parents and 6 members per parent, and both state that every dose time is called
 
 #### Scenario: Best value
 - **WHEN** Play returns 299 and 2999 rupees for monthly and yearly
