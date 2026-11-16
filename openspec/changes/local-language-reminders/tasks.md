@@ -9,7 +9,7 @@
 
 ## 2. Notifications
 
-- [ ] 2.1 Store the member's language on their own user document (rule and emulator tests so only the member can write it, and only the four values). Verify: rules tests for allowed and denied writes.
+- [x] 2.1 Store the member's language on their own user document (rule and emulator tests so only the member can write it, and only the four values). Verify: rules tests for allowed and denied writes.
 - [ ] 2.2 Give the push templates a language, with an English fallback per line, and pick the recipient's language when sending. Verify: unit and emulator tests for one language, two members in two languages, and no language set.
 
 ## 3. Parent call language

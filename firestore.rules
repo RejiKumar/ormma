@@ -59,8 +59,10 @@ service cloud.firestore {
 
     // ---------- users/{uid}: read/write only by that uid ----------
     function validUser(data) {
-      return data.keys().hasOnly(['displayName', 'phone', 'fcmTokens', 'createdAt'])
+      // `language` is optional: the language the member's app shows, used for their notifications.
+      return data.keys().hasOnly(['displayName', 'phone', 'fcmTokens', 'createdAt', 'language'])
         && data.keys().hasAll(['displayName', 'phone', 'fcmTokens', 'createdAt'])
+        && (!('language' in data) || data.language in ['en', 'ml', 'ta', 'hi'])
         && data.displayName is string
         && isE164(data.phone)
         && data.fcmTokens is list

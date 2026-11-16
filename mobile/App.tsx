@@ -11,6 +11,7 @@ import { useAppFonts } from "./src/design/useAppFonts";
 import { connectEmulators } from "./src/firebase/emulators";
 import { initI18n } from "./src/i18n";
 import { AppLanguageProvider, useAppLanguage } from "./src/i18n/AppLanguageProvider";
+import { MemberLanguageSync } from "./src/i18n/MemberLanguageSync";
 import { navigationRef } from "./src/navigation/navigationRef";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { PushRegistrar } from "./src/push/PushRegistrar";
@@ -50,6 +51,7 @@ function Root() {
     <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       <AuthProvider>
         <PushRegistrar />
+        <MemberLanguageSync />
         <RootNavigator />
         <StatusBar style={name === "dark" ? "light" : "dark"} />
       </AuthProvider>

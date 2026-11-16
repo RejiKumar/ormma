@@ -41,6 +41,8 @@ export interface UserDoc {
   phone: E164Phone;
   fcmTokens: string[];
   createdAt: Timestamp;
+  /** The language the member's app shows; notifications to them use it. Missing means English. */
+  language?: "en" | "ml" | "ta" | "hi";
 }
 
 // ---------- parents/{parentId} ----------

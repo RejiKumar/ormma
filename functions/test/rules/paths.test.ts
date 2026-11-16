@@ -71,6 +71,22 @@ describe("users path rule / users document shape", () => {
     await assertFails(getDoc(doc(asUser(env, OWNER), `users/${EDITOR}`)));
   });
 
+  it("the language is optional, only one of the four, and only the member writes it", async () => {
+    const ok = { displayName: "A", phone: "+919800000009", fcmTokens: [], createdAt: at(0) };
+    const ref = doc(asUser(env, EDITOR), `users/${EDITOR}`);
+    await assertSucceeds(setDoc(ref, ok));
+    for (const language of ["en", "ml", "ta", "hi"]) {
+      await assertSucceeds(setDoc(ref, { ...ok, language }));
+      await assertSucceeds(updateDoc(ref, { language }));
+    }
+    await assertFails(setDoc(ref, { ...ok, language: "fr" }));
+    await assertFails(setDoc(ref, { ...ok, language: "" }));
+    await assertFails(setDoc(ref, { ...ok, language: 5 }));
+    await assertFails(updateDoc(ref, { language: "bn" }));
+    await assertFails(setDoc(doc(asUser(env, VIEWER), `users/${EDITOR}`), { ...ok, language: "ml" }));
+    await assertFails(updateDoc(doc(asUser(env, OWNER), `users/${EDITOR}`), { language: "ta" }));
+  });
+
   it("the phone must be E.164 and only data-model fields are allowed", async () => {
     const ok = { displayName: "A", phone: "+919800000009", fcmTokens: [], createdAt: at(0) };
     const ref = doc(asUser(env, EDITOR), `users/${EDITOR}`);
