@@ -1,6 +1,6 @@
-// Builds the public legal pages (Firebase Hosting) from docs/PRIVACY-POLICY.md and docs/TERMS.md, so the
+// Builds the public legal pages (Firebase Hosting) from docs/PRIVACY-POLICY.md, docs/TERMS.md and docs/ACCOUNT-DELETION.md, so the
 // website says exactly what the app says. Run: node scripts/build-legal-site.mjs
-// Output: hosting/public/{index,privacy/index,terms/index}.html
+// Output: hosting/public/{index,privacy/index,terms/index,delete-account/index}.html
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -111,6 +111,7 @@ const write = (rel, content) => {
 for (const [dir, doc] of [
   ["privacy", "PRIVACY-POLICY.md"],
   ["terms", "TERMS.md"],
+  ["delete-account", "ACCOUNT-DELETION.md"],
 ]) {
   const { title, body } = toHtml(fs.readFileSync(path.join(root, "docs", doc), "utf8"));
   write(`${dir}/index.html`, page(title, body));
@@ -121,7 +122,7 @@ write(
   page(
     "Ormma",
     `<p>Ormma phones an elderly parent at medicine times, records the reply and shows it to family in an app.</p>
-<ul><li><a href="/privacy">Privacy policy</a></li><li><a href="/terms">Terms of use</a></li></ul>`,
+<ul><li><a href="/privacy">Privacy policy</a></li><li><a href="/terms">Terms of use</a></li><li><a href="/delete-account">Delete your account and data</a></li></ul>`,
   ),
 );
 console.log("legal pages written to", OUT);

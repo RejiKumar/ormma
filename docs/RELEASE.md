@@ -222,7 +222,7 @@ Smoke-test the exact release build before uploading: install the `.aab` through 
 | Third-party contacts (emergency contacts) | Yes | No | App functionality | Entered by the family owner |
 | Purchase history | Yes | No | App functionality | The plan, product and end date, and a one-way hash of the purchase token; payment itself is handled by Google Play |
 
-Encryption in transit: yes. Users can request deletion: yes (Family tab → Settings → Delete account, Delete parent, and Export data). Play also asks for a web page where a user can request account deletion: use the published privacy policy page and say that deletion is in the app under Settings, or give a support email.
+Encryption in transit: yes. Users can request deletion: yes (Family tab → Settings → Delete account, Delete parent, and Export data). Play also asks for a web page where a user can request account deletion: use `https://ormma-prod.web.app/delete-account` (built from `docs/ACCOUNT-DELETION.md` by `node scripts/build-legal-site.mjs`, published with `firebase deploy --only hosting --project ormma-prod`). Check the page loads before you submit the form.
 Re-check these answers against `docs/PRIVACY-POLICY.md` before submitting.
 
 ## 8b. Subscriptions (Google Play Billing)
