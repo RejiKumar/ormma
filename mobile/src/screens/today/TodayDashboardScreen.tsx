@@ -47,9 +47,10 @@ const ALERT_TYPE_KEY = {
   urgent: "alertTypes.urgent",
 } as const satisfies Record<AlertType, string>;
 
-function heroDate(timezone: string, ms: number): string {
+/** The date line in the app language ("Mon, 16 November", "തിങ്കൾ, 16 നവംബർ"). */
+function heroDate(timezone: string, ms: number, language: string): string {
   try {
-    return new Intl.DateTimeFormat("en-IN", { timeZone: timezone, weekday: "short", day: "numeric", month: "long" }).format(
+    return new Intl.DateTimeFormat(`${language}-IN`, { timeZone: timezone, weekday: "short", day: "numeric", month: "long" }).format(
       new Date(ms),
     );
   } catch {
@@ -59,7 +60,7 @@ function heroDate(timezone: string, ms: number): string {
 
 /** Reassurance card: date, progress ring and one sentence on how the day is going. */
 function HeroCard({ parent, cards }: { parent: FamilyParent; cards: DoseCard[] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme } = useTheme();
   const navigation = useNavigation();
   const total = cards.length;
@@ -93,7 +94,7 @@ function HeroCard({ parent, cards }: { parent: FamilyParent; cards: DoseCard[] }
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.sm }}>
         <Icon name="home" color={theme.colors.inkOnPrimary} size={18} />
         <Text variant="small" tone="onPrimary" numeric style={{ opacity: 0.9 }}>
-          {heroDate(parent.timezone, Date.now())}
+          {heroDate(parent.timezone, Date.now(), i18n.language)}
         </Text>
       </View>
       <View style={{ flexDirection: "row", alignItems: "center", gap: theme.spacing.lg }}>
@@ -219,8 +220,10 @@ function ParentTodaySection({
           <HeroCard parent={parent} cards={cards} />
           <PresenceBar parent={parent} />
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
-            <Text variant="title">{t("screens.today.dosesTitle")}</Text>
-            <Text variant="caption" tone="muted">
+            <Text variant="title" style={{ flexShrink: 1 }}>
+              {t("screens.today.dosesTitle")}
+            </Text>
+            <Text variant="caption" tone="muted" style={{ flexShrink: 0, marginLeft: 8 }}>
               {t("screens.today.dosesCount", { count: cards.length })}
             </Text>
           </View>

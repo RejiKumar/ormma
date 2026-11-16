@@ -85,7 +85,7 @@ export function DoseCardView({
       </View>
       <Card style={{ flex: 1, gap: theme.spacing.sm, marginBottom: last ? 0 : theme.spacing.md }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: theme.spacing.sm }}>
-          <View style={{ flexShrink: 1 }}>
+          <View style={{ flexShrink: 0 }}>
             <Text variant="chip" tone="muted" numeric testID={`${testID}-time`}>
               {time}
             </Text>
