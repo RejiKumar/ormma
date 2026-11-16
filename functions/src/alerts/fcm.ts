@@ -1,6 +1,7 @@
 import { FieldValue, type Firestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import type { AlertType, NotifyPrefs, UserDoc } from "../../../shared/types";
+import { memberLanguage, type MemberLanguage } from "./language";
 import { effectiveNotify, shouldPushAlert } from "./preferences";
 
 // FCM boundary for family alerts. Tokens live in users/{uid}.fcmTokens; invalid tokens are removed
@@ -70,6 +71,21 @@ export interface MemberTokens {
   tokens: string[];
   /** Token -> the users that hold it, for pruning. */
   owners: Map<string, string[]>;
+  /** Token -> the language of the member it belongs to (the first member, when a phone is shared). */
+  languages: Map<string, MemberLanguage>;
+}
+
+/** Splits tokens by language so each group can get its own wording. Tokens without a language are English. */
+export function groupTokensByLanguage(
+  tokens: string[],
+  languages: Map<string, MemberLanguage>,
+): Map<MemberLanguage, string[]> {
+  const groups = new Map<MemberLanguage, string[]>();
+  for (const token of tokens) {
+    const language = languages.get(token) ?? "en";
+    groups.set(language, [...(groups.get(language) ?? []), token]);
+  }
+  return groups;
 }
 
 /** Reads the parent's member documents and each member's user document. */
@@ -81,6 +97,7 @@ export async function resolveMemberTokens(
 ): Promise<MemberTokens> {
   const membersSnap = await db.collection(`parents/${parentId}/members`).get();
   const owners = new Map<string, string[]>();
+  const languages = new Map<string, MemberLanguage>();
 
   for (const member of membersSnap.docs) {
     if (include) {
@@ -91,15 +108,17 @@ export async function resolveMemberTokens(
     if (!userSnap.exists) continue;
     const data = userSnap.data() as UserDoc | undefined;
     const tokens = Array.isArray(data?.fcmTokens) ? data.fcmTokens : [];
+    const language = memberLanguage(data?.language);
     for (const token of tokens) {
       if (typeof token !== "string" || token.length === 0) continue;
+      if (!languages.has(token)) languages.set(token, language);
       const uids = owners.get(token) ?? [];
       if (!uids.includes(member.id)) uids.push(member.id);
       owners.set(token, uids);
     }
   }
 
-  return { tokens: [...owners.keys()], owners };
+  return { tokens: [...owners.keys()], owners, languages };
 }
 
 /** Removes invalid tokens from the user documents that hold them. */
@@ -136,7 +155,8 @@ export interface DeliverPushResult {
 export async function deliverAlertPush(
   db: Firestore,
   parentId: string,
-  message: PushMessage,
+  /** One message for everyone, or a function that writes it in each recipient's language. */
+  message: PushMessage | ((language: MemberLanguage) => PushMessage),
   sender: PushSender,
   /** When given, members' notification preferences and quiet hours are applied for this alert type. */
   options?: { alertType: AlertType; nowMs?: number },
@@ -148,25 +168,28 @@ export async function deliverAlertPush(
     const ms = options.nowMs ?? Date.now();
     include = (notify) => shouldPushAlert(notify, options.alertType, timezone, ms);
   }
-  const { tokens, owners } = await resolveMemberTokens(db, parentId, include);
+  const { tokens, owners, languages } = await resolveMemberTokens(db, parentId, include);
   if (tokens.length === 0) {
     console.info("alerts: no push tokens", { parentId });
     return { tokens: 0, sent: 0, failed: 0, removedTokens: 0 };
   }
 
-  const result = await sender.sendMulticast(tokens, message);
-  const removedTokens = await pruneInvalidTokens(db, result.invalidTokens, owners);
-  console.info("alerts: push complete", {
-    parentId,
-    tokens: tokens.length,
-    sent: result.successCount,
-    failed: result.failureCount,
-    removedTokens,
-  });
-  return {
-    tokens: tokens.length,
-    sent: result.successCount,
-    failed: result.failureCount,
-    removedTokens,
-  };
+  // One send per language, so each member reads the alert in their own. A message given as plain text goes
+  // to everyone unchanged.
+  const groups =
+    typeof message === "function"
+      ? [...groupTokensByLanguage(tokens, languages)].map(([language, group]) => ({ group, text: message(language) }))
+      : [{ group: tokens, text: message }];
+  let sent = 0;
+  let failed = 0;
+  const invalid: string[] = [];
+  for (const { group, text } of groups) {
+    const result = await sender.sendMulticast(group, text);
+    sent += result.successCount;
+    failed += result.failureCount;
+    invalid.push(...result.invalidTokens);
+  }
+  const removedTokens = await pruneInvalidTokens(db, invalid, owners);
+  console.info("alerts: push complete", { parentId, tokens: tokens.length, sent, failed, removedTokens });
+  return { tokens: tokens.length, sent, failed, removedTokens };
 }

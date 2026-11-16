@@ -1,7 +1,9 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type { DoseEventDoc, MedicineDoc, ParentDoc } from "../../../shared/types";
 import { callActivation, callsEnabled, type CallActivation } from "../exotel/config";
-import { resolveMemberTokens, pruneInvalidTokens, type PushSender } from "../alerts/fcm";
+import { groupTokensByLanguage, resolveMemberTokens, pruneInvalidTokens, type PushSender } from "../alerts/fcm";
+import { pick } from "../alerts/language";
+import { ALERT_LINES } from "../alerts/translations";
 import { buildDigestText, type DigestEvent } from "../digestText";
 import { FALLBACK_TIME_ZONE, localDateKey, localWallClock, nextDateKey, zonedTimeToMs } from "./time";
 
@@ -74,22 +76,30 @@ export async function eveningDigestHandler(deps: {
         medicine: names.get(e.medicineId) ?? "",
       };
     });
-    const text = buildDigestText({ name: parent.name, nowMs, timeZone: tz, events });
+    const hasDoses = buildDigestText({ name: parent.name, nowMs, timeZone: tz, events }) !== null;
 
     // Mark the day first: a retry after a partial failure must not send twice.
     await parentDoc.ref.update({ lastDigestDate: today });
-    if (text === null) continue;
+    if (!hasDoses) continue;
 
-    const { tokens, owners } = await resolveMemberTokens(db, parentDoc.id, (notify) => notify.summary);
+    const { tokens, owners, languages } = await resolveMemberTokens(db, parentDoc.id, (notify) => notify.summary);
     if (tokens.length === 0) continue;
-    const push = await sender.sendMulticast(tokens, {
-      title: "Ormma update",
-      body: text,
-      data: { type: "evening_digest", parentId: parentDoc.id },
-    });
-    await pruneInvalidTokens(db, push.invalidTokens, owners);
+    // One send per language: each member reads the digest in their own.
+    let sentCount = 0;
+    const invalid: string[] = [];
+    for (const [language, group] of groupTokensByLanguage(tokens, languages)) {
+      const body = buildDigestText({ name: parent.name, nowMs, timeZone: tz, events, language }) ?? "";
+      const push = await sender.sendMulticast(group, {
+        title: pick(ALERT_LINES, language, "titleDigest"),
+        body,
+        data: { type: "evening_digest", parentId: parentDoc.id },
+      });
+      sentCount += push.successCount;
+      invalid.push(...push.invalidTokens);
+    }
+    await pruneInvalidTokens(db, invalid, owners);
     result.sent += 1;
-    console.info("digest: sent", { parentId: parentDoc.id, tokens: tokens.length, sent: push.successCount });
+    console.info("digest: sent", { parentId: parentDoc.id, tokens: tokens.length, sent: sentCount });
   }
   return result;
 }

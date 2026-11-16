@@ -1,3 +1,5 @@
+import { fill, pick, type MemberLanguage } from "./alerts/language";
+import { DIGEST_LINES, MONTH_NAMES, WEEKDAY_NAMES, type DigestKey } from "./alerts/translations";
 import { localWallClock } from "./schedule/time";
 
 // The fixed family-update template (evening-digest spec). Pure and English-only on the server; the
@@ -22,8 +24,6 @@ export interface DigestCard {
 }
 
 const NOT_CONFIRMED = new Set(["missed", "no_answer", "not_taken"]);
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** Morning from 05:00, Afternoon from 12:00, Evening from 17:00, Night from 21:00 until 05:00. */
 export function periodName(hour: number): "Morning" | "Afternoon" | "Evening" | "Night" {
@@ -42,10 +42,10 @@ export function clock12(ms: number, timeZone: string): string {
 }
 
 /** "Mon 19 Oct" in the given timezone. */
-export function dayLabel(ms: number, timeZone: string): string {
+export function dayLabel(ms: number, timeZone: string, language: MemberLanguage = "en"): string {
   const wall = localWallClock(ms, timeZone);
   const weekday = new Date(Date.UTC(wall.year, wall.month - 1, wall.day)).getUTCDay();
-  return `${WEEKDAYS[weekday]} ${wall.day} ${MONTHS[wall.month - 1]}`;
+  return `${WEEKDAY_NAMES[language][weekday]} ${wall.day} ${MONTH_NAMES[language][wall.month - 1]}`;
 }
 
 /** Groups events at the same scheduled time into one card, in time order. */
@@ -71,36 +71,45 @@ export function groupCards(events: DigestEvent[]): DigestCard[] {
     });
 }
 
-/** The digest text, or null when there are no doses today. */
+/** The digest text in the recipient's language (English when missing), or null when there are no doses today. */
 export function buildDigestText(input: {
   name: string;
   nowMs: number;
   timeZone: string;
   events: DigestEvent[];
+  language?: MemberLanguage;
 }): string | null {
+  const language = input.language ?? "en";
+  const line = (key: DigestKey, values: Record<string, string | number> = {}) =>
+    fill(pick(DIGEST_LINES, language, key), values);
   const cards = groupCards(input.events);
   if (cards.length === 0) return null;
   const tz = input.timeZone;
   const taken = cards.filter((c) => c.taken);
   const notConfirmed = cards.filter((c) => c.notConfirmed);
 
-  const lines = [`Ormma update, ${dayLabel(input.nowMs, tz)}`];
+  const lines = [line("header", { date: dayLabel(input.nowMs, tz, language) })];
   if (notConfirmed.length === 0) {
-    lines.push(`${input.name} is on track: ${taken.length} of ${cards.length} doses confirmed.`);
+    lines.push(line("onTrack", { name: input.name, taken: taken.length, total: cards.length }));
   } else {
     const times = notConfirmed.map((c) => clock12(c.scheduledForMs, tz)).join(", ");
-    const plural = notConfirmed.length > 1 ? "s" : "";
-    lines.push(`${input.name} has not confirmed ${notConfirmed.length} dose${plural}: ${times}. Please check in.`);
+    lines.push(
+      line(notConfirmed.length > 1 ? "notConfirmedMany" : "notConfirmedOne", {
+        name: input.name,
+        count: notConfirmed.length,
+        times,
+      }),
+    );
   }
   const firstTaken = taken.find((c) => c.resolvedAtMs !== null);
   if (firstTaken && firstTaken.resolvedAtMs !== null) {
-    const period = periodName(localWallClock(firstTaken.scheduledForMs, tz).hour);
-    lines.push(`${period} dose taken at ${clock12(firstTaken.resolvedAtMs, tz)}.`);
+    const period = line(periodName(localWallClock(firstTaken.scheduledForMs, tz).hour));
+    lines.push(line("takenAt", { period, time: clock12(firstTaken.resolvedAtMs, tz) }));
   }
   const next = cards.find((c) => c.pending && c.scheduledForMs >= input.nowMs);
   if (next) {
-    const meds = next.medicines.length > 0 ? `${next.medicines} ` : "";
-    lines.push(`Next: ${meds}at ${clock12(next.scheduledForMs, tz)}.`.replace("Next:  at", "Next: at"));
+    const time = clock12(next.scheduledForMs, tz);
+    lines.push(next.medicines.length > 0 ? line("next", { medicines: next.medicines, time }) : line("nextNoMedicine", { time }));
   }
   return lines.join("\n");
 }

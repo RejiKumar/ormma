@@ -208,13 +208,16 @@ export async function missedDoseCheckerHandler(options: MissedOptions): Promise<
   summary.groups = groups.length;
 
   for (const group of groups) {
-    const message = buildMissedDoseMessage({
+    const messageInput = {
       parentName: group.parent.name,
       scheduledFor: group.scheduledFor,
       lastAttemptAt: group.lastAttemptAt,
       timeZone: group.parent.timeZone,
       variant: group.variant,
-    });
+    };
+    // The stored alert (shown in the Alerts tab) keeps the English text; each member's push is written in
+    // their own language by notifyAlert.
+    const message = buildMissedDoseMessage(messageInput);
 
     let alertId: string | null = null;
     let alertDoc: ReturnType<typeof writeAlert>["doc"] | null = null;
@@ -273,7 +276,9 @@ export async function missedDoseCheckerHandler(options: MissedOptions): Promise<
       summary.missed += group.members.length;
       if (alertId && alertDoc) {
         summary.alerted += 1;
-        await notifyAlert(db, group.parentId, alertId, alertDoc, options.sender);
+        await notifyAlert(db, group.parentId, alertId, alertDoc, options.sender, (language) =>
+          buildMissedDoseMessage({ ...messageInput, language }),
+        );
       }
     } catch (error) {
       summary.failed += 1;

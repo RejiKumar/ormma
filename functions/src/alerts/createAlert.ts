@@ -1,7 +1,8 @@
 import { Timestamp, type Firestore, type Transaction } from "firebase-admin/firestore";
 import type { AlertDoc, AlertType } from "../../../shared/types";
 import { deliverAlertPush, type PushSender } from "./fcm";
-import { buildUrgentMessage } from "./templates";
+import type { MemberLanguage } from "./language";
+import { alertTitle, buildUrgentMessage } from "./templates";
 
 // Alert writes and delivery. The caller decides whether the write belongs to a transaction (missed
 // doses) or is a standalone immediate alert (urgent).
@@ -35,31 +36,29 @@ export function writeAlert(
   return { alertId: ref.id, doc };
 }
 
-const TITLE: Partial<Record<AlertType, string>> = {
-  missed_dose: "Missed dose",
-  urgent: "Urgent",
-};
-
 export async function notifyAlert(
   db: Firestore,
   parentId: string,
   alertId: string,
   alert: AlertDoc,
   sender: PushSender,
+  /** Writes the body in a recipient's language; without it everyone gets the stored (English) message. */
+  bodyFor?: (language: MemberLanguage) => string,
 ): Promise<void> {
+  const data = {
+    type: alert.type,
+    parentId,
+    alertId,
+    ...(alert.relatedEventId ? { relatedEventId: alert.relatedEventId } : {}),
+  };
   await deliverAlertPush(
     db,
     parentId,
-    {
-      title: TITLE[alert.type] ?? "Ormma alert",
-      body: alert.message,
-      data: {
-        type: alert.type,
-        parentId,
-        alertId,
-        ...(alert.relatedEventId ? { relatedEventId: alert.relatedEventId } : {}),
-      },
-    },
+    (language) => ({
+      title: alertTitle(alert.type, language),
+      body: bodyFor ? bodyFor(language) : alert.message,
+      data,
+    }),
     sender,
     { alertType: alert.type },
   );
@@ -82,6 +81,8 @@ export async function createUrgentAlert(
   };
   const ref = db.collection(`parents/${parentId}/alerts`).doc();
   await ref.set(buildAlert(alert));
-  await notifyAlert(db, parentId, ref.id, buildAlert(alert), sender);
+  await notifyAlert(db, parentId, ref.id, buildAlert(alert), sender, (language) =>
+    buildUrgentMessage(parentName, language),
+  );
   return ref.id;
 }
