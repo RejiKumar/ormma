@@ -21,7 +21,7 @@ Links: [Play Console](https://play.google.com/console) · [Firebase console](htt
 - [ ] `PLAY_SERVICE_ACCOUNT_JSON` secret set; the service account has Play Console permissions; `playBillingEvents` topic test notification received
 - [ ] On a physical phone from the Internal testing track: buy, cancel, refund and restore all work; the plan row in Settings and the limits follow
 - [ ] Exotel's real per-call price recorded here: ____. The Free plan now calls every dose time (decision 187), so check the cost of a Free family per day; the plans differ in parents and members only
-- [ ] Build 1.0.1 (versionCode 2) uploaded to Internal testing; Play shows the version you expect (docs/PLAY-UPLOAD.md)
+- [ ] Build 1.0.1 (versionCode 3) uploaded to Internal testing; Play shows the version you expect (docs/PLAY-UPLOAD.md)
 - [ ] `firestore:rules` deployed before the 1.0.1 app reaches users (the app writes `users/{uid}.language`), then functions
 - [ ] A call in Malayalam, Tamil or Hindi answered, and a missed-dose push and the 8 PM digest received in that language
 - [ ] Malayalam, Tamil and Hindi wording (app, pushes, call script) reviewed by a fluent speaker of each; reviewers recorded in docs/DECISIONS.md

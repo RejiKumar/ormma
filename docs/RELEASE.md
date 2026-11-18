@@ -6,7 +6,7 @@ cannot change after the first upload to Play.
 
 Do the sections in order. Items marked **[you]** need your accounts or secrets; I cannot do them.
 
-**Current build:** 1.0.1, `versionCode` 2 (`release/ormma-1.0.1-vc2.aab`). The short upload path is
+**Current build:** 1.0.1, `versionCode` 2 (`release/ormma-1.0.1-vc3.aab`). The short upload path is
 [PLAY-UPLOAD.md](PLAY-UPLOAD.md); what to check before Production is section 9 and
 [PRELAUNCH-CHECKLIST.md](PRELAUNCH-CHECKLIST.md); the go-live order is [GO-LIVE.md](GO-LIVE.md).
 

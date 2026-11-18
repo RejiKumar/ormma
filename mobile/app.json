@@ -20,7 +20,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.ormma.app",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 2,
+      "versionCode": 3,
       "allowBackup": false,
       "permissions": [
         "android.permission.INTERNET",

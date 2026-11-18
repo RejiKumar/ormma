@@ -1,6 +1,6 @@
-# Play upload sheet: Ormma 1.0.1 (versionCode 2)
+# Play upload sheet: Ormma 1.0.1 (versionCode 3)
 
-The bundle: `release/ormma-1.0.1-vc2.aab` (a copy of `mobile/android/app/build/outputs/bundle/release/app-release.aab`).
+The bundle: `release/ormma-1.0.1-vc3.aab` (a copy of `mobile/android/app/build/outputs/bundle/release/app-release.aab`).
 Package `com.ormma.app`, minSdk 24, targetSdk 36, production Firebase config (`ormma-prod`), signed with the upload key
 (SHA-256 `91:8F:54:A8:1E:C5:10:E8:3A:73:74:FB:A0:66:35:95:5E:97:00:9C:F1:E2:E1:38:9F:6C:04:86:D4:D1:01:69`).
 
@@ -9,7 +9,7 @@ Every later upload needs a higher `versionCode` in `mobile/app.json` (`node scri
 | Build | versionName | versionCode | What it adds |
 | --- | --- | --- | --- |
 | first internal build | 1.0.0 | 1 | Check-in calls, family app, plans and Google Play billing |
-| this build | 1.0.1 | 2 | App in Malayalam, Tamil and Hindi (Settings, App language); pushes and the evening digest in each member's language; call language editable in Parent details; Free plan calls every dose time; prescription scanner; layout fixes in the three scripts |
+| this build | 1.0.1 | 3 (code 2 was already used in Play) | App in Malayalam, Tamil and Hindi (Settings, App language); pushes and the evening digest in each member's language; call language editable in Parent details; Free plan calls every dose time; prescription scanner; layout fixes in the three scripts |
 
 ## Links
 
@@ -30,7 +30,7 @@ Every later upload needs a higher `versionCode` in `mobile/app.json` (`node scri
 1. Play Console, Create app (once): name Ormma, App, Free, accept the declarations. (One-time developer fee and identity verification if not done.)
 2. Testing, Internal testing, Testers: a list with your Google account emails (and the licence testers, section 4), save.
 3. Internal testing, Create new release. Accept Play App Signing when asked (the default).
-4. Upload `release/ormma-1.0.1-vc2.aab`. Check that Play shows versionCode 2. Release name `1.0.1 (2)`. Release notes (shown to testers):
+4. Upload `release/ormma-1.0.1-vc3.aab`. Check that Play shows versionCode 3. Release name `1.0.1 (3)`. Release notes (shown to testers):
    - "The app now works in Malayalam, Tamil and Hindi: Settings, App language."
    - "Reminders and the evening update arrive in each family member's language."
    - "The parent's call language can be changed in Parent details."
